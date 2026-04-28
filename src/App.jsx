@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const PAYMENT_LINKS = {
   audit: import.meta.env.VITE_AUDIT_PAYMENT_URL || '',
@@ -9,6 +9,8 @@ const PAYMENT_LINKS = {
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'quantumbusinessstrategies@gmail.com'
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
+const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || ''
+const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || ''
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -115,6 +117,42 @@ export default function QuantumAIWebsite() {
 
   const result = useMemo(() => scoreFromAnswers(form), [form])
 
+  useEffect(() => {
+    if (GOOGLE_TAG_ID && !document.querySelector(`[data-quantum-script="gtag-${GOOGLE_TAG_ID}"]`)) {
+      const gtagScript = document.createElement('script')
+      gtagScript.async = true
+      gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`
+      gtagScript.dataset.quantumScript = `gtag-${GOOGLE_TAG_ID}`
+      document.head.appendChild(gtagScript)
+
+      window.dataLayer = window.dataLayer || []
+      window.gtag = function gtag() {
+        window.dataLayer.push(arguments)
+      }
+      window.gtag('js', new Date())
+      window.gtag('config', GOOGLE_TAG_ID)
+    }
+
+    if (META_PIXEL_ID && !window.fbq) {
+      window.fbq = function fbq() {
+        window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments)
+      }
+      window.fbq.push = window.fbq
+      window.fbq.loaded = true
+      window.fbq.version = '2.0'
+      window.fbq.queue = []
+
+      const metaScript = document.createElement('script')
+      metaScript.async = true
+      metaScript.src = 'https://connect.facebook.net/en_US/fbevents.js'
+      metaScript.dataset.quantumScript = `meta-${META_PIXEL_ID}`
+      document.head.appendChild(metaScript)
+
+      window.fbq('init', META_PIXEL_ID)
+      window.fbq('track', 'PageView')
+    }
+  }, [])
+
   function updateField(event) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
@@ -131,6 +169,11 @@ export default function QuantumAIWebsite() {
     setLeadStatus('ASSESSMENT PACKET GENERATED')
     setOpen(true)
     setResp(`READINESS ${result.readiness}% :: PRIORITY GAPS: ${result.gaps.join(' / ')} :: SELECT A GROWTH PATH BELOW`)
+    window.gtag?.('event', 'generate_lead', {
+      event_category: 'assessment',
+      value: result.readiness,
+    })
+    window.fbq?.('track', 'Lead')
 
     if (!LEAD_WEBHOOK) return
 
