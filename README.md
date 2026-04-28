@@ -19,7 +19,7 @@ npm run build
 
 Set these as GitHub Pages repository variables or local `.env` values:
 
-- `VITE_CONTACT_EMAIL`: fallback email for lead and payment buttons.
+- `VITE_CONTACT_EMAIL`: fallback email for lead and payment buttons. Default: `quantumbusinessstrategies@gmail.com`.
 - `VITE_LEAD_WEBHOOK_URL`: Zapier, Make, CRM, Google Apps Script, or other HTTPS webhook for assessments.
 - `VITE_AUDIT_PAYMENT_URL`: checkout link for the Business Weakness Scan.
 - `VITE_OVERHAUL_PAYMENT_URL`: checkout/application link for the Done-For-You Overhaul.

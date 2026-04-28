@@ -7,7 +7,7 @@ const PAYMENT_LINKS = {
   fullSpectrum: import.meta.env.VITE_FULL_SPECTRUM_PAYMENT_URL || '',
 }
 
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'admin@quantumaibusiness.com'
+const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'quantumbusinessstrategies@gmail.com'
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
 
 function rand(seed, min, max) {
