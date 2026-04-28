@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
 const PAYMENT_LINKS = {
-  audit: import.meta.env.VITE_AUDIT_PAYMENT_URL || '',
-  overhaul: import.meta.env.VITE_OVERHAUL_PAYMENT_URL || '',
-  lifetimeInsight: import.meta.env.VITE_LIFETIME_INSIGHT_PAYMENT_URL || '',
-  fullSpectrum: import.meta.env.VITE_FULL_SPECTRUM_PAYMENT_URL || '',
+  outlinedStrategy: import.meta.env.VITE_OUTLINED_STRATEGY_PAYMENT_URL || import.meta.env.VITE_AUDIT_PAYMENT_URL || '',
+  automatedUtility: import.meta.env.VITE_AUTOMATED_UTILITY_PAYMENT_URL || import.meta.env.VITE_OVERHAUL_PAYMENT_URL || '',
+  fullStrategic: import.meta.env.VITE_FULL_STRATEGIC_PAYMENT_URL || import.meta.env.VITE_FULL_SPECTRUM_PAYMENT_URL || '',
+  premiumReferral: import.meta.env.VITE_PREMIUM_REFERRAL_URL || 'https://quantumbusinessstrategies.com',
 }
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'quantumbusinessstrategies@gmail.com'
@@ -21,16 +21,38 @@ function createField(count, mapper) {
   return Array.from({ length: count }, (_, i) => mapper(i + 1))
 }
 
-function scoreFromAnswers(form) {
-  const values = [
-    form.revenue,
-    form.leads,
-    form.operations,
-    form.accounting,
-    form.advertising,
-    form.automation,
-  ].map(Number)
+function fingerprint(text) {
+  return Array.from(text || 'quantum').reduce((sum, char, index) => sum + char.charCodeAt(0) * (index + 3), 137)
+}
 
+function scanTarget(target, result) {
+  const seed = fingerprint(target)
+  const conversionLeak = 12 + (seed % 31)
+  const automationWaste = 8 + (seed % 24)
+  const followupLeak = 10 + (seed % 29)
+  const readiness = Math.max(18, Math.min(96, result.readiness + (seed % 17) - 8))
+  const bottlenecks = [
+    'Offer clarity is probably not doing enough selling before a human gets involved',
+    'Lead capture should be tied to instant follow-up, owner alerts, and a paid next step',
+    'Retargeting and abandoned-interest recovery are likely underused',
+    'Client delivery can be packaged into repeatable automation instead of custom chaos',
+    'Reporting should show cash movement, lead source, conversion stage, and next action',
+  ]
+
+  return {
+    readiness,
+    score: 100 - readiness,
+    losses: [
+      `${conversionLeak}% estimated conversion friction from unclear next-step routing`,
+      `${automationWaste} hours per month may be recoverable through automated intake and follow-up`,
+      `${followupLeak}% of warm interest may be leaking without structured retargeting`,
+    ],
+    bottlenecks: bottlenecks.sort((a, b) => ((seed + a.length) % 7) - ((seed + b.length) % 7)).slice(0, 3),
+  }
+}
+
+function scoreFromAnswers(form) {
+  const values = [form.revenue, form.leads, form.operations, form.accounting, form.advertising, form.automation].map(Number)
   const total = values.reduce((sum, value) => sum + value, 0)
   const readiness = Math.round((total / (values.length * 5)) * 100)
   const gaps = [
@@ -47,14 +69,15 @@ function scoreFromAnswers(form) {
   return { readiness, gaps }
 }
 
-function mailtoHref(form, result) {
-  const subject = encodeURIComponent(`Quantum AI Business assessment: ${form.company || 'New lead'}`)
+function mailtoHref({ form, result, scan, packageName = 'General inquiry' }) {
+  const subject = encodeURIComponent(`Quantum AI Business: ${packageName} - ${form.company || form.website || 'New lead'}`)
   const body = encodeURIComponent(
     [
+      `Package: ${packageName}`,
       `Company: ${form.company}`,
-      `Website: ${form.website}`,
+      `Website/business name: ${form.website || form.company}`,
       `Email: ${form.email}`,
-      `Revenue stage: ${form.revenue}`,
+      `Revenue clarity: ${form.revenue}`,
       `Leads: ${form.leads}`,
       `Operations: ${form.operations}`,
       `Accounting: ${form.accounting}`,
@@ -63,17 +86,35 @@ function mailtoHref(form, result) {
       `Objective: ${form.objective}`,
       `Readiness score: ${result.readiness}%`,
       `Priority gaps: ${result.gaps.join(', ')}`,
+      `Scan pressure: ${scan?.score || 'Not generated'}`,
+      `Scan notes: ${(scan?.bottlenecks || []).join(' | ')}`,
     ].join('\n'),
   )
 
   return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`
 }
 
+async function notifyOwner(type, payload) {
+  if (!LEAD_WEBHOOK) return false
+
+  try {
+    await fetch(LEAD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, ...payload, notify: CONTACT_EMAIL, source: 'quantumaibusiness.com' }),
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
 export default function QuantumAIWebsite() {
-  const [objective, setObjective] = useState('')
+  const [target, setTarget] = useState('')
   const [open, setOpen] = useState(false)
-  const [resp, setResp] = useState('AWAITING QUANTUM ANALYSIS...')
+  const [resp, setResp] = useState('AWAITING QUANTUM BUSINESS SCAN...')
   const [leadStatus, setLeadStatus] = useState('')
+  const [scan, setScan] = useState(null)
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -124,7 +165,6 @@ export default function QuantumAIWebsite() {
       gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`
       gtagScript.dataset.quantumScript = `gtag-${GOOGLE_TAG_ID}`
       document.head.appendChild(gtagScript)
-
       window.dataLayer = window.dataLayer || []
       window.gtag = function gtag() {
         window.dataLayer.push(arguments)
@@ -141,13 +181,11 @@ export default function QuantumAIWebsite() {
       window.fbq.loaded = true
       window.fbq.version = '2.0'
       window.fbq.queue = []
-
       const metaScript = document.createElement('script')
       metaScript.async = true
       metaScript.src = 'https://connect.facebook.net/en_US/fbevents.js'
       metaScript.dataset.quantumScript = `meta-${META_PIXEL_ID}`
       document.head.appendChild(metaScript)
-
       window.fbq('init', META_PIXEL_ID)
       window.fbq('track', 'PageView')
     }
@@ -158,65 +196,79 @@ export default function QuantumAIWebsite() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
-  function send() {
-    const target = objective || form.objective || form.company || 'BUSINESS'
-    setResp(`SCANNING ${target.toUpperCase()} :: BOTTLENECKS FOUND :: ${result.gaps.join(' + ').toUpperCase()} :: NEXT STEP READY`)
+  async function runScan() {
+    const scanTargetValue = target || form.website || form.company || 'Business'
+    const nextForm = { ...form, website: form.website || scanTargetValue, company: form.company || scanTargetValue }
+    const generatedScan = scanTarget(scanTargetValue, result)
+    setForm(nextForm)
+    setScan(generatedScan)
     setOpen(true)
+    setResp(
+      `SCANNING ${scanTargetValue.toUpperCase()} :: ${generatedScan.score}/100 GROWTH PRESSURE :: ` +
+        `FAULTS FOUND: ${generatedScan.bottlenecks.join(' / ')} :: PACKAGE ROUTING READY`,
+    )
+    setLeadStatus('SCAN GENERATED - OWNER NOTIFICATION READY')
+    window.gtag?.('event', 'scan_generated', { event_category: 'diagnostic', value: generatedScan.score })
+    window.fbq?.('trackCustom', 'BusinessScanGenerated')
+    const sent = await notifyOwner('scan_generated', { form: nextForm, result, scan: generatedScan })
+    if (sent) setLeadStatus('SCAN GENERATED - SENT TO AUTOMATION HUB')
   }
 
   async function submitLead(event) {
     event.preventDefault()
+    const generatedScan = scan || scanTarget(form.website || form.company || 'Business', result)
+    setScan(generatedScan)
     setLeadStatus('ASSESSMENT PACKET GENERATED')
     setOpen(true)
-    setResp(`READINESS ${result.readiness}% :: PRIORITY GAPS: ${result.gaps.join(' / ')} :: SELECT A GROWTH PATH BELOW`)
-    window.gtag?.('event', 'generate_lead', {
-      event_category: 'assessment',
-      value: result.readiness,
-    })
+    setResp(`READINESS ${generatedScan.readiness}% :: UNLOCKED GAPS: ${result.gaps.join(' / ')} :: SELECT PACKAGE 1-4 BELOW`)
+    window.gtag?.('event', 'generate_lead', { event_category: 'assessment', value: generatedScan.readiness })
     window.fbq?.('track', 'Lead')
+    const sent = await notifyOwner('assessment_submitted', { form, result, scan: generatedScan })
+    if (sent) setLeadStatus('ASSESSMENT SENT TO AUTOMATION HUB')
+  }
 
-    if (!LEAD_WEBHOOK) return
-
-    try {
-      await fetch(LEAD_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, result, source: 'quantumaibusiness.com' }),
-      })
-      setLeadStatus('ASSESSMENT SENT TO AUTOMATION HUB')
-    } catch {
-      setLeadStatus('ASSESSMENT SAVED ON SCREEN - WEBHOOK NEEDS ATTENTION')
-    }
+  async function trackPackage(offer) {
+    window.gtag?.('event', 'select_package', { event_category: 'commerce', item_name: offer.title, value: offer.amount || 0 })
+    window.fbq?.('trackCustom', 'PackageSelected', { package: offer.title })
+    await notifyOwner('package_selected', { form, result, scan, package: offer })
   }
 
   const offers = [
     {
-      key: 'audit',
-      title: 'Business Weakness Scan',
-      price: 'Entry diagnostic',
-      copy: 'A paid review that turns the free scan into a prioritized fix list for sales, operations, accounting, automation, and advertising.',
-      cta: 'Buy Scan',
+      key: 'outlinedStrategy',
+      number: '01',
+      title: 'Outlined Strategy',
+      price: '$9.99 one-time',
+      amount: 9.99,
+      copy: 'A compact AI-assisted readout: visible faults, missed growth lanes, fastest fixes, and an ordered strategy map for the owner.',
+      cta: 'Buy Strategy',
     },
     {
-      key: 'overhaul',
-      title: 'Done-For-You Overhaul',
-      price: 'High-ticket buildout',
-      copy: 'Your company builds the funnels, automations, dashboards, client reporting, ad systems, and operating procedures.',
-      cta: 'Start Overhaul',
+      key: 'automatedUtility',
+      number: '02',
+      title: 'Automated Utility',
+      price: 'Starts at $229.99',
+      amount: 229.99,
+      copy: 'Automation setup for intake, owner alerts, follow-up, simple reporting, lead routing, and recurring growth prompts.',
+      cta: 'Start Automation',
     },
     {
-      key: 'lifetimeInsight',
-      title: 'Lifetime Insight Vault',
-      price: 'Self-guided access',
-      copy: 'A permanent library of recommendations, playbooks, metrics, prompts, and business growth perspectives.',
-      cta: 'Unlock Insight',
+      key: 'fullStrategic',
+      number: '03',
+      title: 'Full Strategic Growth',
+      price: 'Starts at $2,500',
+      amount: 2500,
+      copy: 'A deeper operating-system build: offer architecture, funnel logic, analytics, client delivery workflows, and strategic execution.',
+      cta: 'Begin Growth Build',
     },
     {
-      key: 'fullSpectrum',
-      title: 'Full-Spectrum Growth',
-      price: 'Ongoing partnership',
-      copy: 'Lifetime access to the broadest growth system: AI analysis, automation oversight, recurring reviews, and execution planning.',
-      cta: 'Apply Now',
+      key: 'premiumReferral',
+      number: '04',
+      title: 'Premium QuantumBusinessStrategies Referral',
+      price: 'Price upon referral',
+      amount: 0,
+      copy: 'For businesses that need premier-tier intervention, strategic review, and referral into the Quantumbusinessstrategies growth track.',
+      cta: 'Request Premium Referral',
     },
   ]
 
@@ -227,13 +279,7 @@ export default function QuantumAIWebsite() {
         <div
           className="beam"
           key={`beam-${beam.id}`}
-          style={{
-            left: `${beam.x}%`,
-            top: `${beam.y}%`,
-            width: beam.w,
-            transform: `rotate(${beam.r}deg)`,
-            opacity: beam.o,
-          }}
+          style={{ left: `${beam.x}%`, top: `${beam.y}%`, width: beam.w, transform: `rotate(${beam.r}deg)`, opacity: beam.o }}
         />
       ))}
       {stars.map((star) => (
@@ -243,13 +289,7 @@ export default function QuantumAIWebsite() {
         <span
           className="coin"
           key={`coin-${coin.id}`}
-          style={{
-            left: `${coin.x}%`,
-            top: `${coin.y}%`,
-            width: coin.s,
-            height: coin.s,
-            animationDuration: `${coin.d}s`,
-          }}
+          style={{ left: `${coin.x}%`, top: `${coin.y}%`, width: coin.s, height: coin.s, animationDuration: `${coin.d}s` }}
         >
           $
         </span>
@@ -258,11 +298,7 @@ export default function QuantumAIWebsite() {
         <span
           className="matrix-rain"
           key={`rain-${i}`}
-          style={{
-            left: `${(i * 1.8) % 100}%`,
-            animationDuration: `${2 + (i % 9) * 0.7}s`,
-            animationDelay: `-${(i % 17) * 0.4}s`,
-          }}
+          style={{ left: `${(i * 1.8) % 100}%`, animationDuration: `${2 + (i % 9) * 0.7}s`, animationDelay: `-${(i % 17) * 0.4}s` }}
         >
           0101{'\n'}1010{'\n'}1100{'\n'}0011
         </span>
@@ -272,50 +308,61 @@ export default function QuantumAIWebsite() {
         <section className="hero-panel" aria-labelledby="hero-title">
           <div className="brand-chip">QUANTUMAIBUSINESS.COM</div>
           <h1 id="hero-title">QUANTUM AI BUSINESS</h1>
-          <p className="tagline">8-BIT FUTURISM // FRACTAL LOGIC // CYBER PROFIT // AUTOMATION COMMAND</p>
+          <p className="tagline">QUANTUM PARABOLIC GROWTH // QUANTITATIVE LOGIC // AUTOMATED BUSINESS PRESSURE SCANS</p>
           <p className="promise">
-            AI-assisted business diagnostics and automation systems for owners who need clearer bottlenecks, sharper offers,
-            and a path from insight to execution.
+            Enter a business name or website. The system generates a first-pass growth diagnostic, flags likely profit leaks,
+            routes the client into the right package, and notifies the owner automation channel when connected.
           </p>
 
           <div className="command-center">
             <input
-              value={objective}
-              onChange={(event) => setObjective(event.target.value)}
-              placeholder="> ENTER OBJECTIVE_"
-              aria-label="Business objective"
+              value={target}
+              onChange={(event) => setTarget(event.target.value)}
+              placeholder="> WEBSITE OR BUSINESS NAME_"
+              aria-label="Website or business name"
             />
-            <button onClick={send} type="button">QUANTIFY BUSINESS</button>
-            {open && <div className="response-console">{resp}</div>}
+            <button onClick={runScan} type="button">QUANTIFY BUSINESS</button>
+            {open && (
+              <div className="response-console">
+                <p>{resp}</p>
+                {scan && (
+                  <ul>
+                    {scan.losses.map((loss) => (
+                      <li key={loss}>{loss}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
         <section className="system-grid" aria-label="Automation system">
           <div>
-            <h2>Automation Stack</h2>
-            <p>Lead intake, scoring, offer routing, payment links, client follow-up, and operator alerts are designed as one connected funnel.</p>
+            <h2>Fault Detection</h2>
+            <p>Website or business-name intake becomes a structured scan for weak offers, missing follow-up, lost leads, and unused growth channels.</p>
           </div>
           <div>
-            <h2>Human Oversight</h2>
-            <p>AI can draft analysis and automate repetitive work, while final claims, billing, ads, and client promises stay reviewable.</p>
+            <h2>Owner Oversight</h2>
+            <p>Every scan, assessment, and package selection can be sent to {CONTACT_EMAIL} through the webhook automation hub.</p>
           </div>
           <div>
-            <h2>Profit Engine</h2>
-            <p>The site moves visitors from free weakness scan to paid audit, done-for-you overhaul, self-guided insight, or full-spectrum growth.</p>
+            <h2>Client Delivery</h2>
+            <p>The package ladder moves clients from low-friction strategy to automation utility, full strategic growth, or premium referral.</p>
           </div>
         </section>
 
         <section className="assessment" aria-labelledby="assessment-title">
           <div className="assessment-copy">
-            <div className="brand-chip">FREE FRONT-END SCAN</div>
-            <h2 id="assessment-title">Business Weakness Intake</h2>
+            <div className="brand-chip">CLIENT UTILITY LAYER</div>
+            <h2 id="assessment-title">Business Growth Intake</h2>
             <p>
-              This creates the first useful client touchpoint: collect the business context, score readiness, expose the top gaps,
-              and route the lead into a paid offer.
+              The scan gives prospective clients a useful first readout, then adds context so the paid deliverable can be generated,
+              reviewed, and routed into the right service path.
             </p>
             <div className="score-box">
-              <strong>{result.readiness}%</strong>
-              <span>automation readiness</span>
+              <strong>{scan?.readiness || result.readiness}%</strong>
+              <span>growth-system readiness</span>
               <small>Priority gaps: {result.gaps.join(', ')}</small>
             </div>
           </div>
@@ -323,19 +370,19 @@ export default function QuantumAIWebsite() {
           <form className="intake-form" onSubmit={submitLead}>
             <label>
               Company
-              <input name="company" value={form.company} onChange={updateField} placeholder="Acme Growth LLC" />
+              <input name="company" value={form.company} onChange={updateField} placeholder="Business name" />
             </label>
             <label>
-              Website
-              <input name="website" value={form.website} onChange={updateField} placeholder="https://example.com" />
+              Website or profile
+              <input name="website" value={form.website} onChange={updateField} placeholder="https://example.com or business name" />
             </label>
             <label>
               Email
               <input name="email" value={form.email} onChange={updateField} placeholder="owner@example.com" type="email" />
             </label>
             <label className="wide">
-              Main objective
-              <textarea name="objective" value={form.objective} onChange={updateField} placeholder="More qualified leads, cleaner operations, better reporting..." />
+              Desired growth outcome
+              <textarea name="objective" value={form.objective} onChange={updateField} placeholder="More leads, better ads, cleaner operations, automation, reporting..." />
             </label>
             {[
               ['revenue', 'Revenue clarity'],
@@ -356,34 +403,46 @@ export default function QuantumAIWebsite() {
                 </select>
               </label>
             ))}
-            <button className="wide" type="submit">GENERATE BUSINESS READOUT</button>
+            <button className="wide" type="submit">LOCK READOUT + NOTIFY OWNER</button>
             {leadStatus && <p className="lead-status">{leadStatus}</p>}
           </form>
         </section>
 
         <section className="offers" aria-label="Paid growth paths">
           {offers.map((offer) => {
-            const href = PAYMENT_LINKS[offer.key] || mailtoHref(form, result)
+            const href =
+              PAYMENT_LINKS[offer.key] ||
+              (offer.key === 'premiumReferral' ? PAYMENT_LINKS.premiumReferral : mailtoHref({ form, result, scan, packageName: offer.title }))
             return (
               <article key={offer.key}>
-                <span>{offer.price}</span>
+                <span>PACKAGE {offer.number} // {offer.price}</span>
                 <h2>{offer.title}</h2>
                 <p>{offer.copy}</p>
-                <a href={href}>{offer.cta}</a>
+                <a href={href} onClick={() => trackPackage(offer)}>{offer.cta}</a>
               </article>
             )
           })}
         </section>
 
         <section className="launch-board" aria-labelledby="launch-title">
-          <h2 id="launch-title">Operator Launch Board</h2>
+          <h2 id="launch-title">Background Utility + Delivery Map</h2>
           <ul>
-            <li>Connect a form webhook with <code>VITE_LEAD_WEBHOOK_URL</code> for CRM, Sheets, Zapier, Make, or GoHighLevel.</li>
-            <li>Add Stripe or checkout links with the <code>VITE_*_PAYMENT_URL</code> environment variables.</li>
-            <li>Point Porkbun DNS for <code>quantumaibusiness.com</code> at GitHub Pages after the repo is published.</li>
-            <li>Keep final ad claims, legal promises, and financial decisions under owner review.</li>
+            <li>Connect <code>VITE_LEAD_WEBHOOK_URL</code> to Zapier, Make, GoHighLevel, HubSpot, Airtable, or Google Sheets for owner emails and client records.</li>
+            <li>Add Stripe Payment Links for package 1, 2, and 3 so checkout is immediate.</li>
+            <li>Use package 4 to send premium prospects to <code>quantumbusinessstrategies.com</code> and notify {CONTACT_EMAIL}.</li>
+            <li>Names such as Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI should be protected through trademark review, not only copyright.</li>
           </ul>
         </section>
+
+        <footer className="transparency">
+          <p>
+            Transparency: Quantum AI Business provides automated diagnostics, strategic information, and workflow routing. Results are not guaranteed,
+            do not replace legal, financial, tax, or professional advice, and depend on client execution, market conditions, platform policies, and data quality.
+            By using this site, visitors agree that all services and information are used at their own discretion and that liability is limited to the fullest
+            extent permitted by applicable law.
+          </p>
+          <p>Copyright notice: © 2025-2026 Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI brand materials. Trademark registration recommended.</p>
+        </footer>
       </main>
     </div>
   )

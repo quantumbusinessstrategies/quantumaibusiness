@@ -25,8 +25,16 @@ Set these as GitHub Pages repository variables or local `.env` values:
 - `VITE_OVERHAUL_PAYMENT_URL`: checkout/application link for the Done-For-You Overhaul.
 - `VITE_LIFETIME_INSIGHT_PAYMENT_URL`: checkout link for the Lifetime Insight Vault.
 - `VITE_FULL_SPECTRUM_PAYMENT_URL`: checkout/application link for Full-Spectrum Growth.
+- `VITE_OUTLINED_STRATEGY_PAYMENT_URL`: package 1 checkout link, starting at `$9.99`.
+- `VITE_AUTOMATED_UTILITY_PAYMENT_URL`: package 2 checkout link, starting at `$229.99`.
+- `VITE_FULL_STRATEGIC_PAYMENT_URL`: package 3 checkout/application link, starting at `$2,500`.
+- `VITE_PREMIUM_REFERRAL_URL`: package 4 referral URL, defaulting to `https://quantumbusinessstrategies.com`.
 - `VITE_GOOGLE_TAG_ID`: Google Ads/Analytics tag ID for conversion tracking.
 - `VITE_META_PIXEL_ID`: Meta pixel ID for lead conversion tracking.
+
+## Brand protection note
+
+Names such as Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI are usually protected through trademark law when used to identify services. Copyright can protect original website copy, graphics, software, and creative materials, but it generally does not protect names, titles, short phrases, or domain names.
 
 ## GitHub Pages domain setup
 
