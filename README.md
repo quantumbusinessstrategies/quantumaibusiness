@@ -21,6 +21,7 @@ Set these as GitHub Pages repository variables or local `.env` values:
 
 - `VITE_CONTACT_EMAIL`: fallback email for lead and payment buttons. Default: `quantumbusinessstrategies@gmail.com`.
 - `VITE_LEAD_WEBHOOK_URL`: Zapier, Make, CRM, Google Apps Script, or other HTTPS webhook for assessments.
+- `VITE_OWNER_NOTIFICATION_URL`: owner notification endpoint. Defaults to FormSubmit AJAX for `quantumbusinessstrategies@gmail.com`; approve the first activation email from FormSubmit.
 - `VITE_AUDIT_PAYMENT_URL`: checkout link for the Business Weakness Scan.
 - `VITE_OVERHAUL_PAYMENT_URL`: checkout/application link for the Done-For-You Overhaul.
 - `VITE_LIFETIME_INSIGHT_PAYMENT_URL`: checkout link for the Lifetime Insight Vault.

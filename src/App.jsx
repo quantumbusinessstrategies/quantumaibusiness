@@ -9,6 +9,8 @@ const PAYMENT_LINKS = {
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'quantumbusinessstrategies@gmail.com'
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
+const OWNER_NOTIFICATION_URL =
+  import.meta.env.VITE_OWNER_NOTIFICATION_URL || `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
 const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || ''
 const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || ''
 
@@ -95,13 +97,33 @@ function mailtoHref({ form, result, scan, packageName = 'General inquiry' }) {
 }
 
 async function notifyOwner(type, payload) {
-  if (!LEAD_WEBHOOK) return false
+  const endpoint = LEAD_WEBHOOK || OWNER_NOTIFICATION_URL
+  if (!endpoint) return false
+
+  const subject = `Quantum AI Business ${type.replaceAll('_', ' ')}`
+  const message = JSON.stringify(
+    {
+      event: type,
+      timestamp: new Date().toISOString(),
+      ...payload,
+    },
+    null,
+    2,
+  )
 
   try {
-    await fetch(LEAD_WEBHOOK, {
+    await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, ...payload, notify: CONTACT_EMAIL, source: 'quantumaibusiness.com' }),
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        _subject: subject,
+        _template: 'table',
+        _captcha: 'false',
+        event_type: type,
+        notify: CONTACT_EMAIL,
+        source: 'quantumaibusiness.com',
+        message,
+      }),
     })
     return true
   } catch {
