@@ -28,6 +28,9 @@ const OWNER_NOTIFICATION_URL =
   import.meta.env.VITE_OWNER_NOTIFICATION_URL || `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
 const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || ''
 const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || ''
+const SITE_URL = 'https://quantumaibusiness.com'
+const SHARE_TITLE = 'QuantumAiBusiness'
+const SHARE_TEXT = 'Run a cyber growth-pressure scan for business faults, profit leaks, and automation opportunities.'
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -156,6 +159,8 @@ export default function QuantumAIWebsite() {
   const [packageStatus, setPackageStatus] = useState('')
   const [scanBurst, setScanBurst] = useState(0)
   const [activeHash, setActiveHash] = useState(() => window.location.hash)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareStatus, setShareStatus] = useState('')
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -318,6 +323,40 @@ export default function QuantumAIWebsite() {
     setPackageStatus(sent ? 'PREMIUM REFERRAL SENT TO OWNER EMAIL' : 'REFERRAL READY - USE EMAIL OR SITE LINK BELOW')
   }
 
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(SITE_URL)
+      setShareStatus('LINK COPIED')
+      return true
+    } catch {
+      setShareStatus('COPY MANUALLY: QUANTUMAIBUSINESS.COM')
+      return false
+    }
+  }
+
+  async function nativeShare() {
+    if (!navigator.share) {
+      await copyShareLink()
+      return
+    }
+
+    try {
+      await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SITE_URL })
+      setShareStatus('SHARE PANEL OPENED')
+    } catch {
+      setShareStatus('SHARE CANCELLED')
+    }
+  }
+
+  async function openShareDestination(destination) {
+    if (destination.copyFirst) {
+      await copyShareLink()
+    }
+
+    window.open(destination.href, '_blank', 'noopener,noreferrer')
+    if (!destination.copyFirst) setShareStatus(`OPENED ${destination.label.toUpperCase()}`)
+  }
+
   const offers = [
     {
       key: 'outlinedStrategy',
@@ -354,6 +393,42 @@ export default function QuantumAIWebsite() {
       amount: 0,
       copy: 'For businesses that need premier-tier intervention, strategic review, and referral into the Quantumbusinessstrategies growth track.',
       cta: 'Request Premium Referral',
+    },
+  ]
+  const shareDestinations = [
+    {
+      label: 'Facebook',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`,
+    },
+    {
+      label: 'X',
+      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(`${SHARE_TITLE}: ${SHARE_TEXT}`)}`,
+    },
+    {
+      label: 'LinkedIn',
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`,
+    },
+    {
+      label: 'Reddit',
+      href: `https://www.reddit.com/submit?url=${encodeURIComponent(SITE_URL)}&title=${encodeURIComponent(SHARE_TITLE)}`,
+    },
+    {
+      label: 'Threads',
+      href: `https://www.threads.net/intent/post?text=${encodeURIComponent(`${SHARE_TITLE} ${SITE_URL}`)}`,
+    },
+    {
+      label: 'Bluesky',
+      href: `https://bsky.app/intent/compose?text=${encodeURIComponent(`${SHARE_TITLE}: ${SHARE_TEXT} ${SITE_URL}`)}`,
+    },
+    {
+      label: 'Instagram',
+      href: 'https://www.instagram.com/',
+      copyFirst: true,
+    },
+    {
+      label: 'TikTok',
+      href: 'https://www.tiktok.com/upload',
+      copyFirst: true,
     },
   ]
 
@@ -446,6 +521,24 @@ export default function QuantumAIWebsite() {
           </section>
         </div>
       </details>
+
+      <div className="share-dock">
+        <button type="button" className="share-toggle" onClick={() => setShareOpen((current) => !current)}>
+          SHARE
+        </button>
+        {shareOpen && (
+          <div className="share-panel" aria-label="Share QuantumAiBusiness">
+            <button type="button" onClick={nativeShare}>SYSTEM SHARE</button>
+            {shareDestinations.map((destination) => (
+              <button type="button" key={destination.label} onClick={() => openShareDestination(destination)}>
+                {destination.label}
+              </button>
+            ))}
+            <button type="button" onClick={copyShareLink}>COPY LINK</button>
+            {shareStatus && <p>{shareStatus}</p>}
+          </div>
+        )}
+      </div>
 
       <main className="content" id="home">
         <section className="hero-panel" aria-labelledby="hero-title">
