@@ -98,8 +98,8 @@ a {
   position: absolute;
   height: 2px;
   background: linear-gradient(90deg, transparent, #0ff, transparent);
-  box-shadow: 0 0 18px #0ff, 0 0 34px rgba(255, 125, 242, 0.35);
-  animation: beamPhase 8s ease-in-out infinite;
+  box-shadow: 0 0 12px #0ff;
+  animation: beamPhase 14s ease-in-out infinite;
 }
 
 .star {
@@ -107,8 +107,8 @@ a {
   display: block;
   background: #fff;
   opacity: 0.8;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
-  animation: particlePulse 5s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
+  animation: particlePulse 9s ease-in-out infinite;
 }
 
 .glow-particle {
@@ -116,8 +116,8 @@ a {
   display: block;
   border-radius: 50%;
   background: radial-gradient(circle, #eaffff, #7df9ff 42%, transparent 72%);
-  opacity: 0.78;
-  box-shadow: 0 0 12px rgba(125, 249, 255, 0.75), 0 0 22px rgba(255, 125, 242, 0.35);
+  opacity: 0.46;
+  box-shadow: 0 0 10px rgba(125, 249, 255, 0.55);
   animation: particleFloat ease-in-out infinite;
 }
 
@@ -125,15 +125,15 @@ a {
   position: absolute;
   display: block;
   transform-style: preserve-3d;
-  opacity: 0.94;
-  animation: wireSpin linear infinite, geometryFloat 13s ease-in-out infinite;
-  filter: drop-shadow(0 0 18px rgba(125, 249, 255, 0.78)) drop-shadow(0 0 26px rgba(255, 184, 243, 0.28));
+  opacity: 0.96;
+  animation: wireSpin linear infinite, geometryFloat 18s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(125, 249, 255, 0.82));
 }
 
 .wireframe,
 .wireframe i,
 .wireframe b {
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   background: linear-gradient(90deg, #00f6ff, #ff7df2, #fff1a6, #98ffdd, #00f6ff) border-box;
   background-size: 280% 100%;
   mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
@@ -146,7 +146,7 @@ a {
   inset: 12%;
   content: "";
   display: block;
-  animation: interfaceSweep 7s linear infinite;
+  animation: interfaceSweep 12s linear infinite;
 }
 
 .wireframe b {
@@ -162,9 +162,9 @@ a {
     linear-gradient(45deg, transparent 48%, rgba(255, 241, 166, 0.72) 49%, rgba(255, 241, 166, 0.72) 51%, transparent 52%),
     linear-gradient(135deg, transparent 48%, rgba(255, 184, 243, 0.62) 49%, rgba(255, 184, 243, 0.62) 51%, transparent 52%),
     radial-gradient(circle, transparent 42%, rgba(125, 249, 255, 0.32) 43%, transparent 48%);
-  opacity: 0.9;
+  opacity: 0.96;
   transform: rotateX(55deg) rotateY(30deg);
-  animation: geometryPulse 9s ease-in-out infinite;
+  animation: geometryPulse 14s ease-in-out infinite;
 }
 
 .wireframe-0 {
@@ -254,7 +254,7 @@ a {
   color: #00ff66;
   font-size: 7px;
   line-height: 8px;
-  text-shadow: 0 0 5px rgba(0, 255, 102, 0.58), 0 0 12px rgba(0, 255, 120, 0.28);
+  text-shadow: 0 0 4px rgba(0, 255, 102, 0.44);
   animation-name: matrixFall, matrixGlitch;
   animation-timing-function: linear, steps(2, end);
   animation-iteration-count: infinite, infinite;
@@ -265,11 +265,11 @@ a {
 .binary-pop {
   position: absolute;
   z-index: 1;
-  color: rgba(144, 255, 226, 0.82);
+  color: rgba(144, 255, 226, 0.5);
   font-size: 8px;
   line-height: 1;
   letter-spacing: 0;
-  text-shadow: 0 0 8px rgba(0, 255, 120, 0.72), 0 0 18px rgba(125, 249, 255, 0.36);
+  text-shadow: 0 0 6px rgba(0, 255, 120, 0.38);
   animation: binaryPop ease-in-out infinite;
 }
 
@@ -670,7 +670,7 @@ button:hover,
   transform: perspective(1200px) rotateX(2.2deg) rotateY(-0.6deg) translateZ(14px);
   transform-style: preserve-3d;
   clip-path: polygon(0 14px, 14px 14px, 14px 0, calc(100% - 14px) 0, calc(100% - 14px) 14px, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 14px calc(100% - 14px), 0 calc(100% - 14px));
-  animation: panelHoverDepth 12s ease-in-out infinite;
+  animation: none;
 }
 
 .system-grid > div::after,
@@ -1075,12 +1075,10 @@ code {
 @keyframes beamPhase {
   0%,
   100% {
-    filter: hue-rotate(0deg);
     opacity: 0.45;
   }
   50% {
-    filter: hue-rotate(145deg);
-    opacity: 0.92;
+    opacity: 0.74;
   }
 }
 
@@ -1125,11 +1123,9 @@ code {
 @keyframes wireSpin {
   from {
     transform: perspective(900px) rotateX(24deg) rotateY(0deg) rotateZ(0deg);
-    filter: hue-rotate(0deg) drop-shadow(0 0 12px rgba(125, 249, 255, 0.55));
   }
   to {
     transform: perspective(900px) rotateX(24deg) rotateY(360deg) rotateZ(180deg);
-    filter: hue-rotate(360deg) drop-shadow(0 0 16px rgba(255, 125, 242, 0.5));
   }
 }
 
@@ -1281,18 +1277,16 @@ code {
 @keyframes matrixGlitch {
   0%,
   100% {
-    filter: hue-rotate(0deg);
-    text-shadow: 0 0 6px #00ff66, 0 0 14px rgba(0, 255, 120, 0.45);
+    text-shadow: 0 0 4px rgba(0, 255, 102, 0.44);
   }
   20% {
-    filter: hue-rotate(55deg);
-    opacity: 0.18;
+    opacity: 0.12;
   }
   42% {
-    opacity: 0.48;
+    opacity: 0.34;
   }
   68% {
-    opacity: 0.14;
+    opacity: 0.1;
   }
 }
 
@@ -1309,12 +1303,10 @@ code {
 @keyframes geometryPulse {
   0%,
   100% {
-    opacity: 0.34;
-    filter: hue-rotate(0deg);
+    opacity: 0.46;
   }
   50% {
-    opacity: 0.82;
-    filter: hue-rotate(120deg);
+    opacity: 0.92;
   }
 }
 

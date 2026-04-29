@@ -168,12 +168,12 @@ export default function QuantumAIWebsite() {
   })
 
   const stars = useMemo(
-    () => createField(120, (i) => ({ id: i, x: rand(i, 0, 100), y: rand(i + 3, 0, 100), s: rand(i + 7, 1, 3) })),
+    () => createField(56, (i) => ({ id: i, x: rand(i, 0, 100), y: rand(i + 3, 0, 100), s: rand(i + 7, 1, 3) })),
     [],
   )
   const coins = useMemo(
     () =>
-      createField(28, (i) => ({
+      createField(10, (i) => ({
         id: i,
         x: rand(i + 11, 0, 100),
         y: rand(i + 19, 8, 88),
@@ -184,7 +184,7 @@ export default function QuantumAIWebsite() {
   )
   const beams = useMemo(
     () =>
-      createField(22, (i) => ({
+      createField(8, (i) => ({
         id: i,
         x: rand(i + 31, 0, 100),
         y: rand(i + 37, 0, 100),
@@ -196,12 +196,12 @@ export default function QuantumAIWebsite() {
   )
   const wireframes = useMemo(
     () =>
-      createField(42, (i) => ({
+      createField(34, (i) => ({
         id: i,
-        x: rand(i + 53, 1, 94),
-        y: rand(i + 59, 2, 92),
-        s: rand(i + 61, 92, 250),
-        d: rand(i + 67, 14, 34),
+        x: rand(i + 53, -3, 96),
+        y: rand(i + 59, -2, 94),
+        s: rand(i + 61, 145, 340),
+        d: rand(i + 67, 18, 42),
         r: rand(i + 71, -38, 38),
         shape: i % 8,
       })),
@@ -209,7 +209,7 @@ export default function QuantumAIWebsite() {
   )
   const particles = useMemo(
     () =>
-      createField(90, (i) => ({
+      createField(28, (i) => ({
         id: i,
         x: rand(i + 79, 0, 100),
         y: rand(i + 83, 0, 100),
@@ -379,7 +379,7 @@ export default function QuantumAIWebsite() {
           style={{ left: `${particle.x}%`, top: `${particle.y}%`, width: particle.s, height: particle.s, animationDuration: `${particle.d}s` }}
         />
       ))}
-      {createField(42, (i) => (
+      {createField(16, (i) => (
         <span
           className="binary-pop"
           key={`binary-pop-${i}`}
@@ -412,7 +412,7 @@ export default function QuantumAIWebsite() {
           $
         </span>
       ))}
-      {createField(115, (i) => {
+      {createField(68, (i) => {
         const glyphs = createField(8 + (i % 7), (j) => (rand(i * j + 131, 0, 1) > 0.5 ? '1' : '0')).join('\n')
         return (
           <span
@@ -420,9 +420,9 @@ export default function QuantumAIWebsite() {
             key={`rain-${i}`}
             style={{
               left: `${rand(i + 137, 0, 100)}%`,
-              animationDuration: `${rand(i + 149, 6, 16)}s`,
-              animationDelay: `-${rand(i + 151, 0, 12)}s`,
-              opacity: rand(i + 157, 0.08, 0.46),
+              animationDuration: `${rand(i + 149, 8, 20)}s`,
+              animationDelay: `-${rand(i + 151, 0, 16)}s`,
+              opacity: rand(i + 157, 0.06, 0.32),
             }}
           >
             {glyphs}
