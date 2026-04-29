@@ -1686,3 +1686,187 @@ code {
     width: min(360px, 100%);
   }
 }
+
+.owner-console {
+  min-height: 100vh;
+  padding: 28px;
+  color: #eaffff;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(0, 246, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 80% 18%, rgba(255, 184, 243, 0.12), transparent 22%),
+    #020509;
+  font-family: "Press Start 2P", "Courier New", monospace;
+}
+
+.owner-console h1,
+.owner-console h2,
+.owner-console p {
+  margin: 0;
+}
+
+.owner-hero,
+.owner-grid {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+}
+
+.owner-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(125, 249, 255, 0.48);
+  background: rgba(0, 12, 22, 0.78);
+  box-shadow: 0 0 26px rgba(0, 255, 255, 0.14);
+}
+
+.owner-hero span {
+  display: block;
+  margin-bottom: 12px;
+  color: #fff1a6;
+  font-size: 10px;
+}
+
+.owner-hero h1 {
+  color: #eaffff;
+  font-size: clamp(20px, 3.2vw, 36px);
+  line-height: 1.2;
+}
+
+.owner-hero p {
+  max-width: 860px;
+  margin-top: 14px;
+  color: #bdfaff;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.owner-hero a,
+.owner-panel button {
+  min-height: 42px;
+  padding: 12px 14px;
+  color: #061018;
+  background: linear-gradient(135deg, #eaffff, #ffb8f3, #fff1a6);
+  border: 2px solid #effcff;
+  box-shadow: 0 8px 0 #001133, 0 0 18px rgba(0, 255, 255, 0.18);
+  font-size: 9px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.owner-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.owner-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.owner-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(125, 249, 255, 0.4);
+  background: rgba(0, 12, 22, 0.66);
+  box-shadow: inset 0 0 18px rgba(255, 184, 243, 0.06), 0 0 22px rgba(0, 255, 255, 0.1);
+}
+
+.owner-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.owner-panel h2 {
+  color: #fff1a6;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.owner-panel label {
+  display: grid;
+  gap: 8px;
+  color: #9ff;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.owner-panel input,
+.owner-panel select,
+.owner-panel textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  color: #eaffff;
+  background: rgba(0, 8, 16, 0.82);
+  border: 1px solid rgba(125, 249, 255, 0.55);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.owner-panel textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.owner-panel pre {
+  max-height: 560px;
+  overflow: auto;
+  margin: 0;
+  padding: 16px;
+  color: #eaffff;
+  white-space: pre-wrap;
+  background: rgba(0, 8, 16, 0.78);
+  border: 1px solid rgba(152, 255, 221, 0.36);
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.owner-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  max-width: min(420px, calc(100vw - 36px));
+  padding: 14px;
+  color: #061018;
+  background: #98ffdd;
+  border: 2px solid #effcff;
+  box-shadow: 0 8px 0 #001133;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.owner-lockout {
+  display: grid;
+  place-items: center;
+}
+
+.owner-lockout section {
+  width: min(720px, 100%);
+  padding: 24px;
+  border: 1px solid rgba(125, 249, 255, 0.48);
+  background: rgba(0, 12, 22, 0.78);
+}
+
+@media (max-width: 900px) {
+  .owner-console {
+    padding: 14px;
+  }
+
+  .owner-hero,
+  .owner-grid,
+  .owner-output-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
