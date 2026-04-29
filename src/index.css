@@ -125,15 +125,15 @@ a {
   position: absolute;
   display: block;
   transform-style: preserve-3d;
-  opacity: 0.86;
+  opacity: 0.94;
   animation: wireSpin linear infinite, geometryFloat 13s ease-in-out infinite;
-  filter: drop-shadow(0 0 16px rgba(125, 249, 255, 0.62));
+  filter: drop-shadow(0 0 18px rgba(125, 249, 255, 0.78)) drop-shadow(0 0 26px rgba(255, 184, 243, 0.28));
 }
 
 .wireframe,
 .wireframe i,
 .wireframe b {
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   background: linear-gradient(90deg, #00f6ff, #ff7df2, #fff1a6, #98ffdd, #00f6ff) border-box;
   background-size: 280% 100%;
   mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
@@ -162,7 +162,7 @@ a {
     linear-gradient(45deg, transparent 48%, rgba(255, 241, 166, 0.72) 49%, rgba(255, 241, 166, 0.72) 51%, transparent 52%),
     linear-gradient(135deg, transparent 48%, rgba(255, 184, 243, 0.62) 49%, rgba(255, 184, 243, 0.62) 51%, transparent 52%),
     radial-gradient(circle, transparent 42%, rgba(125, 249, 255, 0.32) 43%, transparent 48%);
-  opacity: 0.72;
+  opacity: 0.9;
   transform: rotateX(55deg) rotateY(30deg);
   animation: geometryPulse 9s ease-in-out infinite;
 }
@@ -204,6 +204,18 @@ a {
 .wireframe-5 i,
 .wireframe-5 b {
   clip-path: polygon(50% 0, 58% 18%, 76% 12%, 72% 32%, 92% 38%, 74% 49%, 88% 66%, 67% 64%, 62% 86%, 50% 68%, 38% 86%, 33% 64%, 12% 66%, 26% 49%, 8% 38%, 28% 32%, 24% 12%, 42% 18%);
+}
+
+.wireframe-6,
+.wireframe-6 i,
+.wireframe-6 b {
+  clip-path: polygon(50% 0, 60% 16%, 78% 10%, 72% 28%, 90% 34%, 75% 46%, 100% 50%, 75% 54%, 90% 66%, 72% 72%, 78% 90%, 60% 84%, 50% 100%, 40% 84%, 22% 90%, 28% 72%, 10% 66%, 25% 54%, 0 50%, 25% 46%, 10% 34%, 28% 28%, 22% 10%, 40% 16%);
+}
+
+.wireframe-7,
+.wireframe-7 i,
+.wireframe-7 b {
+  clip-path: polygon(50% 0, 56% 20%, 76% 7%, 70% 31%, 98% 25%, 78% 44%, 100% 50%, 78% 56%, 98% 75%, 70% 69%, 76% 93%, 56% 80%, 50% 100%, 44% 80%, 24% 93%, 30% 69%, 2% 75%, 22% 56%, 0 50%, 22% 44%, 2% 25%, 30% 31%, 24% 7%, 44% 20%);
 }
 
 .scan-burst {
@@ -348,12 +360,15 @@ a {
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0;
-  transform: translateY(-8px);
+  transform: translateY(-30px) perspective(700px) rotateX(8deg) translateZ(24px);
   background: linear-gradient(90deg, #ffffff, #dff9ff, #97f4ff, #ffffff);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  text-shadow: 0 0 14px rgba(240, 255, 255, 0.5), 0 0 28px rgba(125, 249, 255, 0.28);
+  text-shadow:
+    0 0 14px rgba(240, 255, 255, 0.72),
+    0 0 28px rgba(125, 249, 255, 0.42),
+    0 9px 0 rgba(0, 14, 28, 0.6);
   animation: arcticShimmer 8s linear infinite;
 }
 
@@ -508,7 +523,15 @@ button,
     linear-gradient(90deg, #00f6ff, #ff7df2, #fff1a6, #98ffdd, #00f6ff) border-box;
   background-size: 100% 100%, 300% 100%;
   border: 2px solid #8ff;
-  box-shadow: 0 10px 0 #001133, 0 0 24px rgba(143, 255, 255, 0.48), 0 0 48px rgba(255, 184, 243, 0.28);
+  box-shadow:
+    0 4px 0 #4ce9ff,
+    0 12px 0 #001133,
+    8px 18px 0 rgba(0, 6, 22, 0.58),
+    -6px 15px 0 rgba(2, 46, 70, 0.45),
+    0 0 24px rgba(143, 255, 255, 0.48),
+    0 0 48px rgba(255, 184, 243, 0.28),
+    inset 3px 3px 0 rgba(255, 255, 255, 0.26),
+    inset -4px -6px 0 rgba(0, 7, 28, 0.28);
   font-size: 12px;
   animation: inputSkin 8s linear infinite;
   transform-style: preserve-3d;
@@ -537,13 +560,15 @@ button::after,
 .offers a::after {
   content: "";
   position: absolute;
-  inset: auto 8px -13px;
-  height: 14px;
+  inset: auto 10px -20px;
+  height: 22px;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(0, 17, 51, 0.92), rgba(0, 4, 18, 0.98));
-  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%);
-  filter: drop-shadow(0 9px 12px rgba(0, 0, 0, 0.55));
+  background:
+    linear-gradient(180deg, rgba(3, 44, 78, 0.92), rgba(0, 4, 18, 0.98)),
+    linear-gradient(90deg, rgba(125, 249, 255, 0.24), transparent 34%, rgba(255, 184, 243, 0.2));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 18px 100%);
+  filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.62));
 }
 
 .command-center button {
@@ -561,11 +586,15 @@ button::after,
     linear-gradient(90deg, #fff9cf, #ffb51f, #fff1a6, #ff7df2, #7df9ff, #fff9cf) border-box;
   border-color: #fff4a6;
   box-shadow:
-    0 12px 0 #3b2100,
+    0 4px 0 #fff0a4,
+    0 14px 0 #3b2100,
+    10px 22px 0 rgba(52, 28, 0, 0.52),
+    -8px 18px 0 rgba(119, 64, 0, 0.34),
     0 0 24px rgba(255, 213, 94, 0.72),
     0 0 54px rgba(255, 125, 242, 0.26),
     inset 0 3px 0 rgba(255, 255, 255, 0.68),
-    inset 0 -8px 0 rgba(80, 38, 0, 0.22);
+    inset 6px 0 0 rgba(255, 255, 255, 0.18),
+    inset -7px -9px 0 rgba(80, 38, 0, 0.28);
   clip-path: polygon(0 14px, 14px 14px, 14px 0, calc(100% - 14px) 0, calc(100% - 14px) 14px, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 14px calc(100% - 14px), 0 calc(100% - 14px));
   text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.58), 0 0 12px rgba(255, 244, 166, 0.8);
 }
@@ -586,6 +615,7 @@ button::after,
   transform: perspective(800px) rotateX(18deg) translateY(8px) translateZ(6px) scale(0.98);
   box-shadow:
     0 4px 0 #3b2100,
+    4px 7px 0 rgba(52, 28, 0, 0.44),
     0 0 38px rgba(255, 213, 94, 0.68),
     0 0 70px rgba(255, 125, 242, 0.3),
     inset 0 2px 0 rgba(255, 255, 255, 0.58),
@@ -637,8 +667,10 @@ button:hover,
   border: 1px solid rgba(0, 255, 255, 0.7);
   box-shadow: 0 0 24px rgba(0, 255, 255, 0.18), inset 0 0 24px rgba(255, 0, 255, 0.08);
   backdrop-filter: blur(4px);
-  transform: perspective(1200px) rotateX(1.8deg) translateZ(8px);
+  transform: perspective(1200px) rotateX(2.2deg) rotateY(-0.6deg) translateZ(14px);
   transform-style: preserve-3d;
+  clip-path: polygon(0 14px, 14px 14px, 14px 0, calc(100% - 14px) 0, calc(100% - 14px) 14px, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 14px calc(100% - 14px), 0 calc(100% - 14px));
+  animation: panelHoverDepth 12s ease-in-out infinite;
 }
 
 .system-grid > div::after,
@@ -654,6 +686,15 @@ button:hover,
   background: linear-gradient(90deg, transparent, rgba(255, 235, 157, 0.72), rgba(125, 249, 255, 0.72), transparent);
   opacity: 0.72;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.42);
+}
+
+.system-grid > div > *,
+.offers article > *,
+.assessment > *,
+.launch-board > *,
+.referral-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .system-grid > div::before,
@@ -880,10 +921,14 @@ button:active,
   background-size: 220% 100%, 260% 100%;
   border-color: rgba(234, 255, 255, 0.82);
   box-shadow:
-    0 10px 0 rgba(0, 17, 51, 0.86),
+    0 4px 0 rgba(234, 255, 255, 0.74),
+    0 12px 0 rgba(0, 17, 51, 0.86),
+    7px 19px 0 rgba(0, 4, 18, 0.44),
+    -5px 15px 0 rgba(67, 100, 120, 0.24),
     0 18px 28px rgba(0, 0, 0, 0.36),
     0 0 20px rgba(143, 255, 255, 0.28),
-    inset 0 0 22px rgba(255, 255, 255, 0.2);
+    inset 4px 4px 0 rgba(255, 255, 255, 0.3),
+    inset -5px -7px 0 rgba(0, 7, 28, 0.18);
   clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px));
   animation: inputSkin 9s linear infinite, buttonLift 7s ease-in-out infinite;
 }
@@ -903,16 +948,35 @@ code {
 }
 
 .transparency {
-  margin-top: 24px;
-  padding: 18px 0 0;
+  display: grid;
+  gap: 18px;
+  margin-top: 34px;
+  padding: 34px 0 0;
   color: rgba(216, 251, 255, 0.68);
-  border-top: 1px solid rgba(0, 255, 255, 0.35);
   font-size: 11px;
   line-height: 1.55;
-  text-align: left;
+  text-align: center;
 }
 
-.transparency p + p {
+.transparency h2 {
+  font-weight: 900;
+}
+
+.transparency-core {
+  position: relative;
+  padding: 22px;
+  text-align: left;
+  background: rgba(0, 12, 22, 0.46);
+  border: 1px solid rgba(0, 255, 255, 0.56);
+  box-shadow:
+    0 4px 0 rgba(125, 249, 255, 0.28),
+    0 18px 38px rgba(0, 0, 0, 0.45),
+    inset 0 0 28px rgba(255, 184, 243, 0.08);
+  backdrop-filter: blur(5px);
+  clip-path: polygon(0 14px, 14px 14px, 14px 0, calc(100% - 14px) 0, calc(100% - 14px) 14px, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 14px calc(100% - 14px), 0 calc(100% - 14px));
+}
+
+.transparency-core p + p {
   margin-top: 10px;
 }
 
@@ -935,7 +999,8 @@ code {
   justify-content: center;
   align-items: center;
   min-height: 46px;
-  margin-top: 16px;
+  width: min(320px, 100%);
+  margin: 4px auto 0;
   padding: 12px 18px;
   color: #2c1900;
   font-weight: 900;
@@ -945,7 +1010,11 @@ code {
     linear-gradient(90deg, #fff9cf, #ff7df2, #7df9ff, #fff9cf) border-box;
   background-size: 100% 100%, 260% 100%;
   border: 2px solid #fff4a6;
-  box-shadow: 0 8px 0 #3b2100, 0 0 24px rgba(255, 213, 94, 0.42);
+  box-shadow:
+    0 4px 0 #fff0a4,
+    0 12px 0 #3b2100,
+    8px 18px 0 rgba(52, 28, 0, 0.4),
+    0 0 24px rgba(255, 213, 94, 0.42);
   clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px));
   animation: inputSkin 8s linear infinite;
 }
@@ -1246,6 +1315,16 @@ code {
   50% {
     opacity: 0.82;
     filter: hue-rotate(120deg);
+  }
+}
+
+@keyframes panelHoverDepth {
+  0%,
+  100% {
+    filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.22));
+  }
+  50% {
+    filter: drop-shadow(0 24px 32px rgba(0, 0, 0, 0.34)) saturate(1.08);
   }
 }
 

@@ -196,14 +196,14 @@ export default function QuantumAIWebsite() {
   )
   const wireframes = useMemo(
     () =>
-      createField(30, (i) => ({
+      createField(42, (i) => ({
         id: i,
         x: rand(i + 53, 1, 94),
         y: rand(i + 59, 2, 92),
-        s: rand(i + 61, 82, 220),
+        s: rand(i + 61, 92, 250),
         d: rand(i + 67, 14, 34),
         r: rand(i + 71, -38, 38),
-        shape: i % 6,
+        shape: i % 8,
       })),
     [],
   )
@@ -615,6 +615,8 @@ export default function QuantumAIWebsite() {
         </section>
 
         <footer className="transparency" id="transparency">
+          <h2>Transparency</h2>
+          <div className="transparency-core">
           <p>
             Transparency: Quantum AI Business provides automated diagnostics, strategic information, and workflow routing. Results are not guaranteed,
             do not replace legal, financial, tax, or professional advice, and depend on client execution, market conditions, platform policies, and data quality.
@@ -628,6 +630,7 @@ export default function QuantumAIWebsite() {
             <a href={PARTNER_LINKS.strategies}>quantumbusinessstrategies.com</a>
             <a href={PARTNER_LINKS.pepes}>quantumpepes.xyz</a>
           </nav>
+          </div>
           <a className="home-link" href="#home">RETURN TO HOME</a>
         </footer>
       </main>
