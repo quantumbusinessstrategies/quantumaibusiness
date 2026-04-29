@@ -371,8 +371,41 @@ export default function QuantumAIWebsite() {
       })),
     [],
   )
+  const binaryBursts = useMemo(
+    () =>
+      createField(16, (i) => ({
+        id: i,
+        text: i % 2 ? '101101' : '010010',
+        left: rand(i + 103, 0, 98),
+        top: rand(i + 109, 0, 96),
+        delay: -rand(i + 113, 0, 10),
+        duration: rand(i + 127, 5, 13),
+      })),
+    [],
+  )
+  const matrixStreams = useMemo(
+    () =>
+      createField(68, (i) => ({
+        id: i,
+        glyphs: createField(8 + (i % 7), (j) => (rand(i * j + 131, 0, 1) > 0.5 ? '1' : '0')).join('\n'),
+        left: rand(i + 137, 0, 100),
+        duration: rand(i + 149, 8, 20),
+        delay: -rand(i + 151, 0, 16),
+        opacity: rand(i + 157, 0.06, 0.32),
+      })),
+    [],
+  )
 
   const result = useMemo(() => scoreFromAnswers(form), [form])
+
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    if (!window.location.hash) {
+      window.scrollTo(0, 0)
+    }
+  }, [])
 
   useEffect(() => {
     if (GOOGLE_TAG_ID && !document.querySelector(`[data-quantum-script="gtag-${GOOGLE_TAG_ID}"]`)) {
@@ -718,18 +751,18 @@ export default function QuantumAIWebsite() {
           style={{ left: `${particle.x}%`, top: `${particle.y}%`, width: particle.s, height: particle.s, animationDuration: `${particle.d}s` }}
         />
       ))}
-      {createField(16, (i) => (
+      {binaryBursts.map((burst) => (
         <span
           className="binary-pop"
-          key={`binary-pop-${i}`}
+          key={`binary-pop-${burst.id}`}
           style={{
-            left: `${rand(i + 103, 0, 98)}%`,
-            top: `${rand(i + 109, 0, 96)}%`,
-            animationDelay: `-${rand(i + 113, 0, 10)}s`,
-            animationDuration: `${rand(i + 127, 5, 13)}s`,
+            left: `${burst.left}%`,
+            top: `${burst.top}%`,
+            animationDelay: `${burst.delay}s`,
+            animationDuration: `${burst.duration}s`,
           }}
         >
-          {i % 2 ? '101101' : '010010'}
+          {burst.text}
         </span>
       ))}
       {coins.map((coin) => (
@@ -741,23 +774,20 @@ export default function QuantumAIWebsite() {
           $
         </span>
       ))}
-      {createField(68, (i) => {
-        const glyphs = createField(8 + (i % 7), (j) => (rand(i * j + 131, 0, 1) > 0.5 ? '1' : '0')).join('\n')
-        return (
-          <span
-            className="matrix-rain"
-            key={`rain-${i}`}
-            style={{
-              left: `${rand(i + 137, 0, 100)}%`,
-              animationDuration: `${rand(i + 149, 8, 20)}s`,
-              animationDelay: `-${rand(i + 151, 0, 16)}s`,
-              opacity: rand(i + 157, 0.06, 0.32),
-            }}
-          >
-            {glyphs}
-          </span>
-        )
-      })}
+      {matrixStreams.map((stream) => (
+        <span
+          className="matrix-rain"
+          key={`rain-${stream.id}`}
+          style={{
+            left: `${stream.left}%`,
+            animationDuration: `${stream.duration}s`,
+            animationDelay: `${stream.delay}s`,
+            opacity: stream.opacity,
+          }}
+        >
+          {stream.glyphs}
+        </span>
+      ))}
 
       <details className="cyber-menu">
         <summary>MENU</summary>

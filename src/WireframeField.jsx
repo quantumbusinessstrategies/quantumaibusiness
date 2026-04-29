@@ -114,6 +114,9 @@ export default function WireframeField() {
     let frameId = 0
     let disposed = false
     let handleResize = null
+    let isPaused = document.hidden
+    let lastFrame = 0
+    const frameInterval = 1000 / 48
 
     function resize(camera) {
       const width = mount.clientWidth || window.innerWidth
@@ -127,7 +130,13 @@ export default function WireframeField() {
       camera.updateProjectionMatrix()
     }
 
-    function animate(rendererInstance, scene, camera, clock) {
+    function animate(rendererInstance, scene, camera, clock, timestamp = 0) {
+      if (disposed) return
+      if (isPaused || timestamp - lastFrame < frameInterval) {
+        frameId = window.requestAnimationFrame((nextTimestamp) => animate(rendererInstance, scene, camera, clock, nextTimestamp))
+        return
+      }
+      lastFrame = timestamp
       const elapsed = clock.getElapsedTime()
       objects.forEach((object, index) => {
         const spin = object.userData.spin
@@ -140,7 +149,7 @@ export default function WireframeField() {
         object.material.color.setHSL((spin.hue + elapsed * spin.hueSpeed) % 1, 0.98, 0.72)
       })
       rendererInstance.render(scene, camera)
-      frameId = window.requestAnimationFrame(() => animate(rendererInstance, scene, camera, clock))
+      frameId = window.requestAnimationFrame((nextTimestamp) => animate(rendererInstance, scene, camera, clock, nextTimestamp))
     }
 
     async function start() {
@@ -160,13 +169,22 @@ export default function WireframeField() {
       objects.forEach((object) => scene.add(object))
 
       const clock = new THREE.Clock()
-      handleResize = () => resize(camera)
+      handleResize = () => window.requestAnimationFrame(() => resize(camera))
+      const handleVisibility = () => {
+        isPaused = document.hidden
+        if (!isPaused) {
+          clock.getDelta()
+        }
+      }
       resize(camera)
       animate(renderer, scene, camera, clock)
       window.addEventListener('resize', handleResize)
+      document.addEventListener('visibilitychange', handleVisibility)
+
+      return () => document.removeEventListener('visibilitychange', handleVisibility)
     }
 
-    start()
+    const cleanupPromise = start()
 
     return () => {
       disposed = true
@@ -174,6 +192,7 @@ export default function WireframeField() {
       if (handleResize) {
         window.removeEventListener('resize', handleResize)
       }
+      cleanupPromise.then((cleanup) => cleanup?.())
       objects.forEach((object) => {
         object.geometry.dispose()
         object.material.dispose()
