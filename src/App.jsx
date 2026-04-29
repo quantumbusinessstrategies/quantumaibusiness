@@ -196,14 +196,14 @@ export default function QuantumAIWebsite() {
   )
   const wireframes = useMemo(
     () =>
-      createField(34, (i) => ({
+      createField(26, (i) => ({
         id: i,
-        x: rand(i + 53, -3, 96),
-        y: rand(i + 59, -2, 94),
-        s: rand(i + 61, 145, 340),
-        d: rand(i + 67, 18, 42),
-        r: rand(i + 71, -38, 38),
-        shape: i % 8,
+        x: rand(i + 53, -6, 96),
+        y: rand(i + 59, -4, 92),
+        s: rand(i + 61, 190, 390),
+        d: rand(i + 67, 22, 48),
+        r: rand(i + 71, -26, 26),
+        shape: ['globe', 'icosahedron', 'dodecahedron', 'icosadodecahedron', 'sierpinski'][i % 5],
       })),
     [],
   )
@@ -397,10 +397,36 @@ export default function QuantumAIWebsite() {
         <span
           className={`wireframe wireframe-${wire.shape}`}
           key={`wire-${wire.id}`}
-          style={{ left: `${wire.x}%`, top: `${wire.y}%`, width: wire.s, height: wire.s, animationDuration: `${wire.d}s`, transform: `rotate(${wire.r}deg)` }}
+          style={{
+            left: `${wire.x}%`,
+            top: `${wire.y}%`,
+            width: wire.s,
+            height: wire.s,
+            animationDuration: `${wire.d}s`,
+            '--wire-rotate': `${wire.r}deg`,
+          }}
         >
-          <i />
-          <b />
+          <span className="wire-core">
+            {createField(8, (ring) => (
+              <i
+                className="wire-ring"
+                key={`ring-${ring}`}
+                style={{ '--rx': `${ring * 22.5}deg`, '--ry': `${ring * 45}deg`, '--rz': `${ring * 12}deg` }}
+              />
+            ))}
+            {createField(12, (edge) => (
+              <b
+                className="wire-edge"
+                key={`edge-${edge}`}
+                style={{
+                  '--edge-rz': `${edge * 30}deg`,
+                  '--edge-ry': `${34 + edge * 18}deg`,
+                  '--edge-rx': `${-54 + edge * 11}deg`,
+                  '--edge-z': `${(edge - 6) * 10}px`,
+                }}
+              />
+            ))}
+          </span>
         </span>
       ))}
       {coins.map((coin) => (

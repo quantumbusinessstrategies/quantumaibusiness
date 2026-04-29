@@ -125,97 +125,112 @@ a {
   position: absolute;
   display: block;
   transform-style: preserve-3d;
-  opacity: 0.96;
-  animation: wireSpin linear infinite, geometryFloat 18s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(125, 249, 255, 0.82));
+  opacity: 0.9;
+  perspective: 720px;
+  transform: rotate(var(--wire-rotate));
+  animation: geometryFloat 18s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(125, 249, 255, 0.72));
 }
 
-.wireframe,
-.wireframe i,
-.wireframe b {
-  border: 3px solid transparent;
-  background: linear-gradient(90deg, #00f6ff, #ff7df2, #fff1a6, #98ffdd, #00f6ff) border-box;
-  background-size: 280% 100%;
-  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-
-.wireframe i,
-.wireframe b {
-  position: absolute;
-  inset: 12%;
-  content: "";
-  display: block;
-  animation: interfaceSweep 12s linear infinite;
-}
-
-.wireframe b {
-  inset: 26%;
-  transform: rotateX(62deg) rotateY(28deg);
-}
-
-.wireframe::after {
-  content: "";
+.wire-core {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(45deg, transparent 48%, rgba(255, 241, 166, 0.72) 49%, rgba(255, 241, 166, 0.72) 51%, transparent 52%),
-    linear-gradient(135deg, transparent 48%, rgba(255, 184, 243, 0.62) 49%, rgba(255, 184, 243, 0.62) 51%, transparent 52%),
-    radial-gradient(circle, transparent 42%, rgba(125, 249, 255, 0.32) 43%, transparent 48%);
-  opacity: 0.96;
-  transform: rotateX(55deg) rotateY(30deg);
-  animation: geometryPulse 14s ease-in-out infinite;
+  transform-style: preserve-3d;
+  animation: wireSpin linear infinite;
+  animation-duration: inherit;
 }
 
-.wireframe-0 {
+.wire-core::before,
+.wire-core::after {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border: 2px solid rgba(255, 241, 166, 0.65);
+  transform-style: preserve-3d;
+  box-shadow: 0 0 16px rgba(255, 241, 166, 0.42), inset 0 0 20px rgba(255, 125, 242, 0.22);
+}
+
+.wire-core::before {
+  transform: rotateX(58deg) rotateY(24deg) translateZ(42px);
+}
+
+.wire-core::after {
+  transform: rotateX(-42deg) rotateY(68deg) translateZ(-42px);
+}
+
+.wire-ring,
+.wire-edge {
+  position: absolute;
+  display: block;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.wire-ring {
+  inset: 10%;
+  border: 2px solid rgba(125, 249, 255, 0.86);
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(0, 246, 255, 0.64), inset 0 0 20px rgba(255, 125, 242, 0.22);
+  transform:
+    rotateX(var(--rx))
+    rotateY(var(--ry))
+    rotateZ(var(--rz));
+}
+
+.wire-edge {
+  left: 50%;
+  top: 50%;
+  width: 58%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 125, 242, 0.92), rgba(152, 255, 221, 0.86), transparent);
+  box-shadow: 0 0 13px rgba(255, 125, 242, 0.58), 0 0 18px rgba(0, 246, 255, 0.34);
+  transform-origin: 0 50%;
+  transform:
+    rotateZ(var(--edge-rz))
+    rotateY(var(--edge-ry))
+    rotateX(var(--edge-rx))
+    translateX(-29%)
+    translateZ(var(--edge-z));
+}
+
+.wireframe-globe .wire-ring {
+  inset: 8%;
+}
+
+.wireframe-globe .wire-core::before,
+.wireframe-globe .wire-core::after {
   border-radius: 50%;
 }
 
-.wireframe-0 i,
-.wireframe-0 b {
-  border-radius: 50%;
+.wireframe-icosahedron .wire-ring,
+.wireframe-sierpinski .wire-ring {
+  clip-path: polygon(50% 0, 100% 88%, 0 88%);
+  border-radius: 0;
 }
 
-.wireframe-1,
-.wireframe-1 i,
-.wireframe-1 b {
+.wireframe-dodecahedron .wire-ring {
+  clip-path: polygon(50% 0, 95% 35%, 80% 100%, 20% 100%, 5% 35%);
+  border-radius: 0;
+}
+
+.wireframe-icosadodecahedron .wire-ring {
+  clip-path: polygon(50% 0, 64% 24%, 92% 18%, 78% 46%, 100% 64%, 70% 70%, 64% 100%, 50% 74%, 36% 100%, 30% 70%, 0 64%, 22% 46%, 8% 18%, 36% 24%);
+  border-radius: 0;
+}
+
+.wireframe-sierpinski .wire-core::before,
+.wireframe-sierpinski .wire-core::after {
+  clip-path: polygon(50% 0, 100% 88%, 0 88%);
+}
+
+.wireframe-dodecahedron .wire-core::before,
+.wireframe-dodecahedron .wire-core::after {
   clip-path: polygon(50% 0, 95% 35%, 80% 100%, 20% 100%, 5% 35%);
 }
 
-.wireframe-2,
-.wireframe-2 i,
-.wireframe-2 b {
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.wireframe-3,
-.wireframe-3 i,
-.wireframe-3 b {
-  clip-path: polygon(50% 0, 62% 28%, 95% 35%, 70% 55%, 80% 100%, 50% 75%, 20% 100%, 30% 55%, 5% 35%, 38% 28%);
-}
-
-.wireframe-4,
-.wireframe-4 i,
-.wireframe-4 b {
-  clip-path: polygon(50% 0, 65% 25%, 100% 25%, 78% 50%, 100% 75%, 65% 75%, 50% 100%, 35% 75%, 0 75%, 22% 50%, 0 25%, 35% 25%);
-}
-
-.wireframe-5,
-.wireframe-5 i,
-.wireframe-5 b {
-  clip-path: polygon(50% 0, 58% 18%, 76% 12%, 72% 32%, 92% 38%, 74% 49%, 88% 66%, 67% 64%, 62% 86%, 50% 68%, 38% 86%, 33% 64%, 12% 66%, 26% 49%, 8% 38%, 28% 32%, 24% 12%, 42% 18%);
-}
-
-.wireframe-6,
-.wireframe-6 i,
-.wireframe-6 b {
-  clip-path: polygon(50% 0, 60% 16%, 78% 10%, 72% 28%, 90% 34%, 75% 46%, 100% 50%, 75% 54%, 90% 66%, 72% 72%, 78% 90%, 60% 84%, 50% 100%, 40% 84%, 22% 90%, 28% 72%, 10% 66%, 25% 54%, 0 50%, 25% 46%, 10% 34%, 28% 28%, 22% 10%, 40% 16%);
-}
-
-.wireframe-7,
-.wireframe-7 i,
-.wireframe-7 b {
-  clip-path: polygon(50% 0, 56% 20%, 76% 7%, 70% 31%, 98% 25%, 78% 44%, 100% 50%, 78% 56%, 98% 75%, 70% 69%, 76% 93%, 56% 80%, 50% 100%, 44% 80%, 24% 93%, 30% 69%, 2% 75%, 22% 56%, 0 50%, 22% 44%, 2% 25%, 30% 31%, 24% 7%, 44% 20%);
+.wireframe-icosadodecahedron .wire-core::before,
+.wireframe-icosadodecahedron .wire-core::after {
+  clip-path: polygon(50% 0, 64% 24%, 92% 18%, 78% 46%, 100% 64%, 70% 70%, 64% 100%, 50% 74%, 36% 100%, 30% 70%, 0 64%, 22% 46%, 8% 18%, 36% 24%);
 }
 
 .scan-burst {
