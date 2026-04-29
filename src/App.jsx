@@ -155,6 +155,7 @@ export default function QuantumAIWebsite() {
   const [referralOpen, setReferralOpen] = useState(false)
   const [packageStatus, setPackageStatus] = useState('')
   const [scanBurst, setScanBurst] = useState(0)
+  const [activeHash, setActiveHash] = useState(() => window.location.hash)
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -240,6 +241,16 @@ export default function QuantumAIWebsite() {
       window.fbq('init', META_PIXEL_ID)
       window.fbq('track', 'PageView')
     }
+  }, [])
+
+  useEffect(() => {
+    function updateHash() {
+      setActiveHash(window.location.hash)
+    }
+
+    window.addEventListener('hashchange', updateHash)
+    updateHash()
+    return () => window.removeEventListener('hashchange', updateHash)
   }, [])
 
   function updateField(event) {
@@ -611,7 +622,7 @@ export default function QuantumAIWebsite() {
             <a href={PARTNER_LINKS.pepes}>quantumpepes.xyz</a>
           </nav>
           </div>
-          <a className="home-link" href="#home">RETURN TO HOME</a>
+          {activeHash === '#transparency' && <a className="home-link" href="#home">RETURN TO HOME</a>}
         </footer>
       </main>
     </div>
