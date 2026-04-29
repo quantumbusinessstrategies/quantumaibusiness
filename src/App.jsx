@@ -1,9 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 
 const PAYMENT_LINKS = {
-  outlinedStrategy: import.meta.env.VITE_OUTLINED_STRATEGY_PAYMENT_URL || import.meta.env.VITE_AUDIT_PAYMENT_URL || '',
-  automatedUtility: import.meta.env.VITE_AUTOMATED_UTILITY_PAYMENT_URL || import.meta.env.VITE_OVERHAUL_PAYMENT_URL || '',
-  fullStrategic: import.meta.env.VITE_FULL_STRATEGIC_PAYMENT_URL || import.meta.env.VITE_FULL_SPECTRUM_PAYMENT_URL || '',
+  outlinedStrategy:
+    import.meta.env.VITE_OUTLINED_STRATEGY_PAYMENT_URL ||
+    import.meta.env.VITE_AUDIT_PAYMENT_URL ||
+    'https://buy.stripe.com/fZu28qet66Ff2pE78Cfw401',
+  automatedUtility:
+    import.meta.env.VITE_AUTOMATED_UTILITY_PAYMENT_URL ||
+    import.meta.env.VITE_OVERHAUL_PAYMENT_URL ||
+    'https://buy.stripe.com/aFa8wO84IaVv3tIeB4fw402',
+  fullStrategic:
+    import.meta.env.VITE_FULL_STRATEGIC_PAYMENT_URL ||
+    import.meta.env.VITE_FULL_SPECTRUM_PAYMENT_URL ||
+    'https://buy.stripe.com/aFa00iet6d3D8O21Oifw403',
   premiumReferral: import.meta.env.VITE_PREMIUM_REFERRAL_URL || 'https://quantumbusinessstrategies.com',
 }
 
