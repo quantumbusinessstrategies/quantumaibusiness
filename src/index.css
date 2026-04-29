@@ -58,11 +58,12 @@ a {
   z-index: 0;
   pointer-events: none;
   background:
-    conic-gradient(from 120deg at 45% 50%, transparent, rgba(255, 184, 255, 0.2), transparent, rgba(141, 255, 236, 0.2), transparent),
-    linear-gradient(115deg, transparent 0 16%, rgba(255, 236, 156, 0.14) 30%, transparent 42% 56%, rgba(170, 180, 255, 0.16) 70%, transparent 84%);
+    radial-gradient(circle at 16% 22%, rgba(0, 246, 255, 0.16), transparent 18%),
+    radial-gradient(circle at 82% 30%, rgba(255, 184, 243, 0.15), transparent 20%),
+    linear-gradient(115deg, transparent 0 16%, rgba(255, 236, 156, 0.1) 30%, transparent 42% 56%, rgba(170, 180, 255, 0.12) 70%, transparent 84%);
   mix-blend-mode: screen;
-  opacity: 1;
-  animation: auroraShift 16s linear infinite;
+  opacity: 0.86;
+  animation: auroraDrift 18s ease-in-out infinite;
 }
 
 .quantum-shell::before {
@@ -204,14 +205,17 @@ a {
 
 .matrix-rain {
   position: absolute;
-  top: -260vh;
+  top: -90vh;
   white-space: pre;
   color: #00ff66;
-  font-size: 7px;
-  line-height: 7px;
-  opacity: 0.7;
+  font-size: 8px;
+  line-height: 9px;
   text-shadow: 0 0 6px #00ff66, 0 0 14px rgba(0, 255, 120, 0.45);
-  animation: fall linear infinite alternate;
+  animation-name: matrixFall, matrixGlitch;
+  animation-timing-function: linear, steps(2, end);
+  animation-iteration-count: infinite, infinite;
+  animation-direction: normal, alternate;
+  mix-blend-mode: screen;
 }
 
 .binary-pop {
@@ -430,7 +434,7 @@ h2 {
   padding: 14px 16px;
   color: #7df9ff;
   background:
-    linear-gradient(180deg, rgba(0, 40, 60, 0.92), rgba(0, 0, 0, 0.92)) padding-box,
+    linear-gradient(180deg, rgba(0, 40, 60, 0.5), rgba(0, 0, 0, 0.36)) padding-box,
     linear-gradient(110deg, #00f6ff, #ff7df2, #fff1a6, #98ffdd, #00f6ff) border-box;
   background-size: 100% 100%, 240% 100%;
   border: 2px solid #0ff;
@@ -544,7 +548,7 @@ button:hover,
   padding: 16px;
   color: #e8ffff;
   text-align: left;
-  background: rgba(0, 20, 30, 0.74);
+  background: rgba(0, 20, 30, 0.48);
   border: 1px solid #0ff;
   box-shadow: 0 0 24px rgba(0, 255, 255, 0.25);
   font-size: 11px;
@@ -573,9 +577,10 @@ button:hover,
 .referral-panel {
   position: relative;
   overflow: hidden;
-  background: rgba(0, 12, 22, 0.74);
+  background: rgba(0, 12, 22, 0.48);
   border: 1px solid rgba(0, 255, 255, 0.7);
   box-shadow: 0 0 24px rgba(0, 255, 255, 0.18), inset 0 0 24px rgba(255, 0, 255, 0.08);
+  backdrop-filter: blur(4px);
   transform: perspective(1100px) rotateX(1.5deg);
 }
 
@@ -751,7 +756,7 @@ button:hover,
   padding: 14px;
   color: #00ff66;
   text-align: center;
-  background: rgba(0, 12, 22, 0.78);
+  background: rgba(0, 12, 22, 0.5);
   border: 1px solid rgba(0, 255, 102, 0.55);
   box-shadow: 0 0 22px rgba(0, 255, 102, 0.16);
   font-size: 10px;
@@ -876,6 +881,18 @@ code {
   }
   to {
     transform: rotate(360deg) scale(1.08);
+  }
+}
+
+@keyframes auroraDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-2%, 2%, 0) scale(1.04);
+    filter: hue-rotate(34deg);
   }
 }
 
@@ -1105,6 +1122,33 @@ code {
   100% {
     transform: translateY(260vh);
     opacity: 0;
+  }
+}
+
+@keyframes matrixFall {
+  0% {
+    transform: translate3d(0, -35vh, 0);
+  }
+  100% {
+    transform: translate3d(0, 210vh, 0);
+  }
+}
+
+@keyframes matrixGlitch {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+    text-shadow: 0 0 6px #00ff66, 0 0 14px rgba(0, 255, 120, 0.45);
+  }
+  20% {
+    filter: hue-rotate(55deg);
+    opacity: 0.28;
+  }
+  42% {
+    opacity: 0.9;
+  }
+  68% {
+    opacity: 0.38;
   }
 }
 

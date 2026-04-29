@@ -412,15 +412,23 @@ export default function QuantumAIWebsite() {
           $
         </span>
       ))}
-      {createField(110, (i) => (
-        <span
-          className="matrix-rain"
-          key={`rain-${i}`}
-          style={{ left: `${(i * 1.8) % 100}%`, animationDuration: `${2 + (i % 9) * 0.7}s`, animationDelay: `-${(i % 17) * 0.4}s` }}
-        >
-          0101{'\n'}1010{'\n'}1100{'\n'}0011
-        </span>
-      ))}
+      {createField(150, (i) => {
+        const glyphs = createField(8 + (i % 7), (j) => (rand(i * j + 131, 0, 1) > 0.5 ? '1' : '0')).join('\n')
+        return (
+          <span
+            className="matrix-rain"
+            key={`rain-${i}`}
+            style={{
+              left: `${rand(i + 137, 0, 100)}%`,
+              animationDuration: `${rand(i + 149, 4.5, 13)}s`,
+              animationDelay: `-${rand(i + 151, 0, 12)}s`,
+              opacity: rand(i + 157, 0.18, 0.74),
+            }}
+          >
+            {glyphs}
+          </span>
+        )
+      })}
 
       <details className="cyber-menu">
         <summary>MENU</summary>
