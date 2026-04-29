@@ -379,6 +379,20 @@ export default function QuantumAIWebsite() {
           style={{ left: `${particle.x}%`, top: `${particle.y}%`, width: particle.s, height: particle.s, animationDuration: `${particle.d}s` }}
         />
       ))}
+      {createField(42, (i) => (
+        <span
+          className="binary-pop"
+          key={`binary-pop-${i}`}
+          style={{
+            left: `${rand(i + 103, 0, 98)}%`,
+            top: `${rand(i + 109, 0, 96)}%`,
+            animationDelay: `-${rand(i + 113, 0, 10)}s`,
+            animationDuration: `${rand(i + 127, 5, 13)}s`,
+          }}
+        >
+          {i % 2 ? '101101' : '010010'}
+        </span>
+      ))}
       {wireframes.map((wire) => (
         <span
           className={`wireframe wireframe-${wire.shape}`}
@@ -434,7 +448,7 @@ export default function QuantumAIWebsite() {
         </div>
       </details>
 
-      <main className="content">
+      <main className="content" id="home">
         <section className="hero-panel" aria-labelledby="hero-title">
           <div className="brand-chip">QUANTUMAIBUSINESS.COM</div>
           <h1 id="hero-title">QuantumAiBusiness</h1>
@@ -606,6 +620,7 @@ export default function QuantumAIWebsite() {
             <a href={PARTNER_LINKS.strategies}>quantumbusinessstrategies.com</a>
             <a href={PARTNER_LINKS.pepes}>quantumpepes.xyz</a>
           </nav>
+          <a className="home-link" href="#home">RETURN TO HOME</a>
         </footer>
       </main>
     </div>
