@@ -31,6 +31,8 @@ const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || ''
 const SITE_URL = 'https://quantumaibusiness.com'
 const SHARE_TITLE = 'QuantumAiBusiness'
 const SHARE_TEXT = 'Run a cyber growth-pressure scan for business faults, profit leaks, and automation opportunities.'
+const EVENT_STORAGE_KEY = 'quantumaibusiness_event_log'
+const MAX_EVENT_LOG = 40
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -149,6 +151,40 @@ async function notifyOwner(type, payload) {
   }
 }
 
+function loadStoredEvents() {
+  try {
+    return JSON.parse(window.localStorage.getItem(EVENT_STORAGE_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+function serializeCsvValue(value) {
+  const text = String(value ?? '')
+  return `"${text.replaceAll('"', '""')}"`
+}
+
+function buildCsv(events) {
+  const header = ['timestamp', 'event', 'target', 'package', 'score', 'readiness']
+  const rows = events.map((event) =>
+    [event.timestamp, event.type, event.target, event.package, event.score, event.readiness].map(serializeCsvValue).join(','),
+  )
+  return [header.join(','), ...rows].join('\n')
+}
+
+function createAutomationEvent(type, payload, fallbackTarget) {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    type,
+    timestamp: new Date().toISOString(),
+    target: payload.form?.website || payload.form?.company || fallbackTarget || 'Unspecified',
+    package: payload.package?.title || '',
+    score: payload.scan?.score ?? '',
+    readiness: payload.scan?.readiness ?? payload.result?.readiness ?? '',
+    payload,
+  }
+}
+
 export default function QuantumAIWebsite() {
   const [target, setTarget] = useState('')
   const [open, setOpen] = useState(false)
@@ -161,6 +197,8 @@ export default function QuantumAIWebsite() {
   const [activeHash, setActiveHash] = useState(() => window.location.hash)
   const [shareOpen, setShareOpen] = useState(false)
   const [shareStatus, setShareStatus] = useState('')
+  const [automationEvents, setAutomationEvents] = useState(loadStoredEvents)
+  const [automationStatus, setAutomationStatus] = useState('SYSTEM READY - OWNER APPROVAL MODE')
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -263,6 +301,46 @@ export default function QuantumAIWebsite() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
+  async function recordAutomationEvent(type, payload = {}) {
+    const event = createAutomationEvent(type, payload, target)
+
+    setAutomationEvents((current) => {
+      const next = [event, ...current].slice(0, MAX_EVENT_LOG)
+      try {
+        window.localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(next))
+      } catch {
+        // Local storage can be blocked in some browsers; the in-session log still updates.
+      }
+      return next
+    })
+
+    const sent = await notifyOwner(type, payload)
+    setAutomationStatus(sent ? `${type.replaceAll('_', ' ').toUpperCase()} SENT TO OWNER` : `${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY`)
+    return sent
+  }
+
+  function exportAutomationLog(format) {
+    const text = format === 'csv' ? buildCsv(automationEvents) : JSON.stringify(automationEvents, null, 2)
+    const blob = new Blob([text], { type: format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `quantumaibusiness-events.${format}`
+    link.click()
+    URL.revokeObjectURL(url)
+    setAutomationStatus(`LOCAL EVENT LOG EXPORTED AS ${format.toUpperCase()}`)
+  }
+
+  function clearAutomationLog() {
+    try {
+      window.localStorage.removeItem(EVENT_STORAGE_KEY)
+    } catch {
+      // Ignore storage cleanup failures; clearing state is still useful.
+    }
+    setAutomationEvents([])
+    setAutomationStatus('LOCAL EVENT LOG CLEARED')
+  }
+
   async function runScan() {
     const scanTargetValue = target || form.website || form.company || 'Business'
     const nextForm = { ...form, website: form.website || scanTargetValue, company: form.company || scanTargetValue }
@@ -278,7 +356,7 @@ export default function QuantumAIWebsite() {
     setLeadStatus('SCAN GENERATED - OWNER NOTIFICATION READY')
     window.gtag?.('event', 'scan_generated', { event_category: 'diagnostic', value: generatedScan.score })
     window.fbq?.('trackCustom', 'BusinessScanGenerated')
-    const sent = await notifyOwner('scan_generated', { form: nextForm, result, scan: generatedScan })
+    const sent = await recordAutomationEvent('scan_generated', { form: nextForm, result, scan: generatedScan })
     if (sent) setLeadStatus('SCAN GENERATED - SENT TO AUTOMATION HUB')
   }
 
@@ -291,14 +369,14 @@ export default function QuantumAIWebsite() {
     setResp(`READINESS ${generatedScan.readiness}% :: UNLOCKED GAPS: ${result.gaps.join(' / ')} :: SELECT PACKAGE 1-4 BELOW`)
     window.gtag?.('event', 'generate_lead', { event_category: 'assessment', value: generatedScan.readiness })
     window.fbq?.('track', 'Lead')
-    const sent = await notifyOwner('assessment_submitted', { form, result, scan: generatedScan })
+    const sent = await recordAutomationEvent('assessment_submitted', { form, result, scan: generatedScan })
     if (sent) setLeadStatus('ASSESSMENT SENT TO AUTOMATION HUB')
   }
 
   async function trackPackage(offer) {
     window.gtag?.('event', 'select_package', { event_category: 'commerce', item_name: offer.title, value: offer.amount || 0 })
     window.fbq?.('trackCustom', 'PackageSelected', { package: offer.title })
-    await notifyOwner('package_selected', { form, result, scan, package: offer })
+    await recordAutomationEvent('package_selected', { form, result, scan, package: offer })
   }
 
   async function handleOfferAction(offer) {
@@ -319,7 +397,7 @@ export default function QuantumAIWebsite() {
     event.preventDefault()
     setPackageStatus('SENDING PREMIUM REFERRAL REQUEST...')
     const premiumOffer = offers.find((offer) => offer.key === 'premiumReferral')
-    const sent = await notifyOwner('premium_referral_requested', { form, result, scan, package: premiumOffer })
+    const sent = await recordAutomationEvent('premium_referral_requested', { form, result, scan, package: premiumOffer })
     setPackageStatus(sent ? 'PREMIUM REFERRAL SENT TO OWNER EMAIL' : 'REFERRAL READY - USE EMAIL OR SITE LINK BELOW')
   }
 
@@ -327,6 +405,7 @@ export default function QuantumAIWebsite() {
     try {
       await navigator.clipboard.writeText(SITE_URL)
       setShareStatus('LINK COPIED')
+      recordAutomationEvent('share_link_copied', { destination: 'copy_link', url: SITE_URL })
       return true
     } catch {
       setShareStatus('COPY MANUALLY: QUANTUMAIBUSINESS.COM')
@@ -343,6 +422,7 @@ export default function QuantumAIWebsite() {
     try {
       await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SITE_URL })
       setShareStatus('SHARE PANEL OPENED')
+      await recordAutomationEvent('system_share_started', { destination: 'system_share', url: SITE_URL })
     } catch {
       setShareStatus('SHARE CANCELLED')
     }
@@ -355,6 +435,7 @@ export default function QuantumAIWebsite() {
 
     window.open(destination.href, '_blank', 'noopener,noreferrer')
     if (!destination.copyFirst) setShareStatus(`OPENED ${destination.label.toUpperCase()}`)
+    await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: SITE_URL })
   }
 
   const offers = [
@@ -518,6 +599,10 @@ export default function QuantumAIWebsite() {
           <section>
             <h2>Transparency</h2>
             <a href="#transparency">Read site transparency</a>
+          </section>
+          <section>
+            <h2>Owner</h2>
+            <a href="#automation-control">Automation control</a>
           </section>
         </div>
       </details>
@@ -698,6 +783,54 @@ export default function QuantumAIWebsite() {
           </ul>
         </section>
 
+        <section className="automation-control" id="automation-control" aria-labelledby="automation-control-title">
+          <div>
+            <div className="brand-chip">OWNER OVERSIGHT</div>
+            <h2 id="automation-control-title">Automation Control</h2>
+            <p>
+              Recent scans, package selections, referral requests, and share actions are captured for review. Major implementation
+              actions stay in approval mode so the owner can decide what moves from signal into execution.
+            </p>
+          </div>
+          <div className="automation-metrics">
+            <div>
+              <strong>{automationEvents.length}</strong>
+              <span>local events</span>
+            </div>
+            <div>
+              <strong>{LEAD_WEBHOOK ? 'WEBHOOK' : 'EMAIL'}</strong>
+              <span>notification route</span>
+            </div>
+            <div>
+              <strong>APPROVAL</strong>
+              <span>major-action mode</span>
+            </div>
+          </div>
+          <div className="automation-actions">
+            <button type="button" onClick={() => exportAutomationLog('json')}>EXPORT JSON</button>
+            <button type="button" onClick={() => exportAutomationLog('csv')}>EXPORT CSV</button>
+            <button type="button" onClick={clearAutomationLog}>CLEAR LOCAL LOG</button>
+          </div>
+          <p className="automation-status">{automationStatus}</p>
+          <div className="event-log">
+            {automationEvents.length ? (
+              automationEvents.slice(0, 6).map((event) => (
+                <article key={event.id}>
+                  <span>{new Date(event.timestamp).toLocaleString()}</span>
+                  <strong>{event.type.replaceAll('_', ' ')}</strong>
+                  <p>
+                    {event.target}
+                    {event.package ? ` // ${event.package}` : ''}
+                    {event.score !== '' ? ` // pressure ${event.score}` : ''}
+                  </p>
+                </article>
+              ))
+            ) : (
+              <p>No local events yet. Run a scan or select a package to populate the control log.</p>
+            )}
+          </div>
+        </section>
+
         <footer className="transparency" id="transparency">
           <h2>Transparency</h2>
           <div className="transparency-core">
@@ -707,7 +840,7 @@ export default function QuantumAIWebsite() {
             By using this site, visitors agree that all services and information are used at their own discretion and that liability is limited to the fullest
             extent permitted by applicable law.
           </p>
-          <p>Copyright notice: © 2025-2026 Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI brand materials. Trademark registration recommended.</p>
+          <p>Copyright notice: (c) 2025-2026 Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI brand materials. Trademark registration recommended.</p>
           <nav className="footer-links" aria-label="Contact and project links">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             <a href={PARTNER_LINKS.riskforge}>riskforgeai.xyz</a>
