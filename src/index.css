@@ -327,10 +327,11 @@ p {
 
 h1 {
   position: relative;
+  left: -0.4vw;
   max-width: 1000px;
   margin-top: 18px;
   color: transparent;
-  font-size: clamp(24px, 6.4vw, 70px);
+  font-size: clamp(24px, 5.1vw, 56px);
   font-weight: 900;
   line-height: 1.08;
   letter-spacing: 0;
@@ -520,7 +521,7 @@ button::after,
 
 .command-center button {
   width: min(430px, 100%);
-  margin-top: 16px;
+  margin-top: 28px;
   transform: perspective(800px) rotateX(14deg) translateZ(20px);
   animation: buttonPop 5.8s ease-in-out infinite;
 }
@@ -764,8 +765,16 @@ button:hover,
 }
 
 .offers h2 {
+  display: flex;
+  align-items: flex-start;
+  min-height: 96px;
   margin-top: 12px;
   font-size: 24px;
+  line-height: 1.18;
+}
+
+.offers p {
+  min-height: 138px;
 }
 
 .offers a {
@@ -775,7 +784,7 @@ button:hover,
 
 .offers button {
   width: 100%;
-  margin-top: auto;
+  margin-top: 18px;
 }
 
 .offers .quiet-link,
@@ -1315,10 +1324,16 @@ code {
   .offers article {
     min-height: 0;
   }
+
+  .offers h2,
+  .offers p {
+    min-height: 0;
+  }
 }
 
 @media (max-width: 620px) {
   h1 {
+    left: 0;
     font-size: clamp(20px, 9.4vw, 42px);
     text-shadow:
       0 0 12px #0ff,
