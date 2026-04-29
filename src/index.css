@@ -58,12 +58,12 @@ a {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 16% 22%, rgba(0, 246, 255, 0.16), transparent 18%),
-    radial-gradient(circle at 82% 30%, rgba(255, 184, 243, 0.15), transparent 20%),
-    linear-gradient(115deg, transparent 0 16%, rgba(255, 236, 156, 0.1) 30%, transparent 42% 56%, rgba(170, 180, 255, 0.12) 70%, transparent 84%);
+    radial-gradient(circle at 16% 22%, rgba(0, 246, 255, 0.055), transparent 18%),
+    radial-gradient(circle at 82% 30%, rgba(255, 184, 243, 0.052), transparent 20%),
+    linear-gradient(115deg, transparent 0 16%, rgba(255, 236, 156, 0.035) 30%, transparent 42% 56%, rgba(170, 180, 255, 0.045) 70%, transparent 84%);
   mix-blend-mode: screen;
-  opacity: 0.86;
-  animation: auroraDrift 18s ease-in-out infinite;
+  opacity: 0.48;
+  animation: auroraDrift 42s ease-in-out infinite;
 }
 
 .quantum-shell::before {
@@ -86,11 +86,12 @@ a {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.22), transparent 24%),
-    radial-gradient(circle at 80% 20%, rgba(255, 155, 240, 0.23), transparent 22%),
-    radial-gradient(circle at 50% 80%, rgba(132, 228, 255, 0.19), transparent 27%),
-    radial-gradient(circle at 12% 86%, rgba(255, 241, 166, 0.18), transparent 20%);
-  animation: glowBreathe 12s ease-in-out infinite;
+    radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.055), transparent 24%),
+    radial-gradient(circle at 80% 20%, rgba(255, 155, 240, 0.052), transparent 22%),
+    radial-gradient(circle at 50% 80%, rgba(132, 228, 255, 0.048), transparent 27%),
+    radial-gradient(circle at 12% 86%, rgba(255, 241, 166, 0.045), transparent 20%);
+  opacity: 0.42;
+  animation: glowBreathe 30s ease-in-out infinite;
 }
 
 .beam {
@@ -124,9 +125,9 @@ a {
   position: absolute;
   display: block;
   transform-style: preserve-3d;
-  opacity: 0.78;
-  animation: wireSpin linear infinite;
-  filter: drop-shadow(0 0 12px rgba(125, 249, 255, 0.55));
+  opacity: 0.86;
+  animation: wireSpin linear infinite, geometryFloat 13s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(125, 249, 255, 0.62));
 }
 
 .wireframe,
@@ -153,6 +154,19 @@ a {
   transform: rotateX(62deg) rotateY(28deg);
 }
 
+.wireframe::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(45deg, transparent 48%, rgba(255, 241, 166, 0.72) 49%, rgba(255, 241, 166, 0.72) 51%, transparent 52%),
+    linear-gradient(135deg, transparent 48%, rgba(255, 184, 243, 0.62) 49%, rgba(255, 184, 243, 0.62) 51%, transparent 52%),
+    radial-gradient(circle, transparent 42%, rgba(125, 249, 255, 0.32) 43%, transparent 48%);
+  opacity: 0.72;
+  transform: rotateX(55deg) rotateY(30deg);
+  animation: geometryPulse 9s ease-in-out infinite;
+}
+
 .wireframe-0 {
   border-radius: 50%;
 }
@@ -172,6 +186,24 @@ a {
 .wireframe-2 i,
 .wireframe-2 b {
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.wireframe-3,
+.wireframe-3 i,
+.wireframe-3 b {
+  clip-path: polygon(50% 0, 62% 28%, 95% 35%, 70% 55%, 80% 100%, 50% 75%, 20% 100%, 30% 55%, 5% 35%, 38% 28%);
+}
+
+.wireframe-4,
+.wireframe-4 i,
+.wireframe-4 b {
+  clip-path: polygon(50% 0, 65% 25%, 100% 25%, 78% 50%, 100% 75%, 65% 75%, 50% 100%, 35% 75%, 0 75%, 22% 50%, 0 25%, 35% 25%);
+}
+
+.wireframe-5,
+.wireframe-5 i,
+.wireframe-5 b {
+  clip-path: polygon(50% 0, 58% 18%, 76% 12%, 72% 32%, 92% 38%, 74% 49%, 88% 66%, 67% 64%, 62% 86%, 50% 68%, 38% 86%, 33% 64%, 12% 66%, 26% 49%, 8% 38%, 28% 32%, 24% 12%, 42% 18%);
 }
 
 .scan-burst {
@@ -208,9 +240,9 @@ a {
   top: -90vh;
   white-space: pre;
   color: #00ff66;
-  font-size: 8px;
-  line-height: 9px;
-  text-shadow: 0 0 6px #00ff66, 0 0 14px rgba(0, 255, 120, 0.45);
+  font-size: 7px;
+  line-height: 8px;
+  text-shadow: 0 0 5px rgba(0, 255, 102, 0.58), 0 0 12px rgba(0, 255, 120, 0.28);
   animation-name: matrixFall, matrixGlitch;
   animation-timing-function: linear, steps(2, end);
   animation-iteration-count: infinite, infinite;
@@ -440,6 +472,8 @@ h2 {
   border: 2px solid #0ff;
   border-radius: 0;
   box-shadow:
+    0 10px 0 rgba(0, 8, 22, 0.72),
+    0 18px 28px rgba(0, 0, 0, 0.44),
     inset 0 0 18px rgba(0, 255, 255, 0.25),
     inset 0 -10px 30px rgba(255, 125, 242, 0.08),
     0 0 18px rgba(0, 255, 255, 0.2);
@@ -453,7 +487,7 @@ h2 {
 }
 
 .command-center input {
-  transform: perspective(700px) rotateX(12deg);
+  transform: perspective(800px) rotateX(10deg) translateZ(12px);
 }
 
 button,
@@ -477,6 +511,8 @@ button,
   box-shadow: 0 10px 0 #001133, 0 0 24px rgba(143, 255, 255, 0.48), 0 0 48px rgba(255, 184, 243, 0.28);
   font-size: 12px;
   animation: inputSkin 8s linear infinite;
+  transform-style: preserve-3d;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
 button::before,
@@ -497,10 +533,23 @@ button > span {
   z-index: 1;
 }
 
+button::after,
+.offers a::after {
+  content: "";
+  position: absolute;
+  inset: auto 8px -13px;
+  height: 14px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 17, 51, 0.92), rgba(0, 4, 18, 0.98));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%);
+  filter: drop-shadow(0 9px 12px rgba(0, 0, 0, 0.55));
+}
+
 .command-center button {
   width: min(430px, 100%);
   margin-top: 16px;
-  transform: perspective(700px) rotateX(14deg);
+  transform: perspective(800px) rotateX(14deg) translateZ(20px);
   animation: buttonPop 5.8s ease-in-out infinite;
 }
 
@@ -526,6 +575,7 @@ button > span {
   position: absolute;
   left: 20px;
   top: 12px;
+  z-index: 0;
   width: 14px;
   height: 14px;
   background: rgba(255, 255, 255, 0.55);
@@ -533,13 +583,19 @@ button > span {
 }
 
 .quantify-button:active {
-  transform: perspective(700px) rotateX(18deg) translateY(8px) scale(0.98);
-  box-shadow: 0 4px 0 #001133, 0 0 38px #ff7df2, 0 0 70px rgba(0, 246, 255, 0.45);
+  transform: perspective(800px) rotateX(18deg) translateY(8px) translateZ(6px) scale(0.98);
+  box-shadow:
+    0 4px 0 #3b2100,
+    0 0 38px rgba(255, 213, 94, 0.68),
+    0 0 70px rgba(255, 125, 242, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.58),
+    inset 0 -4px 0 rgba(80, 38, 0, 0.22);
 }
 
 button:hover,
 .offers a:hover {
-  filter: brightness(1.12);
+  filter: brightness(1.14) saturate(1.12);
+  transform: translateY(-3px) translateZ(12px);
 }
 
 .response-console,
@@ -581,7 +637,8 @@ button:hover,
   border: 1px solid rgba(0, 255, 255, 0.7);
   box-shadow: 0 0 24px rgba(0, 255, 255, 0.18), inset 0 0 24px rgba(255, 0, 255, 0.08);
   backdrop-filter: blur(4px);
-  transform: perspective(1100px) rotateX(1.5deg);
+  transform: perspective(1200px) rotateX(1.8deg) translateZ(8px);
+  transform-style: preserve-3d;
 }
 
 .system-grid > div::after,
@@ -596,6 +653,7 @@ button:hover,
   pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(255, 235, 157, 0.72), rgba(125, 249, 255, 0.72), transparent);
   opacity: 0.72;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.42);
 }
 
 .system-grid > div::before,
@@ -746,6 +804,22 @@ button:hover,
   text-underline-offset: 4px;
 }
 
+.offers .quiet-link::before,
+.offers .quiet-link::after,
+.premium-links .quiet-link::before,
+.premium-links .quiet-link::after {
+  content: none;
+}
+
+button:active,
+.offers a:active {
+  transform: translateY(7px) translateZ(3px) scale(0.98);
+  box-shadow:
+    0 3px 0 rgba(0, 17, 51, 0.9),
+    0 0 18px rgba(143, 255, 255, 0.35),
+    inset 0 0 18px rgba(255, 255, 255, 0.16);
+}
+
 .premium-links {
   display: grid;
   gap: 2px;
@@ -806,11 +880,12 @@ button:hover,
   background-size: 220% 100%, 260% 100%;
   border-color: rgba(234, 255, 255, 0.82);
   box-shadow:
-    0 8px 0 rgba(0, 17, 51, 0.82),
+    0 10px 0 rgba(0, 17, 51, 0.86),
+    0 18px 28px rgba(0, 0, 0, 0.36),
     0 0 20px rgba(143, 255, 255, 0.28),
     inset 0 0 22px rgba(255, 255, 255, 0.2);
   clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px));
-  animation: inputSkin 9s linear infinite;
+  animation: inputSkin 9s linear infinite, buttonLift 7s ease-in-out infinite;
 }
 
 .launch-board {
@@ -1142,13 +1217,35 @@ code {
   }
   20% {
     filter: hue-rotate(55deg);
-    opacity: 0.28;
+    opacity: 0.18;
   }
   42% {
-    opacity: 0.9;
+    opacity: 0.48;
   }
   68% {
-    opacity: 0.38;
+    opacity: 0.14;
+  }
+}
+
+@keyframes geometryFloat {
+  0%,
+  100% {
+    opacity: 0.58;
+  }
+  50% {
+    opacity: 0.94;
+  }
+}
+
+@keyframes geometryPulse {
+  0%,
+  100% {
+    opacity: 0.34;
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    opacity: 0.82;
+    filter: hue-rotate(120deg);
   }
 }
 
@@ -1159,6 +1256,16 @@ code {
   }
   50% {
     transform: perspective(700px) rotateX(14deg) translateY(-8px) scale(1.03);
+  }
+}
+
+@keyframes buttonLift {
+  0%,
+  100% {
+    transform: perspective(700px) rotateX(5deg) translateZ(4px);
+  }
+  50% {
+    transform: perspective(700px) rotateX(7deg) translateY(-3px) translateZ(16px);
   }
 }
 

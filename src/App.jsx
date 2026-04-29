@@ -196,14 +196,14 @@ export default function QuantumAIWebsite() {
   )
   const wireframes = useMemo(
     () =>
-      createField(18, (i) => ({
+      createField(30, (i) => ({
         id: i,
-        x: rand(i + 53, 2, 92),
-        y: rand(i + 59, 4, 88),
-        s: rand(i + 61, 72, 190),
-        d: rand(i + 67, 10, 24),
+        x: rand(i + 53, 1, 94),
+        y: rand(i + 59, 2, 92),
+        s: rand(i + 61, 82, 220),
+        d: rand(i + 67, 14, 34),
         r: rand(i + 71, -38, 38),
-        shape: i % 3,
+        shape: i % 6,
       })),
     [],
   )
@@ -412,7 +412,7 @@ export default function QuantumAIWebsite() {
           $
         </span>
       ))}
-      {createField(150, (i) => {
+      {createField(115, (i) => {
         const glyphs = createField(8 + (i % 7), (j) => (rand(i * j + 131, 0, 1) > 0.5 ? '1' : '0')).join('\n')
         return (
           <span
@@ -420,9 +420,9 @@ export default function QuantumAIWebsite() {
             key={`rain-${i}`}
             style={{
               left: `${rand(i + 137, 0, 100)}%`,
-              animationDuration: `${rand(i + 149, 4.5, 13)}s`,
+              animationDuration: `${rand(i + 149, 6, 16)}s`,
               animationDelay: `-${rand(i + 151, 0, 12)}s`,
-              opacity: rand(i + 157, 0.18, 0.74),
+              opacity: rand(i + 157, 0.08, 0.46),
             }}
           >
             {glyphs}
