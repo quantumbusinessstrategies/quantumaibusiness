@@ -221,6 +221,30 @@ async function notifyOwner(type, payload) {
   }
 }
 
+function fulfillmentOwnerMessage(packet) {
+  return [
+    'PAID BUYER FULFILLMENT PACKET',
+    '',
+    `Next action: Review payment in Stripe, confirm package, then prepare the ${packet.package_name || 'selected'} deliverable.`,
+    `Package: ${packet.package_name || packet.package_key || 'Unspecified'}`,
+    `Amount: ${packet.amount ? `$${packet.amount}` : 'Check Stripe'}`,
+    `Business: ${packet.company || 'Unspecified'}`,
+    `Website: ${packet.website || 'Unspecified'}`,
+    `Delivery email: ${packet.customer_email || 'Unspecified'}`,
+    `Stripe payment email: ${packet.payment_email || packet.customer_email || 'Unspecified'}`,
+    `Current tools: ${packet.current_tools || 'Not provided'}`,
+    `Objective: ${packet.objective || 'Not provided'}`,
+    `Constraints: ${packet.constraints || 'Not provided'}`,
+    '',
+    'Owner checklist:',
+    '- Confirm Stripe payment succeeded.',
+    '- Match Stripe email to delivery email if different.',
+    '- Review objective and constraints.',
+    '- Deliver the paid strategy or queue it for backend AI generation when connected.',
+    '- Escalate full-growth or premium requests before making major service commitments.',
+  ].join('\n')
+}
+
 async function submitFulfillmentPacket(packet) {
   const fulfillmentEndpoint = AUTOMATION_API_URL
     ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/fulfillment') ? '' : '/api/fulfillment'}`
@@ -246,7 +270,17 @@ async function submitFulfillmentPacket(packet) {
       event_type: 'paid_fulfillment_intake',
       notify: CONTACT_EMAIL,
       source: 'quantumaibusiness.com',
-      message: JSON.stringify(packet, null, 2),
+      next_action: 'Review Stripe payment, confirm package, and prepare deliverable',
+      package: packet.package_name || packet.package_key,
+      amount: packet.amount ? `$${packet.amount}` : 'Check Stripe',
+      business: packet.company,
+      website: packet.website,
+      delivery_email: packet.customer_email,
+      stripe_payment_email: packet.payment_email || packet.customer_email,
+      current_tools: packet.current_tools,
+      objective: packet.objective,
+      constraints: packet.constraints,
+      owner_checklist: fulfillmentOwnerMessage(packet),
     }),
   })
 
@@ -460,7 +494,7 @@ export default function QuantumAIWebsite() {
     setFulfillmentForm((current) => ({ ...current, [name]: value }))
   }
 
-  async function recordAutomationEvent(type, payload = {}) {
+  function recordLocalAutomationEvent(type, payload = {}) {
     const event = createAutomationEvent(type, payload, target)
 
     setAutomationEvents((current) => {
@@ -472,6 +506,17 @@ export default function QuantumAIWebsite() {
       }
       return next
     })
+
+    return event
+  }
+
+  async function recordAutomationEvent(type, payload = {}, options = {}) {
+    const event = recordLocalAutomationEvent(type, payload)
+
+    if (options.notify === false) {
+      setAutomationStatus(`${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY // SINGLE FULFILLMENT EMAIL SENT`)
+      return true
+    }
 
     const sent = await notifyOwner(type, payload)
     setAutomationStatus(
@@ -586,6 +631,7 @@ export default function QuantumAIWebsite() {
 
     try {
       const response = await submitFulfillmentPacket(packet)
+      const useSingleStaticEmail = response.mode === 'static_email_fallback'
       await recordAutomationEvent('paid_fulfillment_intake', {
         form: {
           company: packet.company,
@@ -594,12 +640,12 @@ export default function QuantumAIWebsite() {
           objective: packet.objective,
         },
         package: selectedPackage,
-      })
+      }, { notify: !useSingleStaticEmail })
       setFulfillmentDeliverable(response.deliverable || '')
       setFulfillmentStatus(
         response.generated
           ? 'AI FULFILLMENT GENERATED - OWNER NOTIFIED'
-          : 'INTAKE SENT - OWNER REVIEW / BACKEND GENERATION QUEUED',
+          : 'INTAKE SENT - PAYMENT REVIEW + DELIVERY QUEUED',
       )
     } catch {
       setFulfillmentStatus(`INTAKE NOT SENT AUTOMATICALLY - EMAIL ${CONTACT_EMAIL}`)
@@ -975,6 +1021,10 @@ export default function QuantumAIWebsite() {
               After checkout, clients can submit the details needed for delivery. Right now this sends the packet to the owner route;
               once the backend host has secrets, it can generate the first AI deliverable automatically and email the client.
             </p>
+            <div className="fulfillment-next">
+              <strong>After payment:</strong>
+              <span>Use the same email from Stripe if possible. The owner receives one fulfillment packet with the payment-review checklist.</span>
+            </div>
           </div>
           <form className="intake-form fulfillment-form" onSubmit={submitPaidFulfillment}>
             <label>
