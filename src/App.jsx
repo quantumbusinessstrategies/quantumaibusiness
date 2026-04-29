@@ -17,6 +17,11 @@ const PAYMENT_LINKS = {
 }
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'quantumbusinessstrategies@gmail.com'
+const PARTNER_LINKS = {
+  riskforge: 'https://riskforgeai.xyz',
+  strategies: 'https://quantumbusinessstrategies.com',
+  pepes: 'https://quantumpepes.xyz',
+}
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
 const OWNER_NOTIFICATION_URL =
   import.meta.env.VITE_OWNER_NOTIFICATION_URL || `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
@@ -146,6 +151,8 @@ export default function QuantumAIWebsite() {
   const [resp, setResp] = useState('AWAITING QUANTUM BUSINESS SCAN...')
   const [leadStatus, setLeadStatus] = useState('')
   const [scan, setScan] = useState(null)
+  const [referralOpen, setReferralOpen] = useState(false)
+  const [packageStatus, setPackageStatus] = useState('')
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -262,6 +269,28 @@ export default function QuantumAIWebsite() {
     window.gtag?.('event', 'select_package', { event_category: 'commerce', item_name: offer.title, value: offer.amount || 0 })
     window.fbq?.('trackCustom', 'PackageSelected', { package: offer.title })
     await notifyOwner('package_selected', { form, result, scan, package: offer })
+  }
+
+  async function handleOfferAction(offer) {
+    setPackageStatus(`ROUTING ${offer.title.toUpperCase()} SELECTION...`)
+    await trackPackage(offer)
+
+    if (offer.key === 'premiumReferral') {
+      setReferralOpen(true)
+      setPackageStatus('PREMIUM REFERRAL OPTIONS OPEN - OWNER NOTIFIED')
+      return
+    }
+
+    setPackageStatus(`${offer.title.toUpperCase()} SELECTED - OWNER NOTIFIED - OPENING CHECKOUT`)
+    window.location.assign(PAYMENT_LINKS[offer.key])
+  }
+
+  async function submitPremiumReferral(event) {
+    event.preventDefault()
+    setPackageStatus('SENDING PREMIUM REFERRAL REQUEST...')
+    const premiumOffer = offers.find((offer) => offer.key === 'premiumReferral')
+    const sent = await notifyOwner('premium_referral_requested', { form, result, scan, package: premiumOffer })
+    setPackageStatus(sent ? 'PREMIUM REFERRAL SENT TO OWNER EMAIL' : 'REFERRAL READY - USE EMAIL OR SITE LINK BELOW')
   }
 
   const offers = [
@@ -441,19 +470,47 @@ export default function QuantumAIWebsite() {
 
         <section className="offers" aria-label="Paid growth paths">
           {offers.map((offer) => {
-            const href =
-              PAYMENT_LINKS[offer.key] ||
-              (offer.key === 'premiumReferral' ? PAYMENT_LINKS.premiumReferral : mailtoHref({ form, result, scan, packageName: offer.title }))
+            const emailHref = mailtoHref({ form, result, scan, packageName: offer.title })
             return (
               <article key={offer.key}>
                 <span>PACKAGE {offer.number} // {offer.price}</span>
                 <h2>{offer.title}</h2>
                 <p>{offer.copy}</p>
-                <a href={href} onClick={() => trackPackage(offer)}>{offer.cta}</a>
+                <button type="button" onClick={() => handleOfferAction(offer)}>{offer.cta}</button>
+                {(offer.key === 'automatedUtility' || offer.key === 'fullStrategic') && (
+                  <a className="quiet-link" href={emailHref} onClick={() => trackPackage(offer)}>Email Before Checkout</a>
+                )}
+                {offer.key === 'premiumReferral' && (
+                  <div className="premium-links">
+                    <a className="quiet-link" href={emailHref} onClick={() => trackPackage(offer)}>Direct Email</a>
+                    <a className="quiet-link" href={PAYMENT_LINKS.premiumReferral} onClick={() => trackPackage(offer)}>Visit Strategy Site</a>
+                  </div>
+                )}
               </article>
             )
           })}
         </section>
+        {packageStatus && <p className="package-status">{packageStatus}</p>}
+
+        {referralOpen && (
+          <section className="referral-panel" aria-labelledby="premium-referral-title">
+            <div>
+              <div className="brand-chip">PREMIUM ROUTING</div>
+              <h2 id="premium-referral-title">QuantumBusinessStrategies Referral</h2>
+              <p>
+                Fill the intake fields above, then send the referral request here. The owner email is notified with the business context,
+                selected package, scan notes, and contact information.
+              </p>
+            </div>
+            <form onSubmit={submitPremiumReferral}>
+              <button type="submit">SEND PREMIUM REFERRAL REQUEST</button>
+              <a href={mailtoHref({ form, result, scan, packageName: 'Premium QuantumBusinessStrategies Referral' })}>
+                EMAIL {CONTACT_EMAIL}
+              </a>
+              <a href={PAYMENT_LINKS.premiumReferral}>OPEN QUANTUMBUSINESSSTRATEGIES.COM</a>
+            </form>
+          </section>
+        )}
 
         <section className="launch-board" aria-labelledby="launch-title">
           <h2 id="launch-title">What Happens After Selection</h2>
@@ -473,6 +530,12 @@ export default function QuantumAIWebsite() {
             extent permitted by applicable law.
           </p>
           <p>Copyright notice: © 2025-2026 Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI brand materials. Trademark registration recommended.</p>
+          <nav className="footer-links" aria-label="Contact and project links">
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <a href={PARTNER_LINKS.riskforge}>riskforgeai.xyz</a>
+            <a href={PARTNER_LINKS.strategies}>quantumbusinessstrategies.com</a>
+            <a href={PARTNER_LINKS.pepes}>quantumpepes.xyz</a>
+          </nav>
         </footer>
       </main>
     </div>
