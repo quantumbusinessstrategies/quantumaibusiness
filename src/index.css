@@ -94,6 +94,33 @@ a {
   animation: glowBreathe 30s ease-in-out infinite;
 }
 
+.stellar-dust {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.72;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.82) 0 1px, transparent 1.35px),
+    radial-gradient(circle, rgba(125, 249, 255, 0.7) 0 1.35px, transparent 1.8px),
+    radial-gradient(circle, rgba(255, 184, 243, 0.58) 0 0.9px, transparent 1.45px),
+    radial-gradient(circle, rgba(255, 241, 166, 0.48) 0 1.7px, transparent 2.15px),
+    radial-gradient(circle, rgba(152, 255, 221, 0.44) 0 0.8px, transparent 1.25px);
+  background-position:
+    11px 23px,
+    49px 73px,
+    95px 31px,
+    24px 117px,
+    131px 89px;
+  background-size:
+    113px 127px,
+    173px 149px,
+    211px 181px,
+    257px 223px,
+    307px 269px;
+  mix-blend-mode: screen;
+}
+
 .three-wireframes {
   position: absolute;
   inset: 0;
@@ -101,6 +128,8 @@ a {
   pointer-events: none;
   opacity: 0.92;
   mix-blend-mode: screen;
+  filter: drop-shadow(0 0 12px rgba(125, 249, 255, 0.34)) drop-shadow(0 0 24px rgba(255, 125, 242, 0.18));
+  animation: wireframeAura 48s linear infinite;
 }
 
 .three-wireframes canvas {
@@ -967,6 +996,18 @@ code {
   50% {
     filter: saturate(1.45);
     opacity: 1;
+  }
+}
+
+@keyframes wireframeAura {
+  0% {
+    filter: hue-rotate(0deg) drop-shadow(0 0 12px rgba(125, 249, 255, 0.34)) drop-shadow(0 0 24px rgba(255, 125, 242, 0.18));
+  }
+  50% {
+    filter: hue-rotate(80deg) drop-shadow(0 0 14px rgba(255, 241, 166, 0.24)) drop-shadow(0 0 28px rgba(152, 255, 221, 0.16));
+  }
+  100% {
+    filter: hue-rotate(160deg) drop-shadow(0 0 12px rgba(125, 249, 255, 0.34)) drop-shadow(0 0 24px rgba(255, 125, 242, 0.18));
   }
 }
 

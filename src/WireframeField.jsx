@@ -86,8 +86,18 @@ function createWireObject(THREE, index) {
     x: range(index + 60, -0.16, 0.16),
     y: range(index + 66, 0.12, 0.34),
     z: range(index + 72, -0.1, 0.18),
-    drift: range(index + 78, 0.12, 0.34),
+    driftX: range(index + 78, 0.055, 0.16),
+    driftY: range(index + 84, 0.08, 0.2),
+    driftZ: range(index + 90, 0.045, 0.13),
+    orbitX: range(index + 96, 0.45, 1.25),
+    orbitY: range(index + 102, 0.25, 0.74),
+    orbitZ: range(index + 108, 0.18, 0.62),
+    phase: range(index + 114, 0, Math.PI * 2),
+    hue,
+    hueSpeed: range(index + 120, 0.018, 0.042),
+    originX: mesh.position.x,
     originY: mesh.position.y,
+    originZ: mesh.position.z,
   }
   return mesh
 }
@@ -124,7 +134,10 @@ export default function WireframeField() {
         object.rotation.x += spin.x * 0.01
         object.rotation.y += spin.y * 0.01
         object.rotation.z += spin.z * 0.01
-        object.position.y = spin.originY + Math.sin(elapsed * spin.drift + index) * 0.34
+        object.position.x = spin.originX + Math.sin(elapsed * spin.driftX + spin.phase) * spin.orbitX
+        object.position.y = spin.originY + Math.cos(elapsed * spin.driftY + spin.phase + index) * spin.orbitY
+        object.position.z = spin.originZ + Math.sin(elapsed * spin.driftZ + spin.phase * 0.7) * spin.orbitZ
+        object.material.color.setHSL((spin.hue + elapsed * spin.hueSpeed) % 1, 0.98, 0.72)
       })
       rendererInstance.render(scene, camera)
       frameId = window.requestAnimationFrame(() => animate(rendererInstance, scene, camera, clock))

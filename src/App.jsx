@@ -349,6 +349,7 @@ export default function QuantumAIWebsite() {
   return (
     <div className="quantum-shell">
       <div className="cosmic-glow" />
+      <div className="stellar-dust" aria-hidden="true" />
       <WireframeField />
       {scanBurst > 0 && <span key={scanBurst} className="scan-burst" />}
       {beams.map((beam) => (
