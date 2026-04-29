@@ -671,6 +671,7 @@ button:hover,
 .offers article,
 .assessment,
 .launch-board,
+.growth-launch,
 .automation-control,
 .referral-panel {
   position: relative;
@@ -689,6 +690,7 @@ button:hover,
 .offers article::after,
 .assessment::after,
 .launch-board::after,
+.growth-launch::after,
 .automation-control::after,
 .referral-panel::after {
   content: "";
@@ -705,6 +707,7 @@ button:hover,
 .offers article > *,
 .assessment > *,
 .launch-board > *,
+.growth-launch > *,
 .automation-control > *,
 .referral-panel > * {
   position: relative;
@@ -715,6 +718,7 @@ button:hover,
 .offers article::before,
 .assessment::before,
 .launch-board::before,
+.growth-launch::before,
 .automation-control::before,
 .referral-panel::before {
   content: "";
@@ -738,6 +742,7 @@ button:hover,
 .offers p,
 .assessment-copy p,
 .launch-board li,
+.growth-launch p,
 .automation-control p,
 .referral-panel p {
   margin-top: 12px;
@@ -903,6 +908,75 @@ button:active,
   font-size: 10px;
 }
 
+.growth-launch {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  margin: 24px 0;
+}
+
+.growth-launch h2 {
+  margin-top: 14px;
+}
+
+.campaign-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.campaign-links article,
+.launch-copy-grid section {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(0, 8, 16, 0.44);
+  border: 1px solid rgba(143, 255, 255, 0.42);
+  box-shadow: 0 3px 0 rgba(125, 249, 255, 0.16), inset 0 0 20px rgba(255, 184, 243, 0.06);
+  clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px));
+}
+
+.campaign-links strong,
+.launch-copy-grid h3 {
+  color: #ffeb9d;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.campaign-links code {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #98ffdd;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.campaign-links button {
+  min-height: 42px;
+  font-size: 8px;
+}
+
+.campaign-status {
+  margin: 0;
+  padding: 12px;
+  color: #00ff66;
+  background: rgba(0, 255, 102, 0.08);
+  border: 1px solid rgba(0, 255, 102, 0.35);
+  text-align: center;
+}
+
+.launch-copy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.launch-copy-grid p {
+  margin: 0;
+  color: #d5fbff;
+  font-size: 9px;
+}
+
 .referral-panel {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) minmax(280px, 0.9fr);
@@ -938,6 +1012,7 @@ button:active,
 
 .offers article > button,
 .intake-form button,
+.campaign-links button,
 .automation-actions button,
 .referral-panel button,
 .referral-panel a {
@@ -1508,6 +1583,8 @@ code {
   .system-grid,
   .assessment,
   .offers,
+  .campaign-links,
+  .launch-copy-grid,
   .automation-flow,
   .automation-metrics,
   .referral-panel {
@@ -1542,6 +1619,7 @@ code {
   .system-grid > div,
   .offers article,
   .launch-board,
+  .growth-launch,
   .automation-control,
   .referral-panel {
     padding: 18px;

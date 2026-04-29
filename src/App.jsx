@@ -52,6 +52,35 @@ const AUTOMATION_FLOW = [
     copy: 'Premium referral and higher-ticket growth signals are marked for owner review so serious prospects get attention.',
   },
 ]
+const CAMPAIGN_LINKS = [
+  {
+    label: 'Business pressure scan',
+    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=pressure_scan#home`,
+  },
+  {
+    label: '$9.99 strategy offer',
+    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=strategy_offer#packages`,
+  },
+  {
+    label: 'Automation utility offer',
+    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=automation_utility#packages`,
+  },
+]
+const AD_ANGLES = [
+  'Your business may not need more effort. It may need fewer leaks. Run the QuantumAiBusiness pressure scan.',
+  'Missing follow-up, weak routing, and unclear offers quietly drain revenue. Quantify the gaps before they compound.',
+  'Turn a business name or website into an AI-assisted growth readout, then choose the strategy or automation path that fits.',
+]
+const ORGANIC_POSTS = [
+  'Built a cyber business-pressure scanner for owners who want to find profit leaks, weak follow-up, and unused automation paths.',
+  'If your website gets attention but not enough paid action, the problem may be routing. QuantumAiBusiness scans the pressure points.',
+  'New offer: $9.99 AI-assisted strategy outline for business owners who want a fast first read on growth gaps.',
+]
+const SOCIAL_SETUP = [
+  'Claim QuantumAiBusiness on X, LinkedIn, TikTok, Instagram, Facebook, YouTube, Reddit, Threads, and Bluesky where available.',
+  'Use the same avatar, one-line promise, and link: quantumaibusiness.com/?utm_source=social&utm_medium=bio&utm_campaign=profile',
+  'Post the same launch message manually across accounts first, then decide which platform is worth automating.',
+]
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -240,6 +269,7 @@ export default function QuantumAIWebsite() {
   const [shareStatus, setShareStatus] = useState('')
   const [automationEvents, setAutomationEvents] = useState(loadStoredEvents)
   const [automationStatus, setAutomationStatus] = useState('AUTOPILOT READY - OWNER ALERTS ON - HIGH TIER REVIEW')
+  const [campaignStatus, setCampaignStatus] = useState('')
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -483,6 +513,16 @@ export default function QuantumAIWebsite() {
     await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: SITE_URL })
   }
 
+  async function copyCampaignLink(link) {
+    try {
+      await navigator.clipboard.writeText(link.href)
+      setCampaignStatus(`${link.label.toUpperCase()} LINK COPIED`)
+      await recordAutomationEvent('campaign_link_copied', { destination: link.label, url: link.href })
+    } catch {
+      setCampaignStatus(`COPY MANUALLY: ${link.href}`)
+    }
+  }
+
   const offers = [
     {
       key: 'outlinedStrategy',
@@ -648,6 +688,7 @@ export default function QuantumAIWebsite() {
           <section>
             <h2>Owner</h2>
             <a href="#automation-control">Automation control</a>
+            <a href="#growth-launch">Growth launch kit</a>
           </section>
         </div>
       </details>
@@ -797,6 +838,47 @@ export default function QuantumAIWebsite() {
           })}
         </section>
         {packageStatus && <p className="package-status">{packageStatus}</p>}
+
+        <section className="growth-launch" id="growth-launch" aria-labelledby="growth-launch-title">
+          <div>
+            <div className="brand-chip">MONETIZATION LAUNCH</div>
+            <h2 id="growth-launch-title">Organic + Ad Launch Kit</h2>
+            <p>
+              Use these links and copy blocks for manual posting, direct outreach, social bios, and future paid campaigns. This keeps the
+              message consistent with the landing page and avoids overpromising results.
+            </p>
+          </div>
+          <div className="campaign-links">
+            {CAMPAIGN_LINKS.map((link) => (
+              <article key={link.label}>
+                <strong>{link.label}</strong>
+                <code>{link.href}</code>
+                <button type="button" onClick={() => copyCampaignLink(link)}>COPY LINK</button>
+              </article>
+            ))}
+          </div>
+          {campaignStatus && <p className="campaign-status">{campaignStatus}</p>}
+          <div className="launch-copy-grid">
+            <section>
+              <h3>Ad Angles</h3>
+              {AD_ANGLES.map((copy) => (
+                <p key={copy}>{copy}</p>
+              ))}
+            </section>
+            <section>
+              <h3>Organic Posts</h3>
+              {ORGANIC_POSTS.map((copy) => (
+                <p key={copy}>{copy}</p>
+              ))}
+            </section>
+            <section>
+              <h3>Social Setup</h3>
+              {SOCIAL_SETUP.map((copy) => (
+                <p key={copy}>{copy}</p>
+              ))}
+            </section>
+          </div>
+        </section>
 
         {referralOpen && (
           <section className="referral-panel" aria-labelledby="premium-referral-title">
