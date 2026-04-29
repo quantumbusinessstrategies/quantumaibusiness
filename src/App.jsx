@@ -367,7 +367,7 @@ export default function QuantumAIWebsite() {
       <main className="content">
         <section className="hero-panel" aria-labelledby="hero-title">
           <div className="brand-chip">QUANTUMAIBUSINESS.COM</div>
-          <h1 id="hero-title">QUANTUM AI BUSINESS</h1>
+          <h1 id="hero-title">QuantumAiBusiness</h1>
           <p className="tagline">QUANTUM PARABOLIC GROWTH // QUANTITATIVE LOGIC // AUTOMATED BUSINESS PRESSURE SCANS</p>
           <p className="promise">
             Enter a business name or website. The system generates a first-pass growth diagnostic, flags likely profit leaks,
