@@ -34,6 +34,12 @@ const SHARE_TITLE = 'QuantumAiBusiness'
 const SHARE_TEXT = 'Run a cyber growth-pressure scan for business faults, profit leaks, and automation opportunities.'
 const EVENT_STORAGE_KEY = 'quantumaibusiness_event_log'
 const MAX_EVENT_LOG = 40
+const FULFILLMENT_PACKAGES = [
+  ['outlinedStrategy', 'Outlined Strategy'],
+  ['automatedUtility', 'Automated Utility'],
+  ['fullStrategic', 'Full Strategic Growth'],
+  ['premiumReferral', 'Premium Referral'],
+]
 const AUTOMATION_FLOW = [
   {
     label: 'Capture',
@@ -215,6 +221,38 @@ async function notifyOwner(type, payload) {
   }
 }
 
+async function submitFulfillmentPacket(packet) {
+  const fulfillmentEndpoint = AUTOMATION_API_URL
+    ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/fulfillment') ? '' : '/api/fulfillment'}`
+    : ''
+
+  if (fulfillmentEndpoint) {
+    const response = await fetch(fulfillmentEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(packet),
+    })
+    if (!response.ok) throw new Error('Fulfillment endpoint rejected the intake')
+    return response.json()
+  }
+
+  const response = await fetch(OWNER_NOTIFICATION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      _subject: `QuantumAiBusiness paid fulfillment intake - ${packet.company || packet.website || packet.customer_email}`,
+      _template: 'table',
+      _captcha: 'false',
+      event_type: 'paid_fulfillment_intake',
+      notify: CONTACT_EMAIL,
+      source: 'quantumaibusiness.com',
+      message: JSON.stringify(packet, null, 2),
+    }),
+  })
+
+  return { ok: response.ok, mode: 'static_email_fallback', generated: false, deliverable: '' }
+}
+
 function loadStoredEvents() {
   try {
     return JSON.parse(window.localStorage.getItem(EVENT_STORAGE_KEY) || '[]')
@@ -270,6 +308,18 @@ export default function QuantumAIWebsite() {
   const [automationEvents, setAutomationEvents] = useState(loadStoredEvents)
   const [automationStatus, setAutomationStatus] = useState('AUTOPILOT READY - OWNER ALERTS ON - HIGH TIER REVIEW')
   const [campaignStatus, setCampaignStatus] = useState('')
+  const [fulfillmentStatus, setFulfillmentStatus] = useState('')
+  const [fulfillmentDeliverable, setFulfillmentDeliverable] = useState('')
+  const [fulfillmentForm, setFulfillmentForm] = useState({
+    packageKey: 'outlinedStrategy',
+    company: '',
+    website: '',
+    customerEmail: '',
+    paymentEmail: '',
+    objective: '',
+    currentTools: '',
+    constraints: '',
+  })
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -370,6 +420,11 @@ export default function QuantumAIWebsite() {
   function updateField(event) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function updateFulfillmentField(event) {
+    const { name, value } = event.target
+    setFulfillmentForm((current) => ({ ...current, [name]: value }))
   }
 
   async function recordAutomationEvent(type, payload = {}) {
@@ -474,6 +529,48 @@ export default function QuantumAIWebsite() {
     const premiumOffer = offers.find((offer) => offer.key === 'premiumReferral')
     const sent = await recordAutomationEvent('premium_referral_requested', { form, result, scan, package: premiumOffer })
     setPackageStatus(sent ? 'PREMIUM REFERRAL SENT TO OWNER EMAIL' : 'REFERRAL READY - USE EMAIL OR SITE LINK BELOW')
+  }
+
+  async function submitPaidFulfillment(event) {
+    event.preventDefault()
+    setFulfillmentStatus('SENDING PAID FULFILLMENT INTAKE...')
+    setFulfillmentDeliverable('')
+
+    const selectedPackage = offers.find((offer) => offer.key === fulfillmentForm.packageKey)
+    const packet = {
+      package_key: fulfillmentForm.packageKey,
+      package_name: selectedPackage?.title || fulfillmentForm.packageKey,
+      company: fulfillmentForm.company || form.company,
+      website: fulfillmentForm.website || form.website,
+      customer_email: fulfillmentForm.customerEmail || form.email,
+      payment_email: fulfillmentForm.paymentEmail,
+      objective: fulfillmentForm.objective || form.objective,
+      current_tools: fulfillmentForm.currentTools,
+      constraints: fulfillmentForm.constraints,
+      source: 'site_paid_fulfillment_form',
+      amount: selectedPackage?.amount || '',
+    }
+
+    try {
+      const response = await submitFulfillmentPacket(packet)
+      await recordAutomationEvent('paid_fulfillment_intake', {
+        form: {
+          company: packet.company,
+          website: packet.website,
+          email: packet.customer_email || packet.payment_email,
+          objective: packet.objective,
+        },
+        package: selectedPackage,
+      })
+      setFulfillmentDeliverable(response.deliverable || '')
+      setFulfillmentStatus(
+        response.generated
+          ? 'AI FULFILLMENT GENERATED - OWNER NOTIFIED'
+          : 'INTAKE SENT - OWNER REVIEW / BACKEND GENERATION QUEUED',
+      )
+    } catch {
+      setFulfillmentStatus(`INTAKE NOT SENT AUTOMATICALLY - EMAIL ${CONTACT_EMAIL}`)
+    }
   }
 
   async function copyShareLink() {
@@ -688,6 +785,7 @@ export default function QuantumAIWebsite() {
           <section>
             <h2>Owner</h2>
             <a href="#automation-control">Automation control</a>
+            <a href="#fulfillment">Fulfillment intake</a>
             <a href="#growth-launch">Growth launch kit</a>
           </section>
         </div>
@@ -839,6 +937,60 @@ export default function QuantumAIWebsite() {
         </section>
         {packageStatus && <p className="package-status">{packageStatus}</p>}
 
+        <section className="fulfillment-console" id="fulfillment" aria-labelledby="fulfillment-title">
+          <div className="fulfillment-copy">
+            <div className="brand-chip">PAID DELIVERY INTAKE</div>
+            <h2 id="fulfillment-title">Fulfillment Command Packet</h2>
+            <p>
+              After checkout, clients can submit the details needed for delivery. Right now this sends the packet to the owner route;
+              once the backend host has secrets, it can generate the first AI deliverable automatically and email the client.
+            </p>
+          </div>
+          <form className="intake-form fulfillment-form" onSubmit={submitPaidFulfillment}>
+            <label>
+              Package purchased
+              <select name="packageKey" value={fulfillmentForm.packageKey} onChange={updateFulfillmentField}>
+                {FULFILLMENT_PACKAGES.map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Business
+              <input name="company" value={fulfillmentForm.company} onChange={updateFulfillmentField} placeholder="Business name" />
+            </label>
+            <label>
+              Website
+              <input name="website" value={fulfillmentForm.website} onChange={updateFulfillmentField} placeholder="https://example.com" />
+            </label>
+            <label>
+              Delivery email
+              <input name="customerEmail" value={fulfillmentForm.customerEmail} onChange={updateFulfillmentField} placeholder="client@example.com" type="email" />
+            </label>
+            <label>
+              Stripe payment email
+              <input name="paymentEmail" value={fulfillmentForm.paymentEmail} onChange={updateFulfillmentField} placeholder="if different from delivery email" type="email" />
+            </label>
+            <label>
+              Current tools
+              <input name="currentTools" value={fulfillmentForm.currentTools} onChange={updateFulfillmentField} placeholder="Website, CRM, ads, email, booking, spreadsheets..." />
+            </label>
+            <label className="wide">
+              What should the paid deliverable solve?
+              <textarea name="objective" value={fulfillmentForm.objective} onChange={updateFulfillmentField} placeholder="Lead flow, follow-up, offer clarity, automation, reporting, operations..." />
+            </label>
+            <label className="wide">
+              Constraints or owner notes
+              <textarea name="constraints" value={fulfillmentForm.constraints} onChange={updateFulfillmentField} placeholder="Budget, timeline, platforms, industry limits, decision maker, urgent blockers..." />
+            </label>
+            <button className="wide" type="submit">SEND FULFILLMENT PACKET</button>
+            {fulfillmentStatus && <p className="lead-status">{fulfillmentStatus}</p>}
+          </form>
+          {fulfillmentDeliverable && (
+            <pre className="fulfillment-output">{fulfillmentDeliverable}</pre>
+          )}
+        </section>
+
         <section className="growth-launch" id="growth-launch" aria-labelledby="growth-launch-title">
           <div>
             <div className="brand-chip">MONETIZATION LAUNCH</div>
@@ -905,6 +1057,7 @@ export default function QuantumAIWebsite() {
           <ul>
             <li>Routine scans and assessments are captured, logged, and sent through the owner notification route when available.</li>
             <li>Packages 1-3 auto-route prospects toward checkout or direct contact with the submitted business context attached.</li>
+            <li>Paid buyers can submit fulfillment details through the command packet so delivery is ready for owner review or backend AI generation.</li>
             <li>Full strategic growth and premium referral activity is marked for owner review so higher-value prospects get human attention.</li>
             <li>The control log can be exported so lead, package, and outreach activity can move into accounting, CRM, or automation tools.</li>
           </ul>

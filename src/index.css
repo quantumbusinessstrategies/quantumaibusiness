@@ -670,6 +670,7 @@ button:hover,
 .system-grid > div,
 .offers article,
 .assessment,
+.fulfillment-console,
 .launch-board,
 .growth-launch,
 .automation-control,
@@ -689,6 +690,7 @@ button:hover,
 .system-grid > div::after,
 .offers article::after,
 .assessment::after,
+.fulfillment-console::after,
 .launch-board::after,
 .growth-launch::after,
 .automation-control::after,
@@ -706,6 +708,7 @@ button:hover,
 .system-grid > div > *,
 .offers article > *,
 .assessment > *,
+.fulfillment-console > *,
 .launch-board > *,
 .growth-launch > *,
 .automation-control > *,
@@ -717,6 +720,7 @@ button:hover,
 .system-grid > div::before,
 .offers article::before,
 .assessment::before,
+.fulfillment-console::before,
 .launch-board::before,
 .growth-launch::before,
 .automation-control::before,
@@ -741,6 +745,7 @@ button:hover,
 .system-grid p,
 .offers p,
 .assessment-copy p,
+.fulfillment-copy p,
 .launch-board li,
 .growth-launch p,
 .automation-control p,
@@ -906,6 +911,37 @@ button:active,
   border: 1px solid rgba(0, 255, 102, 0.55);
   box-shadow: 0 0 22px rgba(0, 255, 102, 0.16);
   font-size: 10px;
+}
+
+.fulfillment-console {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.75fr) minmax(320px, 1.25fr);
+  gap: 22px;
+  padding: 28px;
+  margin: 24px 0;
+}
+
+.fulfillment-copy h2 {
+  margin-top: 14px;
+}
+
+.fulfillment-form {
+  align-content: start;
+}
+
+.fulfillment-output {
+  grid-column: 1 / -1;
+  max-height: 420px;
+  overflow: auto;
+  margin: 0;
+  padding: 18px;
+  color: #dffbff;
+  white-space: pre-wrap;
+  background: rgba(0, 8, 16, 0.58);
+  border: 1px solid rgba(152, 255, 221, 0.44);
+  box-shadow: inset 0 0 22px rgba(0, 255, 255, 0.12), 0 0 18px rgba(152, 255, 221, 0.12);
+  font-size: 10px;
+  line-height: 1.65;
 }
 
 .growth-launch {
@@ -1582,6 +1618,7 @@ code {
 
   .system-grid,
   .assessment,
+  .fulfillment-console,
   .offers,
   .campaign-links,
   .launch-copy-grid,
@@ -1616,6 +1653,7 @@ code {
   }
 
   .assessment,
+  .fulfillment-console,
   .system-grid > div,
   .offers article,
   .launch-board,

@@ -114,3 +114,27 @@ export async function notifyOwner(record) {
 
   return { notified: response.ok, provider: 'formsubmit', status: response.status }
 }
+
+export async function sendClientEmail({ to, subject, text }) {
+  if (!to) return { sent: false, reason: 'No client email supplied' }
+  if (!process.env.RESEND_API_KEY) {
+    return { sent: false, reason: 'RESEND_API_KEY not configured' }
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: process.env.RESEND_FROM_EMAIL || 'QuantumAiBusiness <onboarding@resend.dev>',
+      to,
+      bcc: ownerEmail(),
+      subject,
+      text,
+    }),
+  })
+
+  return { sent: response.ok, provider: 'resend', status: response.status }
+}
