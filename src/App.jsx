@@ -153,6 +153,7 @@ export default function QuantumAIWebsite() {
   const [scan, setScan] = useState(null)
   const [referralOpen, setReferralOpen] = useState(false)
   const [packageStatus, setPackageStatus] = useState('')
+  const [scanBurst, setScanBurst] = useState(0)
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -190,6 +191,30 @@ export default function QuantumAIWebsite() {
         w: rand(i + 41, 80, 260),
         r: rand(i + 43, -65, 65),
         o: rand(i + 47, 0.2, 0.8),
+      })),
+    [],
+  )
+  const wireframes = useMemo(
+    () =>
+      createField(18, (i) => ({
+        id: i,
+        x: rand(i + 53, 2, 92),
+        y: rand(i + 59, 4, 88),
+        s: rand(i + 61, 72, 190),
+        d: rand(i + 67, 10, 24),
+        r: rand(i + 71, -38, 38),
+        shape: i % 3,
+      })),
+    [],
+  )
+  const particles = useMemo(
+    () =>
+      createField(90, (i) => ({
+        id: i,
+        x: rand(i + 79, 0, 100),
+        y: rand(i + 83, 0, 100),
+        s: rand(i + 89, 2, 5),
+        d: rand(i + 97, 4, 12),
       })),
     [],
   )
@@ -238,6 +263,7 @@ export default function QuantumAIWebsite() {
     const scanTargetValue = target || form.website || form.company || 'Business'
     const nextForm = { ...form, website: form.website || scanTargetValue, company: form.company || scanTargetValue }
     const generatedScan = scanTarget(scanTargetValue, result)
+    setScanBurst((current) => current + 1)
     setForm(nextForm)
     setScan(generatedScan)
     setOpen(true)
@@ -335,6 +361,7 @@ export default function QuantumAIWebsite() {
   return (
     <div className="quantum-shell">
       <div className="cosmic-glow" />
+      {scanBurst > 0 && <span key={scanBurst} className="scan-burst" />}
       {beams.map((beam) => (
         <div
           className="beam"
@@ -344,6 +371,23 @@ export default function QuantumAIWebsite() {
       ))}
       {stars.map((star) => (
         <span className="star" key={star.id} style={{ left: `${star.x}%`, top: `${star.y}%`, width: star.s, height: star.s }} />
+      ))}
+      {particles.map((particle) => (
+        <span
+          className="glow-particle"
+          key={`particle-${particle.id}`}
+          style={{ left: `${particle.x}%`, top: `${particle.y}%`, width: particle.s, height: particle.s, animationDuration: `${particle.d}s` }}
+        />
+      ))}
+      {wireframes.map((wire) => (
+        <span
+          className={`wireframe wireframe-${wire.shape}`}
+          key={`wire-${wire.id}`}
+          style={{ left: `${wire.x}%`, top: `${wire.y}%`, width: wire.s, height: wire.s, animationDuration: `${wire.d}s`, transform: `rotate(${wire.r}deg)` }}
+        >
+          <i />
+          <b />
+        </span>
       ))}
       {coins.map((coin) => (
         <span
@@ -364,6 +408,32 @@ export default function QuantumAIWebsite() {
         </span>
       ))}
 
+      <details className="cyber-menu">
+        <summary>MENU</summary>
+        <div className="cyber-menu-panel">
+          <section>
+            <h2>Products</h2>
+            {offers.map((offer) => (
+              <a key={offer.key} href="#packages">P{offer.number}: {offer.title}</a>
+            ))}
+          </section>
+          <section>
+            <h2>Contact</h2>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          </section>
+          <section>
+            <h2>Links</h2>
+            <a href={PARTNER_LINKS.riskforge}>riskforgeai.xyz</a>
+            <a href={PARTNER_LINKS.strategies}>quantumbusinessstrategies.com</a>
+            <a href={PARTNER_LINKS.pepes}>quantumpepes.xyz</a>
+          </section>
+          <section>
+            <h2>Transparency</h2>
+            <a href="#transparency">Read site transparency</a>
+          </section>
+        </div>
+      </details>
+
       <main className="content">
         <section className="hero-panel" aria-labelledby="hero-title">
           <div className="brand-chip">QUANTUMAIBUSINESS.COM</div>
@@ -381,7 +451,7 @@ export default function QuantumAIWebsite() {
               placeholder="> WEBSITE OR BUSINESS NAME_"
               aria-label="Website or business name"
             />
-            <button onClick={runScan} type="button">QUANTIFY BUSINESS</button>
+            <button className="quantify-button" onClick={runScan} type="button"><span>QUANTIFY BUSINESS</span></button>
             {open && (
               <div className="response-console">
                 <p>{resp}</p>
@@ -468,7 +538,7 @@ export default function QuantumAIWebsite() {
           </form>
         </section>
 
-        <section className="offers" aria-label="Paid growth paths">
+        <section className="offers" id="packages" aria-label="Paid growth paths">
           {offers.map((offer) => {
             const emailHref = mailtoHref({ form, result, scan, packageName: offer.title })
             return (
@@ -522,7 +592,7 @@ export default function QuantumAIWebsite() {
           </ul>
         </section>
 
-        <footer className="transparency">
+        <footer className="transparency" id="transparency">
           <p>
             Transparency: Quantum AI Business provides automated diagnostics, strategic information, and workflow routing. Results are not guaranteed,
             do not replace legal, financial, tax, or professional advice, and depend on client execution, market conditions, platform policies, and data quality.
