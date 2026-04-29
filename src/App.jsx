@@ -33,6 +33,24 @@ const SHARE_TITLE = 'QuantumAiBusiness'
 const SHARE_TEXT = 'Run a cyber growth-pressure scan for business faults, profit leaks, and automation opportunities.'
 const EVENT_STORAGE_KEY = 'quantumaibusiness_event_log'
 const MAX_EVENT_LOG = 40
+const AUTOMATION_FLOW = [
+  {
+    label: 'Capture',
+    copy: 'Business names, websites, scan results, package selections, and share actions become structured events.',
+  },
+  {
+    label: 'Notify',
+    copy: `Each major event attempts an owner email notification to ${CONTACT_EMAIL} through the configured notification route.`,
+  },
+  {
+    label: 'Auto-route',
+    copy: 'Packages 1-3 move prospects into checkout or contact paths without waiting for manual handling.',
+  },
+  {
+    label: 'Escalate',
+    copy: 'Premium referral and higher-ticket growth signals are marked for owner review so serious prospects get attention.',
+  },
+]
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -119,11 +137,13 @@ function mailtoHref({ form, result, scan, packageName = 'General inquiry' }) {
 async function notifyOwner(type, payload) {
   const endpoint = LEAD_WEBHOOK || OWNER_NOTIFICATION_URL
   if (!endpoint) return false
+  const actionMode = payload.package?.key === 'premiumReferral' || Number(payload.package?.amount || 0) >= 2500 ? 'owner_review' : 'auto_route'
 
   const subject = `Quantum AI Business ${type.replaceAll('_', ' ')}`
   const message = JSON.stringify(
     {
       event: type,
+      action_mode: actionMode,
       timestamp: new Date().toISOString(),
       ...payload,
     },
@@ -140,6 +160,7 @@ async function notifyOwner(type, payload) {
         _template: 'table',
         _captcha: 'false',
         event_type: type,
+        action_mode: actionMode,
         notify: CONTACT_EMAIL,
         source: 'quantumaibusiness.com',
         message,
@@ -173,12 +194,18 @@ function buildCsv(events) {
 }
 
 function createAutomationEvent(type, payload, fallbackTarget) {
+  const packageTitle = payload.package?.title || ''
+  const isPremium = payload.package?.key === 'premiumReferral' || packageTitle.toLowerCase().includes('premium')
+  const isHighValue = payload.package?.key === 'fullStrategic' || Number(payload.package?.amount || 0) >= 2500
+  const actionMode = isPremium || isHighValue ? 'owner_review' : type.includes('package') ? 'auto_checkout_route' : 'auto_capture_notify'
+
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     type,
+    actionMode,
     timestamp: new Date().toISOString(),
     target: payload.form?.website || payload.form?.company || fallbackTarget || 'Unspecified',
-    package: payload.package?.title || '',
+    package: packageTitle,
     score: payload.scan?.score ?? '',
     readiness: payload.scan?.readiness ?? payload.result?.readiness ?? '',
     payload,
@@ -198,7 +225,7 @@ export default function QuantumAIWebsite() {
   const [shareOpen, setShareOpen] = useState(false)
   const [shareStatus, setShareStatus] = useState('')
   const [automationEvents, setAutomationEvents] = useState(loadStoredEvents)
-  const [automationStatus, setAutomationStatus] = useState('SYSTEM READY - OWNER APPROVAL MODE')
+  const [automationStatus, setAutomationStatus] = useState('AUTOPILOT READY - OWNER ALERTS ON - HIGH TIER REVIEW')
   const [form, setForm] = useState({
     company: '',
     website: '',
@@ -315,7 +342,11 @@ export default function QuantumAIWebsite() {
     })
 
     const sent = await notifyOwner(type, payload)
-    setAutomationStatus(sent ? `${type.replaceAll('_', ' ').toUpperCase()} SENT TO OWNER` : `${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY`)
+    setAutomationStatus(
+      sent
+        ? `${type.replaceAll('_', ' ').toUpperCase()} SENT TO OWNER // ${event.actionMode.replaceAll('_', ' ').toUpperCase()}`
+        : `${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY // CHECK NOTIFICATION ROUTE`,
+    )
     return sent
   }
 
@@ -664,12 +695,12 @@ export default function QuantumAIWebsite() {
             <p>Website or business-name intake becomes a structured scan for weak offers, missing follow-up, lost leads, and unused growth channels.</p>
           </div>
           <div>
-            <h2>Owner Oversight</h2>
-            <p>Every scan, assessment, and package selection can be sent to {CONTACT_EMAIL} through the webhook automation hub.</p>
+            <h2>Autopilot Routing</h2>
+            <p>Every scan, assessment, package selection, referral, and share action attempts an owner alert while routine prospects keep moving.</p>
           </div>
           <div>
             <h2>Client Delivery</h2>
-            <p>The package ladder moves clients from low-friction strategy to automation utility, full strategic growth, or premium referral.</p>
+            <p>The package ladder pushes buyers from low-friction strategy to automation utility, full strategic growth, or premium referral.</p>
           </div>
         </section>
 
@@ -776,21 +807,29 @@ export default function QuantumAIWebsite() {
         <section className="launch-board" aria-labelledby="launch-title">
           <h2 id="launch-title">What Happens After Selection</h2>
           <ul>
-            <li>Your scan details are routed for review so the next recommendation matches the business context you provided.</li>
-            <li>Paid strategy packages begin with the submitted business name, website, desired outcome, and readiness profile.</li>
-            <li>Automation and full-growth packages may require additional access, onboarding questions, and owner approval before implementation.</li>
-            <li>Premium referral requests are routed toward the Quantumbusinessstrategies review path for higher-touch strategic work.</li>
+            <li>Routine scans and assessments are captured, logged, and sent through the owner notification route when available.</li>
+            <li>Packages 1-3 auto-route prospects toward checkout or direct contact with the submitted business context attached.</li>
+            <li>Full strategic growth and premium referral activity is marked for owner review so higher-value prospects get human attention.</li>
+            <li>The control log can be exported so lead, package, and outreach activity can move into accounting, CRM, or automation tools.</li>
           </ul>
         </section>
 
         <section className="automation-control" id="automation-control" aria-labelledby="automation-control-title">
           <div>
-            <div className="brand-chip">OWNER OVERSIGHT</div>
+            <div className="brand-chip">AUTOMATION OPS</div>
             <h2 id="automation-control-title">Automation Control</h2>
             <p>
-              Recent scans, package selections, referral requests, and share actions are captured for review. Major implementation
-              actions stay in approval mode so the owner can decide what moves from signal into execution.
+              Recent scans, package selections, referral requests, and share actions are captured for review. The site auto-routes
+              routine prospects while higher-ticket and premium signals are separated for owner response.
             </p>
+          </div>
+          <div className="automation-flow" aria-label="Autopilot flow">
+            {AUTOMATION_FLOW.map((step) => (
+              <article key={step.label}>
+                <strong>{step.label}</strong>
+                <p>{step.copy}</p>
+              </article>
+            ))}
           </div>
           <div className="automation-metrics">
             <div>
@@ -802,8 +841,12 @@ export default function QuantumAIWebsite() {
               <span>notification route</span>
             </div>
             <div>
-              <strong>APPROVAL</strong>
-              <span>major-action mode</span>
+              <strong>AUTO</strong>
+              <span>routine routing</span>
+            </div>
+            <div>
+              <strong>REVIEW</strong>
+              <span>premium prospects</span>
             </div>
           </div>
           <div className="automation-actions">
@@ -821,6 +864,7 @@ export default function QuantumAIWebsite() {
                   <p>
                     {event.target}
                     {event.package ? ` // ${event.package}` : ''}
+                    {event.actionMode ? ` // ${event.actionMode.replaceAll('_', ' ')}` : ''}
                     {event.score !== '' ? ` // pressure ${event.score}` : ''}
                   </p>
                 </article>

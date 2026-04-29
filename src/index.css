@@ -987,11 +987,12 @@ code {
 
 .automation-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
 .automation-metrics div,
+.automation-flow article,
 .event-log article {
   padding: 14px;
   background: rgba(0, 8, 16, 0.44);
@@ -1014,6 +1015,26 @@ code {
   display: block;
   margin-top: 8px;
   color: #9ff;
+  font-size: 9px;
+}
+
+.automation-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.automation-flow strong {
+  display: block;
+  color: #ffeb9d;
+  font-size: 10px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.automation-flow p {
+  margin: 8px 0 0;
+  color: #d5fbff;
   font-size: 9px;
 }
 
@@ -1487,6 +1508,7 @@ code {
   .system-grid,
   .assessment,
   .offers,
+  .automation-flow,
   .automation-metrics,
   .referral-panel {
     grid-template-columns: 1fr;
