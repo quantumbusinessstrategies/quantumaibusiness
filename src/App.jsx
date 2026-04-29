@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import WireframeField from './WireframeField.jsx'
 
 const PAYMENT_LINKS = {
   outlinedStrategy:
@@ -194,19 +195,6 @@ export default function QuantumAIWebsite() {
       })),
     [],
   )
-  const wireframes = useMemo(
-    () =>
-      createField(26, (i) => ({
-        id: i,
-        x: rand(i + 53, -6, 96),
-        y: rand(i + 59, -4, 92),
-        s: rand(i + 61, 190, 390),
-        d: rand(i + 67, 22, 48),
-        r: rand(i + 71, -26, 26),
-        shape: ['globe', 'icosahedron', 'dodecahedron', 'icosadodecahedron', 'sierpinski'][i % 5],
-      })),
-    [],
-  )
   const particles = useMemo(
     () =>
       createField(28, (i) => ({
@@ -361,6 +349,7 @@ export default function QuantumAIWebsite() {
   return (
     <div className="quantum-shell">
       <div className="cosmic-glow" />
+      <WireframeField />
       {scanBurst > 0 && <span key={scanBurst} className="scan-burst" />}
       {beams.map((beam) => (
         <div
@@ -391,42 +380,6 @@ export default function QuantumAIWebsite() {
           }}
         >
           {i % 2 ? '101101' : '010010'}
-        </span>
-      ))}
-      {wireframes.map((wire) => (
-        <span
-          className={`wireframe wireframe-${wire.shape}`}
-          key={`wire-${wire.id}`}
-          style={{
-            left: `${wire.x}%`,
-            top: `${wire.y}%`,
-            width: wire.s,
-            height: wire.s,
-            animationDuration: `${wire.d}s`,
-            '--wire-rotate': `${wire.r}deg`,
-          }}
-        >
-          <span className="wire-core">
-            {createField(8, (ring) => (
-              <i
-                className="wire-ring"
-                key={`ring-${ring}`}
-                style={{ '--rx': `${ring * 22.5}deg`, '--ry': `${ring * 45}deg`, '--rz': `${ring * 12}deg` }}
-              />
-            ))}
-            {createField(12, (edge) => (
-              <b
-                className="wire-edge"
-                key={`edge-${edge}`}
-                style={{
-                  '--edge-rz': `${edge * 30}deg`,
-                  '--edge-ry': `${34 + edge * 18}deg`,
-                  '--edge-rx': `${-54 + edge * 11}deg`,
-                  '--edge-z': `${(edge - 6) * 10}px`,
-                }}
-              />
-            ))}
-          </span>
         </span>
       ))}
       {coins.map((coin) => (
