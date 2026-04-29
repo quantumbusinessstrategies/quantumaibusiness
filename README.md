@@ -20,6 +20,7 @@ npm run build
 Set these as GitHub Pages repository variables or local `.env` values:
 
 - `VITE_CONTACT_EMAIL`: fallback email for lead and payment buttons. Default: `quantumbusinessstrategies@gmail.com`.
+- `VITE_AUTOMATION_API_URL`: optional serverless API base URL. Example: `https://quantumaibusiness.vercel.app`. When set, site events go to `/api/lead` first.
 - `VITE_LEAD_WEBHOOK_URL`: Zapier, Make, CRM, Google Apps Script, or other HTTPS webhook for assessments.
 - `VITE_OWNER_NOTIFICATION_URL`: owner notification endpoint. Defaults to FormSubmit AJAX for `quantumbusinessstrategies@gmail.com`; approve the first activation email from FormSubmit.
 - `VITE_AUDIT_PAYMENT_URL`: checkout link for the Business Weakness Scan.
@@ -32,6 +33,15 @@ Set these as GitHub Pages repository variables or local `.env` values:
 - `VITE_PREMIUM_REFERRAL_URL`: package 4 referral URL, defaulting to `https://quantumbusinessstrategies.com`.
 - `VITE_GOOGLE_TAG_ID`: Google Ads/Analytics tag ID for conversion tracking.
 - `VITE_META_PIXEL_ID`: Meta pixel ID for lead conversion tracking.
+
+## Serverless automation backend
+
+This repo includes optional Vercel-style API functions:
+
+- `api/lead.js`: receives scans, assessment submits, package selections, premium referrals, and share actions.
+- `api/stripe-webhook.js`: receives Stripe `checkout.session.completed` events.
+
+See `docs/AUTOMATION_BACKEND.md` for deployment, Stripe webhook, and environment variable setup.
 
 ## Brand protection note
 

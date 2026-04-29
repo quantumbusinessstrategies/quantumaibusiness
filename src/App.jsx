@@ -24,6 +24,7 @@ const PARTNER_LINKS = {
   pepes: 'https://quantumpepes.xyz',
 }
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
+const AUTOMATION_API_URL = import.meta.env.VITE_AUTOMATION_API_URL || ''
 const OWNER_NOTIFICATION_URL =
   import.meta.env.VITE_OWNER_NOTIFICATION_URL || `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
 const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || ''
@@ -135,7 +136,10 @@ function mailtoHref({ form, result, scan, packageName = 'General inquiry' }) {
 }
 
 async function notifyOwner(type, payload) {
-  const endpoint = LEAD_WEBHOOK || OWNER_NOTIFICATION_URL
+  const automationEndpoint = AUTOMATION_API_URL
+    ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/lead') ? '' : '/api/lead'}`
+    : ''
+  const endpoint = automationEndpoint || LEAD_WEBHOOK || OWNER_NOTIFICATION_URL
   if (!endpoint) return false
   const actionMode = payload.package?.key === 'premiumReferral' || Number(payload.package?.amount || 0) >= 2500 ? 'owner_review' : 'auto_route'
 
@@ -152,21 +156,31 @@ async function notifyOwner(type, payload) {
   )
 
   try {
-    await fetch(endpoint, {
+    const body = automationEndpoint
+      ? {
+          event_type: type,
+          action_mode: actionMode,
+          notify: CONTACT_EMAIL,
+          source: 'quantumaibusiness.com',
+          payload,
+        }
+      : {
+          _subject: subject,
+          _template: 'table',
+          _captcha: 'false',
+          event_type: type,
+          action_mode: actionMode,
+          notify: CONTACT_EMAIL,
+          source: 'quantumaibusiness.com',
+          message,
+        }
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        _subject: subject,
-        _template: 'table',
-        _captcha: 'false',
-        event_type: type,
-        action_mode: actionMode,
-        notify: CONTACT_EMAIL,
-        source: 'quantumaibusiness.com',
-        message,
-      }),
+      body: JSON.stringify(body),
     })
-    return true
+    return response.ok
   } catch {
     return false
   }

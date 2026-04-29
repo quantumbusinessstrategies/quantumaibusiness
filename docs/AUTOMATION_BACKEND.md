@@ -1,0 +1,54 @@
+# Automation Backend
+
+This repo includes a lightweight serverless backend for the money and notification path.
+
+## What It Does
+
+- `POST /api/lead`: receives scans, assessments, package clicks, referral requests, and share events.
+- `POST /api/stripe-webhook`: receives Stripe `checkout.session.completed` events.
+- Sends owner notifications to `quantumbusinessstrategies@gmail.com`.
+- Optionally forwards every record to Zapier, Make, Google Sheets, Airtable, HubSpot, or another CRM through `AUTOMATION_WEBHOOK_URL`.
+
+## Fastest Deployment Path
+
+Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to Vercel.
+
+1. Import this GitHub repo into Vercel.
+2. Add these Vercel environment variables:
+   - `OWNER_EMAIL=quantumbusinessstrategies@gmail.com`
+   - `PUBLIC_SITE_ORIGIN=https://quantumaibusiness.com`
+   - `OWNER_NOTIFICATION_URL=https://formsubmit.co/ajax/quantumbusinessstrategies@gmail.com`
+   - `AUTOMATION_WEBHOOK_URL=` optional Zapier/Make/Sheets/CRM catch URL
+   - `STRIPE_WEBHOOK_SECRET=` from the Stripe webhook endpoint
+   - `RESEND_API_KEY=` optional, for more reliable email than FormSubmit
+   - `RESEND_FROM_EMAIL=` optional, requires a verified sender/domain in Resend
+3. Deploy in Vercel and copy the deployment URL, for example `https://quantumaibusiness.vercel.app`.
+4. Set a GitHub Pages repository variable:
+   - `VITE_AUTOMATION_API_URL=https://quantumaibusiness.vercel.app`
+5. Re-run the GitHub Pages deploy workflow.
+
+After that, the static site will send events to the backend first. If the variable is blank, it falls back to the current FormSubmit/webhook path.
+
+## Stripe Webhook Setup
+
+In Stripe:
+
+1. Go to Developers > Webhooks.
+2. Add endpoint:
+   - `https://YOUR-VERCEL-APP.vercel.app/api/stripe-webhook`
+3. Listen for:
+   - `checkout.session.completed`
+4. Copy the signing secret that starts with `whsec_`.
+5. Add it to Vercel as `STRIPE_WEBHOOK_SECRET`.
+
+When a checkout completes, the backend records the payment event, emails the owner, and forwards it to `AUTOMATION_WEBHOOK_URL` if configured.
+
+## Recommended Next Automation
+
+For the fastest useful operations stack, connect `AUTOMATION_WEBHOOK_URL` to a Make or Zapier flow that:
+
+- Creates a row in Google Sheets or Airtable.
+- Sends an owner email.
+- Tags the lead by package tier.
+- Creates a follow-up task only for full-growth or premium prospects.
+- Sends a client receipt/onboarding email after Stripe payment.
