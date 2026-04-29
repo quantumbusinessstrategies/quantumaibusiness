@@ -456,12 +456,12 @@ export default function QuantumAIWebsite() {
         </section>
 
         <section className="launch-board" aria-labelledby="launch-title">
-          <h2 id="launch-title">Background Utility + Delivery Map</h2>
+          <h2 id="launch-title">What Happens After Selection</h2>
           <ul>
-            <li>Connect <code>VITE_LEAD_WEBHOOK_URL</code> to Zapier, Make, GoHighLevel, HubSpot, Airtable, or Google Sheets for owner emails and client records.</li>
-            <li>Add Stripe Payment Links for package 1, 2, and 3 so checkout is immediate.</li>
-            <li>Use package 4 to send premium prospects to <code>quantumbusinessstrategies.com</code> and notify {CONTACT_EMAIL}.</li>
-            <li>Names such as Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI should be protected through trademark review, not only copyright.</li>
+            <li>Your scan details are routed for review so the next recommendation matches the business context you provided.</li>
+            <li>Paid strategy packages begin with the submitted business name, website, desired outcome, and readiness profile.</li>
+            <li>Automation and full-growth packages may require additional access, onboarding questions, and owner approval before implementation.</li>
+            <li>Premium referral requests are routed toward the Quantumbusinessstrategies review path for higher-touch strategic work.</li>
           </ul>
         </section>
 
