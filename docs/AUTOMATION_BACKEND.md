@@ -27,11 +27,11 @@ Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to 
    - `RESEND_API_KEY=` optional, for more reliable email than FormSubmit
    - `RESEND_FROM_EMAIL=` optional, requires a verified sender/domain in Resend
 3. Deploy in Vercel and copy the deployment URL, for example `https://quantumaibusiness.vercel.app`.
-4. Set a GitHub Pages repository variable:
+4. The production frontend now defaults to:
    - `VITE_AUTOMATION_API_URL=https://quantumaibusiness.vercel.app`
-5. Re-run the GitHub Pages deploy workflow.
+5. Re-run the GitHub Pages deploy workflow if you later override the backend URL through repository variables.
 
-After that, the static site will send events to the backend first. If the variable is blank, it falls back to the current FormSubmit/webhook path.
+After that, the static site sends events to the backend first. If the backend URL is intentionally removed, it falls back to the current FormSubmit/webhook path.
 
 ## Stripe Webhook Setup
 

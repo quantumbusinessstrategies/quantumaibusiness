@@ -24,7 +24,7 @@ const PARTNER_LINKS = {
   pepes: 'https://quantumpepes.xyz',
 }
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
-const AUTOMATION_API_URL = import.meta.env.VITE_AUTOMATION_API_URL || ''
+const AUTOMATION_API_URL = import.meta.env.VITE_AUTOMATION_API_URL || 'https://quantumaibusiness.vercel.app'
 const OWNER_NOTIFICATION_URL =
   import.meta.env.VITE_OWNER_NOTIFICATION_URL || `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
 const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || ''
