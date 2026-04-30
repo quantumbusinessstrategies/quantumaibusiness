@@ -70,7 +70,19 @@ async function generateDeliverable(intake) {
   })
 
   if (!response.ok) {
-    return { generated: false, deliverable: buildFallbackDeliverable(intake), status: response.status }
+    let errorDetail
+    try {
+      const errorPayload = await response.json()
+      errorDetail = errorPayload.error?.message || JSON.stringify(errorPayload)
+    } catch {
+      errorDetail = await response.text()
+    }
+    return {
+      generated: false,
+      deliverable: buildFallbackDeliverable(intake),
+      status: response.status,
+      reason: errorDetail || `OpenAI request failed with status ${response.status}`,
+    }
   }
 
   const data = await response.json()
@@ -140,6 +152,8 @@ export default async function handler(req, res) {
       client_email_mode: clientEmailMode,
       review_only: reviewOnly,
       ai_generated: generation.generated,
+      generation_status: generation.status || '',
+      generation_reason: generation.reason || '',
       intake,
       deliverable_preview: generation.deliverable.slice(0, 1200),
     })
@@ -168,6 +182,8 @@ export default async function handler(req, res) {
       review_only: reviewOnly,
       owner_review_required: !shouldEmailClient,
       generated: generation.generated,
+      generation_status: generation.status || '',
+      generation_reason: generation.reason || '',
       deliverable: generation.deliverable,
       record,
       notification: notification.status === 'fulfilled' ? notification.value : { notified: false, error: notification.reason?.message },
