@@ -1956,7 +1956,7 @@ code {
 
 .owner-health-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -1989,6 +1989,32 @@ code {
   font-weight: 900;
 }
 
+.owner-growth-panel p {
+  color: #bdfaff;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.owner-growth-lanes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.owner-growth-lanes span {
+  display: grid;
+  min-height: 72px;
+  place-items: center;
+  padding: 12px;
+  color: #061018;
+  text-align: center;
+  background: linear-gradient(135deg, #eaffff, #ffb8f3, #fff1a6, #98ffdd);
+  border: 2px solid rgba(234, 255, 255, 0.82);
+  box-shadow: 0 8px 0 #001133, 0 0 20px rgba(143, 255, 255, 0.2);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
 .owner-lockout {
   display: grid;
   place-items: center;
@@ -2010,7 +2036,9 @@ code {
   .owner-grid,
   .owner-output-grid,
   .owner-ops-grid,
-  .owner-metrics {
+  .owner-metrics,
+  .owner-health-grid,
+  .owner-growth-lanes {
     grid-template-columns: 1fr;
   }
 

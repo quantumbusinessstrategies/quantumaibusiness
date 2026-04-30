@@ -209,6 +209,8 @@ export default function OwnerConsole() {
   const [aiDraftStatus, setAiDraftStatus] = useState('')
   const [aiDraft, setAiDraft] = useState('')
   const [sendStatus, setSendStatus] = useState('')
+  const [growthStatus, setGrowthStatus] = useState('')
+  const [growthPack, setGrowthPack] = useState('')
   const [ownerToken, setOwnerToken] = useState(loadOwnerToken)
   const [pipeline, setPipeline] = useState(loadPipeline)
   const parsed = useMemo(() => summarizeInput(rawPacket), [rawPacket])
@@ -419,6 +421,46 @@ export default function OwnerConsole() {
     }
   }
 
+  async function requestGrowthPack() {
+    if (!ownerToken) {
+      setGrowthStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to unlock protected growth generation.')
+      return
+    }
+
+    const payload = {
+      offer: 'QuantumAiBusiness pressure scan, $9.99 outlined strategy, $229.99+ automated utility, and $2,500+ full strategic growth',
+      audience: 'business owners, service businesses, local operators, creators, and teams with unclear conversion or follow-up paths',
+      url: 'https://quantumaibusiness.com',
+      channels: 'X/Twitter, LinkedIn, Facebook, direct outreach, referral links, and owner-reviewed paid ads',
+      objective: 'Drive qualified scans, paid strategy buyers, automated utility upgrades, and full strategic growth prospects.',
+      constraints: 'Keep public posting, direct outreach, ad spend, and client delivery owner-reviewed before anything goes live.',
+      source: 'owner_console_growth_pack',
+    }
+
+    try {
+      setGrowthStatus('Generating owner-reviewed growth and advertising pack...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/growth-campaign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify(payload),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setGrowthPack(data.campaign || 'No growth pack returned.')
+      setGrowthStatus(
+        data.generated
+          ? 'Growth pack generated, emailed to owner, and held for review'
+          : `Fallback growth pack returned: ${data.generation_reason || 'AI generation unavailable'}`,
+      )
+    } catch (error) {
+      setGrowthStatus(`Growth pack request failed: ${error.message}`)
+    }
+  }
+
   if (!localOnly) {
     return (
       <main className="owner-console owner-lockout">
@@ -593,31 +635,58 @@ export default function OwnerConsole() {
         </div>
       </section>
 
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-growth-panel">
+          <div className="owner-panel-title">
+            <h2>7. Growth Automation Pack</h2>
+            <button type="button" onClick={requestGrowthPack}>GENERATE PACK</button>
+          </div>
+          <p>
+            Creates owner-reviewed ads, social posts, direct outreach, launch loop, and tracking actions for QuantumAiBusiness.
+          </p>
+          <div className="owner-growth-lanes">
+            <span>Scan traffic</span>
+            <span>Low-ticket strategy</span>
+            <span>Automation upsell</span>
+            <span>Premium review</span>
+          </div>
+          {growthStatus && <p className="owner-inline-status">{growthStatus}</p>}
+        </div>
+
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>8. Campaign Draft</h2>
+            <button type="button" onClick={() => copyText('Growth pack', growthPack)}>COPY PACK</button>
+          </div>
+          <pre>{growthPack || 'No growth pack generated yet. Use GENERATE PACK after adding the owner token.'}</pre>
+        </div>
+      </section>
+
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>7. Strategy Report</h2>
+            <h2>9. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>8. Customer Reply</h2>
+            <h2>10. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>9. Upgrade Follow-Up</h2>
+            <h2>11. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>10. Outreach Copy</h2>
+            <h2>12. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>

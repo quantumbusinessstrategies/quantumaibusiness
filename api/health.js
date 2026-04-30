@@ -21,6 +21,9 @@ export default async function handler(req, res) {
     fulfillment_mode: process.env.FULFILLMENT_MODE || 'intake_only',
     fulfillment_client_email_mode: process.env.FULFILLMENT_CLIENT_EMAIL_MODE || 'owner_review',
     stripe_client_onboarding_mode: process.env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send',
+    growth_campaign_mode: configured(process.env.OWNER_ACTION_TOKEN)
+      ? 'owner_token_required'
+      : 'waiting_for_owner_action_token',
     configured: {
       resend: configured(process.env.RESEND_API_KEY),
       resend_from_email: configured(process.env.RESEND_FROM_EMAIL),
