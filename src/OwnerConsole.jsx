@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 const PIPELINE_STORAGE_KEY = 'quantumaibusiness_owner_pipeline'
+const OWNER_TOKEN_STORAGE_KEY = 'quantumaibusiness_owner_action_token'
 const AUTOMATION_API_URL = 'https://quantumaibusiness.vercel.app'
 const PACKAGE_OPTIONS = [
   ['outlinedStrategy', 'Outlined Strategy'],
@@ -54,6 +55,14 @@ function loadPipeline() {
 
 function savePipeline(next) {
   window.localStorage.setItem(PIPELINE_STORAGE_KEY, JSON.stringify(next))
+}
+
+function loadOwnerToken() {
+  try {
+    return window.localStorage.getItem(OWNER_TOKEN_STORAGE_KEY) || ''
+  } catch {
+    return ''
+  }
 }
 
 function parseField(raw, labels) {
@@ -199,6 +208,8 @@ export default function OwnerConsole() {
   const [backendStatus, setBackendStatus] = useState('Checking backend...')
   const [aiDraftStatus, setAiDraftStatus] = useState('')
   const [aiDraft, setAiDraft] = useState('')
+  const [sendStatus, setSendStatus] = useState('')
+  const [ownerToken, setOwnerToken] = useState(loadOwnerToken)
   const [pipeline, setPipeline] = useState(loadPipeline)
   const parsed = useMemo(() => summarizeInput(rawPacket), [rawPacket])
   const [form, setForm] = useState({
@@ -245,6 +256,16 @@ export default function OwnerConsole() {
   function updateField(event) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function updateOwnerToken(event) {
+    const value = event.target.value
+    setOwnerToken(value)
+    try {
+      window.localStorage.setItem(OWNER_TOKEN_STORAGE_KEY, value)
+    } catch {
+      // Local storage can fail in locked-down browsers; state still works for this session.
+    }
   }
 
   async function copyText(label, text) {
@@ -352,6 +373,49 @@ export default function OwnerConsole() {
       )
     } catch (error) {
       setAiDraftStatus(`Draft request failed: ${error.message}`)
+    }
+  }
+
+  async function sendApprovedDraft() {
+    if (!ownerToken) {
+      setSendStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here.')
+      return
+    }
+    if (!aiDraft) {
+      setSendStatus('Generate or paste an approved backend draft before sending.')
+      return
+    }
+
+    const subject = `Your QuantumAiBusiness ${packageDetail.label} for ${effective.business}`
+    const payload = {
+      to: effective.email,
+      subject,
+      text: aiDraft,
+      business: effective.business,
+      website: effective.website,
+      package_name: packageDetail.label,
+    }
+
+    try {
+      setSendStatus('Sending approved draft through Vercel/Resend...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/send-approved-draft`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify(payload),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setSendStatus(
+        data.client_email?.sent
+          ? `Approved draft sent to ${effective.email}`
+          : `Send attempted but not confirmed: ${data.client_email?.reason || data.client_email?.error || 'unknown'}`,
+      )
+    } catch (error) {
+      setSendStatus(`Approved send failed: ${error.message}`)
     }
   }
 
@@ -476,6 +540,7 @@ export default function OwnerConsole() {
                 <span className={backendHealth.configured?.stripe_webhook_secret ? 'is-on' : ''}>Stripe</span>
                 <span className={backendHealth.configured?.openai_api_key ? 'is-on' : ''}>OpenAI</span>
                 <span className={backendHealth.configured?.automation_webhook ? 'is-on' : ''}>Webhook</span>
+                <span className={backendHealth.configured?.owner_action_token ? 'is-on' : ''}>Owner Key</span>
               </div>
             )}
             {backendHealth && (
@@ -486,6 +551,16 @@ export default function OwnerConsole() {
           </div>
           <button type="button" onClick={requestAiDraft}>REQUEST REVIEW DRAFT</button>
           {aiDraftStatus && <p className="owner-inline-status">{aiDraftStatus}</p>}
+          <label>
+            Owner action token
+            <input
+              name="ownerToken"
+              onChange={updateOwnerToken}
+              placeholder="Paste local OWNER_ACTION_TOKEN after adding it in Vercel"
+              type="password"
+              value={ownerToken}
+            />
+          </label>
         </div>
       </section>
 
@@ -513,6 +588,8 @@ export default function OwnerConsole() {
             <button type="button" onClick={() => copyText('Backend draft', aiDraft)}>COPY DRAFT</button>
           </div>
           <pre>{aiDraft || 'No backend draft requested yet. Use REQUEST REVIEW DRAFT after reviewing the fields above.'}</pre>
+          <button type="button" onClick={sendApprovedDraft}>SEND APPROVED DRAFT</button>
+          {sendStatus && <p className="owner-inline-status">{sendStatus}</p>}
         </div>
       </section>
 

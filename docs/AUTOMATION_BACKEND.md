@@ -25,6 +25,7 @@ Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to 
    - `OPENAI_MODEL=gpt-5-mini`
    - `FULFILLMENT_MODE=intake_only` to collect paid intake for owner review, or `auto_generate` to generate AI drafts automatically
    - `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` to hold generated drafts for owner review, or `auto_send` only after testing
+   - `OWNER_ACTION_TOKEN=` a private random token used by the local owner console to send approved drafts to clients
    - `RESEND_API_KEY=` optional, for more reliable email than FormSubmit
    - `RESEND_FROM_EMAIL=` optional, requires a verified sender/domain in Resend
 3. Deploy in Vercel and copy the deployment URL, for example `https://quantumaibusiness.vercel.app`.
@@ -60,6 +61,17 @@ When backend hosting is available:
 4. After testing, switch to `FULFILLMENT_MODE=auto_generate` if you want the backend to create the first AI deliverable immediately.
 5. Only switch `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send` after generated drafts are consistently acceptable for direct client delivery.
 6. Add `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL` if you want generated drafts emailed directly to clients.
+
+## Owner-Approved Draft Sending
+
+The backend includes `POST /api/send-approved-draft` for the local owner console. This endpoint sends a reviewed draft to the customer through Resend and notifies the owner.
+
+Security requirement:
+
+- Add `OWNER_ACTION_TOKEN` in Vercel.
+- Use a long random value.
+- Enter the same value only in the local owner console.
+- Never publish or commit this token.
 
 Recommended Stripe Payment Link redirect:
 

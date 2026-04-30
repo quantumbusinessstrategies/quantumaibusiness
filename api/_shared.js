@@ -22,7 +22,7 @@ export function setCors(req, res) {
   }
   res.setHeader('Vary', 'Origin')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Stripe-Signature')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Stripe-Signature, X-Owner-Token')
 }
 
 export function handleOptions(req, res) {
@@ -44,6 +44,12 @@ export async function readRawBody(req) {
 
 export function jsonResponse(res, statusCode, body) {
   res.status(statusCode).json(body)
+}
+
+export function verifyOwnerToken(req) {
+  const expected = process.env.OWNER_ACTION_TOKEN || ''
+  const supplied = req.headers['x-owner-token'] || req.body?.owner_token || req.body?.ownerToken || ''
+  return Boolean(expected && supplied && supplied === expected)
 }
 
 export function buildAutomationRecord(type, payload = {}) {
