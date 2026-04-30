@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const PIPELINE_STORAGE_KEY = 'quantumaibusiness_owner_pipeline'
+const AUTOMATION_API_URL = 'https://quantumaibusiness.vercel.app'
 const PACKAGE_OPTIONS = [
   ['outlinedStrategy', 'Outlined Strategy'],
   ['automatedUtility', 'Automated Utility'],
@@ -194,6 +195,10 @@ export default function OwnerConsole() {
   const localOnly = isLocalHost()
   const [rawPacket, setRawPacket] = useState('')
   const [copied, setCopied] = useState('')
+  const [backendHealth, setBackendHealth] = useState(null)
+  const [backendStatus, setBackendStatus] = useState('Checking backend...')
+  const [aiDraftStatus, setAiDraftStatus] = useState('')
+  const [aiDraft, setAiDraft] = useState('')
   const [pipeline, setPipeline] = useState(loadPipeline)
   const parsed = useMemo(() => summarizeInput(rawPacket), [rawPacket])
   const [form, setForm] = useState({
@@ -232,6 +237,10 @@ export default function OwnerConsole() {
     }),
     [pipeline],
   )
+
+  useEffect(() => {
+    refreshBackendHealth()
+  }, [])
 
   function updateField(event) {
     const { name, value } = event.target
@@ -297,6 +306,53 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied(`${format.toUpperCase()} export ready`)
+  }
+
+  async function refreshBackendHealth() {
+    try {
+      setBackendStatus('Checking Vercel automation backend...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/health`)
+      const data = await response.json()
+      setBackendHealth(data)
+      setBackendStatus(response.ok ? 'Backend online' : `Backend check failed: ${data.error || response.status}`)
+    } catch (error) {
+      setBackendStatus(`Backend check failed: ${error.message}`)
+    }
+  }
+
+  async function requestAiDraft() {
+    const payload = {
+      package_key: effective.packageKey,
+      package_name: packageDetail.label,
+      company: effective.business,
+      website: effective.website,
+      customer_email: effective.email,
+      objective: effective.objective,
+      current_tools: effective.tools,
+      constraints: effective.constraints,
+      owner_approved: true,
+      review_only: true,
+      source: 'owner_console_review_draft',
+    }
+
+    try {
+      setAiDraftStatus('Requesting review-only fulfillment draft...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/fulfillment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setAiDraft(data.deliverable || 'No draft returned.')
+      setAiDraftStatus(
+        data.generated
+          ? 'AI draft generated and held for owner review'
+          : `Review draft returned without AI generation: ${data.client_email?.reason || data.record?.payload?.reason || data.mode}`,
+      )
+    } catch (error) {
+      setAiDraftStatus(`Draft request failed: ${error.message}`)
+    }
   }
 
   if (!localOnly) {
@@ -408,7 +464,34 @@ export default function OwnerConsole() {
         </div>
 
         <div className="owner-panel">
-          <h2>4. Daily Money Loop</h2>
+          <div className="owner-panel-title">
+            <h2>4. Backend Automation</h2>
+            <button type="button" onClick={refreshBackendHealth}>REFRESH</button>
+          </div>
+          <div className="owner-backend-status">
+            <strong>{backendStatus}</strong>
+            {backendHealth && (
+              <div className="owner-health-grid">
+                <span className={backendHealth.configured?.resend ? 'is-on' : ''}>Resend</span>
+                <span className={backendHealth.configured?.stripe_webhook_secret ? 'is-on' : ''}>Stripe</span>
+                <span className={backendHealth.configured?.openai_api_key ? 'is-on' : ''}>OpenAI</span>
+                <span className={backendHealth.configured?.automation_webhook ? 'is-on' : ''}>Webhook</span>
+              </div>
+            )}
+            {backendHealth && (
+              <p>
+                Fulfillment: {backendHealth.fulfillment_mode} // Client email: {backendHealth.fulfillment_client_email_mode}
+              </p>
+            )}
+          </div>
+          <button type="button" onClick={requestAiDraft}>REQUEST REVIEW DRAFT</button>
+          {aiDraftStatus && <p className="owner-inline-status">{aiDraftStatus}</p>}
+        </div>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel">
+          <h2>5. Daily Money Loop</h2>
           <div className="owner-action-list">
             {DAILY_ACTIONS.map((action) => (
               <label key={action}>
@@ -423,33 +506,41 @@ export default function OwnerConsole() {
             <span>{packageDetail.next}</span>
           </div>
         </div>
+
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>6. Backend Draft</h2>
+            <button type="button" onClick={() => copyText('Backend draft', aiDraft)}>COPY DRAFT</button>
+          </div>
+          <pre>{aiDraft || 'No backend draft requested yet. Use REQUEST REVIEW DRAFT after reviewing the fields above.'}</pre>
+        </div>
       </section>
 
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>5. Strategy Report</h2>
+            <h2>7. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>6. Customer Reply</h2>
+            <h2>8. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>7. Upgrade Follow-Up</h2>
+            <h2>9. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>8. Outreach Copy</h2>
+            <h2>10. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>

@@ -19,6 +19,7 @@ export default async function handler(req, res) {
     owner_email: ownerEmail(),
     public_site_origin: process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com',
     fulfillment_mode: process.env.FULFILLMENT_MODE || 'intake_only',
+    fulfillment_client_email_mode: process.env.FULFILLMENT_CLIENT_EMAIL_MODE || 'owner_review',
     configured: {
       resend: configured(process.env.RESEND_API_KEY),
       resend_from_email: configured(process.env.RESEND_FROM_EMAIL),

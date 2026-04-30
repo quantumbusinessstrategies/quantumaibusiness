@@ -24,6 +24,7 @@ Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to 
    - `OPENAI_API_KEY=` from the OpenAI platform, only on the backend host
    - `OPENAI_MODEL=gpt-5-mini`
    - `FULFILLMENT_MODE=intake_only` to collect paid intake for owner review, or `auto_generate` to generate AI drafts automatically
+   - `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` to hold generated drafts for owner review, or `auto_send` only after testing
    - `RESEND_API_KEY=` optional, for more reliable email than FormSubmit
    - `RESEND_FROM_EMAIL=` optional, requires a verified sender/domain in Resend
 3. Deploy in Vercel and copy the deployment URL, for example `https://quantumaibusiness.vercel.app`.
@@ -55,8 +56,10 @@ When backend hosting is available:
 
 1. Add `OPENAI_API_KEY` only to the backend host. Never add it to GitHub Pages or any frontend variable.
 2. Start with `FULFILLMENT_MODE=intake_only` so requests go to owner review.
-3. After testing, switch to `FULFILLMENT_MODE=auto_generate` if you want the backend to create the first AI deliverable immediately.
-4. Add `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL` if you want generated drafts emailed directly to clients.
+3. Keep `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` while testing so drafts notify the owner but do not auto-send to clients.
+4. After testing, switch to `FULFILLMENT_MODE=auto_generate` if you want the backend to create the first AI deliverable immediately.
+5. Only switch `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send` after generated drafts are consistently acceptable for direct client delivery.
+6. Add `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL` if you want generated drafts emailed directly to clients.
 
 Recommended Stripe Payment Link redirect:
 

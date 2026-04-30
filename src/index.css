@@ -1932,6 +1932,49 @@ code {
   line-height: 1.7;
 }
 
+.owner-backend-status {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  color: #bdfaff;
+  background: rgba(0, 8, 16, 0.7);
+  border: 1px solid rgba(125, 249, 255, 0.32);
+}
+
+.owner-backend-status strong {
+  color: #fff1a6;
+  font-size: 11px;
+}
+
+.owner-backend-status p,
+.owner-inline-status {
+  margin: 0;
+  color: #eaffff;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.owner-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.owner-health-grid span {
+  padding: 10px 8px;
+  color: #ffb8f3;
+  text-align: center;
+  background: rgba(50, 0, 30, 0.38);
+  border: 1px solid rgba(255, 184, 243, 0.32);
+  font-size: 9px;
+}
+
+.owner-health-grid span.is-on {
+  color: #061018;
+  background: linear-gradient(135deg, #98ffdd, #fff1a6);
+  border-color: #eaffff;
+}
+
 .owner-toast {
   position: fixed;
   right: 18px;

@@ -14,6 +14,7 @@ const PACKAGE_NAMES = {
   fullStrategic: 'Full Strategic Growth',
   premiumReferral: 'Premium QuantumBusinessStrategies Referral',
 }
+const CLIENT_EMAIL_MODES = new Set(['owner_review', 'auto_send'])
 
 function cleanText(value, fallback = '') {
   return String(value || fallback).trim().slice(0, 4000)
@@ -114,10 +115,16 @@ export default async function handler(req, res) {
     }
 
     const mode = process.env.FULFILLMENT_MODE || 'intake_only'
-    const shouldGenerate = mode === 'auto_generate' || body.owner_approved === true || body.source === 'stripe_webhook'
+    const clientEmailMode = CLIENT_EMAIL_MODES.has(process.env.FULFILLMENT_CLIENT_EMAIL_MODE)
+      ? process.env.FULFILLMENT_CLIENT_EMAIL_MODE
+      : 'owner_review'
+    const reviewOnly = body.review_only !== false
+    const shouldGenerate = mode === 'auto_generate' || body.owner_approved === true
     const generation = shouldGenerate
       ? await generateDeliverable(intake)
       : { generated: false, deliverable: '', reason: 'FULFILLMENT_MODE is intake_only' }
+    const shouldEmailClient =
+      clientEmailMode === 'auto_send' && generation.generated && generation.deliverable && !reviewOnly
 
     const record = buildAutomationRecord('paid_fulfillment_intake', {
       package_name: intake.package_name,
@@ -130,6 +137,8 @@ export default async function handler(req, res) {
         objective: intake.objective,
       },
       fulfillment_mode: mode,
+      client_email_mode: clientEmailMode,
+      review_only: reviewOnly,
       ai_generated: generation.generated,
       intake,
       deliverable_preview: generation.deliverable.slice(0, 1200),
@@ -138,18 +147,26 @@ export default async function handler(req, res) {
     const [notification, forwarding, clientEmail] = await Promise.allSettled([
       notifyOwner(record),
       forwardAutomation(record),
-      generation.deliverable
+      shouldEmailClient
         ? sendClientEmail({
             to: intake.customer_email || intake.payment_email,
             subject: `QuantumAiBusiness ${intake.package_name || 'Fulfillment'} Draft`,
             text: generation.deliverable,
           })
-        : Promise.resolve({ sent: false, reason: 'No deliverable generated yet' }),
+        : Promise.resolve({
+            sent: false,
+            reason: generation.deliverable
+              ? 'Client auto-send disabled; deliverable held for owner review'
+              : 'No deliverable generated yet',
+          }),
     ])
 
     jsonResponse(res, 200, {
       ok: true,
       mode,
+      client_email_mode: clientEmailMode,
+      review_only: reviewOnly,
+      owner_review_required: !shouldEmailClient,
       generated: generation.generated,
       deliverable: generation.deliverable,
       record,
