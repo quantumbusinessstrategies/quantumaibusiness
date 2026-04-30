@@ -22,24 +22,24 @@ export default async function handler(req, res) {
     return
   }
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
-  if (!verifyOwnerToken({ ...req, body })) {
-    jsonResponse(res, 401, { ok: false, error: 'Owner action token is missing or invalid' })
-    return
-  }
-
-  const to = cleanText(body.to || body.customer_email || body.email, 500)
-  const subject = cleanText(body.subject || 'Your QuantumAiBusiness fulfillment draft', 300)
-  const text = cleanText(body.text || body.draft || body.deliverable)
-  const business = cleanText(body.business || body.company || 'Client business', 500)
-  const website = cleanText(body.website, 500)
-
-  if (!to || !text) {
-    jsonResponse(res, 400, { ok: false, error: 'Recipient email and approved draft text are required' })
-    return
-  }
-
   try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
+    if (!verifyOwnerToken({ ...req, body })) {
+      jsonResponse(res, 401, { ok: false, error: 'Owner action token is missing or invalid' })
+      return
+    }
+
+    const to = cleanText(body.to || body.customer_email || body.email, 500)
+    const subject = cleanText(body.subject || 'Your QuantumAiBusiness fulfillment draft', 300)
+    const text = cleanText(body.text || body.draft || body.deliverable)
+    const business = cleanText(body.business || body.company || 'Client business', 500)
+    const website = cleanText(body.website, 500)
+
+    if (!to || !text) {
+      jsonResponse(res, 400, { ok: false, error: 'Recipient email and approved draft text are required' })
+      return
+    }
+
     const record = buildAutomationRecord('approved_draft_sent', {
       customer_email: to,
       package_name: cleanText(body.package_name || body.package || 'Approved Fulfillment Draft', 500),
