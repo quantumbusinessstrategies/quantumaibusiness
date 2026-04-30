@@ -24,6 +24,9 @@ export default async function handler(req, res) {
     growth_campaign_mode: configured(process.env.OWNER_ACTION_TOKEN)
       ? 'owner_token_required'
       : 'waiting_for_owner_action_token',
+    lead_router_mode: configured(process.env.OWNER_ACTION_TOKEN)
+      ? 'owner_token_required'
+      : 'waiting_for_owner_action_token',
     configured: {
       resend: configured(process.env.RESEND_API_KEY),
       resend_from_email: configured(process.env.RESEND_FROM_EMAIL),

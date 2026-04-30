@@ -8,6 +8,7 @@ This repo includes a lightweight serverless backend for the money and notificati
 - `POST /api/fulfillment`: receives paid customer delivery details and can generate an AI fulfillment draft when enabled.
 - `POST /api/stripe-webhook`: receives Stripe `checkout.session.completed` events.
 - `POST /api/growth-campaign`: creates owner-reviewed advertising, outreach, and growth campaign packs.
+- `POST /api/lead-router`: scores reviewed leads and recommends the next owner action.
 - `POST /api/send-approved-draft`: sends a reviewed fulfillment draft to a customer from the local owner console.
 - Sends owner notifications to `quantumbusinessstrategies@gmail.com`.
 - Optionally forwards every record to Zapier, Make, Google Sheets, Airtable, HubSpot, or another CRM through `AUTOMATION_WEBHOOK_URL`.
@@ -73,7 +74,10 @@ When backend hosting is available:
 
 The backend includes `POST /api/send-approved-draft` for the local owner console. This endpoint sends a reviewed draft to the customer through Resend and notifies the owner.
 
-The backend also includes `POST /api/growth-campaign` for owner-reviewed growth work. It generates launch copy, social posts, ad angles, direct outreach, and a seven-day action loop. It does not auto-post or spend ad budget.
+The backend also includes protected owner tools:
+
+- `POST /api/growth-campaign` generates launch copy, social posts, ad angles, direct outreach, and a seven-day action loop. It does not auto-post or spend ad budget.
+- `POST /api/lead-router` scores a reviewed lead and recommends one of the package routes: outlined strategy delivery, automated utility upsell, full growth review, or premium owner review.
 
 Security requirement:
 

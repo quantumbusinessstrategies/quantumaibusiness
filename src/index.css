@@ -1995,6 +1995,36 @@ code {
   line-height: 1.7;
 }
 
+.owner-route-panel p {
+  color: #bdfaff;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.owner-route-score {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.35fr) 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  color: #061018;
+  background: linear-gradient(135deg, #98ffdd, #fff1a6, #ffb8f3);
+  border: 2px solid rgba(234, 255, 255, 0.86);
+  box-shadow: 0 8px 0 #001133, 0 0 22px rgba(143, 255, 255, 0.2);
+}
+
+.owner-route-score strong {
+  color: #061018;
+  font-size: 18px;
+}
+
+.owner-route-score span {
+  color: #061018;
+  font-size: 10px;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
 .owner-growth-lanes {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

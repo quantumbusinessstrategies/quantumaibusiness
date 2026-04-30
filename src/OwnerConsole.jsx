@@ -211,6 +211,9 @@ export default function OwnerConsole() {
   const [sendStatus, setSendStatus] = useState('')
   const [growthStatus, setGrowthStatus] = useState('')
   const [growthPack, setGrowthPack] = useState('')
+  const [routeStatus, setRouteStatus] = useState('')
+  const [routeReport, setRouteReport] = useState('')
+  const [routeResult, setRouteResult] = useState(null)
   const [ownerToken, setOwnerToken] = useState(loadOwnerToken)
   const [pipeline, setPipeline] = useState(loadPipeline)
   const parsed = useMemo(() => summarizeInput(rawPacket), [rawPacket])
@@ -461,6 +464,49 @@ export default function OwnerConsole() {
     }
   }
 
+  async function requestLeadRoute() {
+    if (!ownerToken) {
+      setRouteStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to unlock lead routing.')
+      return
+    }
+
+    const payload = {
+      package_key: effective.packageKey,
+      package_name: packageDetail.label,
+      business: effective.business,
+      website: effective.website,
+      email: effective.email,
+      objective: effective.objective,
+      tools: effective.tools,
+      constraints: effective.constraints,
+      source: 'owner_console_lead_router',
+    }
+
+    try {
+      setRouteStatus('Scoring lead and generating owner route...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/lead-router`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify(payload),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setRouteResult({ score: data.score, route: data.route })
+      setRouteReport(data.report || 'No route report returned.')
+      setRouteStatus(
+        data.generated
+          ? `Lead scored ${data.score}/100 and routed to ${data.route.replaceAll('_', ' ')}`
+          : `Fallback route created: ${data.generation_reason || 'AI generation unavailable'}`,
+      )
+    } catch (error) {
+      setRouteStatus(`Lead routing failed: ${error.message}`)
+    }
+  }
+
   if (!localOnly) {
     return (
       <main className="owner-console owner-lockout">
@@ -636,9 +682,36 @@ export default function OwnerConsole() {
       </section>
 
       <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-route-panel">
+          <div className="owner-panel-title">
+            <h2>7. Lead Route Brain</h2>
+            <button type="button" onClick={requestLeadRoute}>SCORE LEAD</button>
+          </div>
+          <p>
+            Scores the reviewed intake and routes it toward strategy delivery, automated utility upsell, full growth review, or premium owner review.
+          </p>
+          {routeResult && (
+            <div className="owner-route-score">
+              <strong>{routeResult.score}/100</strong>
+              <span>{routeResult.route.replaceAll('_', ' ')}</span>
+            </div>
+          )}
+          {routeStatus && <p className="owner-inline-status">{routeStatus}</p>}
+        </div>
+
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>8. Route Report</h2>
+            <button type="button" onClick={() => copyText('Route report', routeReport)}>COPY ROUTE</button>
+          </div>
+          <pre>{routeReport || 'No route report yet. Review the fields above, then use SCORE LEAD.'}</pre>
+        </div>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
         <div className="owner-panel owner-growth-panel">
           <div className="owner-panel-title">
-            <h2>7. Growth Automation Pack</h2>
+            <h2>9. Growth Automation Pack</h2>
             <button type="button" onClick={requestGrowthPack}>GENERATE PACK</button>
           </div>
           <p>
@@ -655,7 +728,7 @@ export default function OwnerConsole() {
 
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>8. Campaign Draft</h2>
+            <h2>10. Campaign Draft</h2>
             <button type="button" onClick={() => copyText('Growth pack', growthPack)}>COPY PACK</button>
           </div>
           <pre>{growthPack || 'No growth pack generated yet. Use GENERATE PACK after adding the owner token.'}</pre>
@@ -665,28 +738,28 @@ export default function OwnerConsole() {
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>9. Strategy Report</h2>
+            <h2>11. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>10. Customer Reply</h2>
+            <h2>12. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>11. Upgrade Follow-Up</h2>
+            <h2>13. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>12. Outreach Copy</h2>
+            <h2>14. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>
