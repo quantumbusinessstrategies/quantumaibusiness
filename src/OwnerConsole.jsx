@@ -211,6 +211,7 @@ export default function OwnerConsole() {
   const [sendStatus, setSendStatus] = useState('')
   const [growthStatus, setGrowthStatus] = useState('')
   const [growthPack, setGrowthPack] = useState('')
+  const [digestStatus, setDigestStatus] = useState('')
   const [routeStatus, setRouteStatus] = useState('')
   const [routeReport, setRouteReport] = useState('')
   const [routeResult, setRouteResult] = useState(null)
@@ -507,6 +508,35 @@ export default function OwnerConsole() {
     }
   }
 
+  async function runDailyDigest() {
+    if (!ownerToken) {
+      setDigestStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to run the owner digest.')
+      return
+    }
+
+    try {
+      setDigestStatus('Sending owner command digest...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/daily-digest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify({ source: 'owner_console_manual_digest' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setDigestStatus(
+        data.notification?.notified
+          ? 'Owner digest sent and logged to automation ledger'
+          : `Digest ran but email was not confirmed: ${data.notification?.error || 'unknown'}`,
+      )
+    } catch (error) {
+      setDigestStatus(`Digest failed: ${error.message}`)
+    }
+  }
+
   if (!localOnly) {
     return (
       <main className="owner-console owner-lockout">
@@ -629,6 +659,7 @@ export default function OwnerConsole() {
                 <span className={backendHealth.configured?.openai_api_key ? 'is-on' : ''}>OpenAI</span>
                 <span className={backendHealth.configured?.automation_webhook ? 'is-on' : ''}>Webhook</span>
                 <span className={backendHealth.configured?.owner_action_token ? 'is-on' : ''}>Owner Key</span>
+                <span className={backendHealth.configured?.cron_secret ? 'is-on' : ''}>Cron</span>
               </div>
             )}
             {backendHealth && (
@@ -638,7 +669,9 @@ export default function OwnerConsole() {
             )}
           </div>
           <button type="button" onClick={requestAiDraft}>REQUEST REVIEW DRAFT</button>
+          <button type="button" onClick={runDailyDigest}>RUN DIGEST NOW</button>
           {aiDraftStatus && <p className="owner-inline-status">{aiDraftStatus}</p>}
+          {digestStatus && <p className="owner-inline-status">{digestStatus}</p>}
           <label>
             Owner action token
             <input

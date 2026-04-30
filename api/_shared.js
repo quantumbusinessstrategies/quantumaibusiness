@@ -147,6 +147,13 @@ export async function forwardAutomation(record) {
 
 export async function notifyOwner(record) {
   const to = ownerEmail()
+  const routeLabel = record.lead_route ? record.lead_route.replaceAll('_', ' ') : 'unrouted'
+  const scoreLabel = record.lead_score ? `${record.lead_score}/100` : 'no score'
+  const priority =
+    record.action_mode === 'owner_review' || record.lead_route === 'premium_review' || Number(record.lead_score || 0) >= 58
+      ? 'PRIORITY'
+      : 'LOG'
+  const subject = `QuantumAiBusiness ${priority} ${record.event_type.replaceAll('_', ' ')} // ${scoreLabel} // ${routeLabel}`
   if (process.env.RESEND_API_KEY) {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -157,7 +164,7 @@ export async function notifyOwner(record) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'QuantumAiBusiness <onboarding@resend.dev>',
         to,
-        subject: `QuantumAiBusiness ${record.event_type.replaceAll('_', ' ')}`,
+        subject,
         text: JSON.stringify(record, null, 2),
       }),
     })
@@ -169,7 +176,7 @@ export async function notifyOwner(record) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
-      _subject: `QuantumAiBusiness ${record.event_type.replaceAll('_', ' ')}`,
+      _subject: subject,
       _template: 'table',
       _captcha: 'false',
       notify: to,
