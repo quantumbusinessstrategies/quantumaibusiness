@@ -23,6 +23,8 @@ function doPost(event) {
       payload.contact_email || '',
       payload.package || '',
       payload.amount || '',
+      payload.lead_score || '',
+      payload.lead_route || '',
       shorten(JSON.stringify(payload.payload || payload, null, 2)),
     ])
 
@@ -51,6 +53,8 @@ function getEventSheet() {
       'contact_email',
       'package',
       'amount',
+      'lead_score',
+      'lead_route',
       'payload_json',
     ])
     sheet.setFrozenRows(1)

@@ -35,6 +35,7 @@ export default async function handler(req, res) {
       automation_webhook: configured(process.env.AUTOMATION_WEBHOOK_URL),
       owner_notification_url: configured(process.env.OWNER_NOTIFICATION_URL),
       owner_action_token: configured(process.env.OWNER_ACTION_TOKEN),
+      cron_secret: configured(process.env.CRON_SECRET),
     },
   })
 }

@@ -4,43 +4,13 @@ import {
   handleOptions,
   jsonResponse,
   notifyOwner,
+  scoreAutomationLead,
   setCors,
   verifyOwnerToken,
 } from './_shared.js'
 
-const PACKAGE_WEIGHT = {
-  outlinedStrategy: 14,
-  automatedUtility: 34,
-  fullStrategic: 58,
-  premiumReferral: 64,
-}
-
 function cleanText(value, fallback = '') {
   return String(value || fallback).trim().slice(0, 4000)
-}
-
-function clampScore(value) {
-  return Math.max(1, Math.min(100, Math.round(value)))
-}
-
-function classify(score, packageKey) {
-  if (packageKey === 'premiumReferral' || score >= 78) return 'premium_review'
-  if (score >= 58) return 'full_growth_review'
-  if (score >= 36) return 'automated_utility_upsell'
-  return 'outlined_strategy_delivery'
-}
-
-function scoreLead(input) {
-  const text = `${input.business} ${input.website} ${input.objective} ${input.tools} ${input.constraints}`.toLowerCase()
-  let score = PACKAGE_WEIGHT[input.package_key] || 18
-  if (input.website && input.website !== 'Not provided') score += 8
-  if (input.email && input.email.includes('@')) score += 6
-  if (/(crm|hubspot|stripe|shopify|booking|calendar|ads|meta|google|mailchimp|zapier|make|airtable|sheets)/.test(text)) score += 10
-  if (/(lead|sales|conversion|follow.?up|automation|growth|profit|revenue|client|customer)/.test(text)) score += 12
-  if (/(urgent|asap|scale|high ticket|premium|enterprise|multi|team|agency)/.test(text)) score += 12
-  if (/(budget|cash|funds|cheap|free|later|not sure)/.test(text)) score -= 8
-  if (input.constraints && input.constraints !== 'Not provided') score += 4
-  return clampScore(score)
 }
 
 function buildFallbackRoute(input, score, route) {
@@ -164,8 +134,17 @@ export default async function handler(req, res) {
       source: cleanText(body.source, 'owner_console_lead_router'),
     }
 
-    const score = scoreLead(input)
-    const route = classify(score, input.package_key)
+    const { lead_score: score, lead_route: route } = scoreAutomationLead({
+      package_key: input.package_key,
+      form: {
+        company: input.business,
+        website: input.website === 'Not provided' ? '' : input.website,
+        email: input.email,
+        objective: input.objective,
+        current_tools: input.tools === 'Not provided' ? '' : input.tools,
+        constraints: input.constraints === 'Not provided' ? '' : input.constraints,
+      },
+    })
     const generation = await generateRouteReport(input, score, route)
     const record = buildAutomationRecord('lead_route_review', {
       target: input.website || input.business,

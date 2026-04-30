@@ -1,5 +1,11 @@
 const DEFAULT_OWNER_EMAIL = 'quantumbusinessstrategies@gmail.com'
 const DEFAULT_SITE_ORIGIN = 'https://quantumaibusiness.com'
+const PACKAGE_WEIGHT = {
+  outlinedStrategy: 14,
+  automatedUtility: 34,
+  fullStrategic: 58,
+  premiumReferral: 64,
+}
 
 export function ownerEmail() {
   return process.env.OWNER_EMAIL || process.env.VITE_CONTACT_EMAIL || DEFAULT_OWNER_EMAIL
@@ -53,20 +59,75 @@ export function verifyOwnerToken(req) {
   return Boolean(expected && supplied && supplied === expected)
 }
 
+export function verifyCronOrOwner(req) {
+  const cronSecret = process.env.CRON_SECRET || ''
+  const headers = req.headers || {}
+  const authHeader = headers.authorization || headers.Authorization || ''
+  return Boolean((cronSecret && authHeader === `Bearer ${cronSecret}`) || verifyOwnerToken(req))
+}
+
+function clampScore(value) {
+  return Math.max(1, Math.min(100, Math.round(value)))
+}
+
+function classifyLead(score, packageKey) {
+  if (packageKey === 'premiumReferral' || score >= 78) return 'premium_review'
+  if (score >= 58) return 'full_growth_review'
+  if (score >= 36) return 'automated_utility_upsell'
+  return 'outlined_strategy_delivery'
+}
+
+export function scoreAutomationLead(payload = {}) {
+  const form = payload.form || payload
+  const selectedPackage = payload.package || {}
+  const packageKey = payload.package_key || payload.packageKey || selectedPackage.key || ''
+  const business = form.company || form.business || payload.company || payload.business || ''
+  const website = form.website || payload.website || ''
+  const email = form.email || payload.customer_email || payload.email || ''
+  const objective = form.objective || payload.objective || ''
+  const tools = form.current_tools || form.currentTools || payload.current_tools || payload.currentTools || payload.tools || ''
+  const constraints = form.constraints || payload.constraints || ''
+  const text = `${business} ${website} ${objective} ${tools} ${constraints}`.toLowerCase()
+  let score = PACKAGE_WEIGHT[packageKey] || 18
+
+  if (website) score += 8
+  if (email && email.includes('@')) score += 6
+  if (/(crm|hubspot|stripe|shopify|booking|calendar|ads|meta|google|mailchimp|zapier|make|airtable|sheets)/.test(text)) score += 10
+  if (/(lead|sales|conversion|follow.?up|automation|growth|profit|revenue|client|customer)/.test(text)) score += 12
+  if (/(urgent|asap|scale|high ticket|premium|enterprise|multi|team|agency)/.test(text)) score += 12
+  if (/(budget|cash|funds|cheap|free|later|not sure)/.test(text)) score -= 8
+  if (constraints) score += 4
+
+  const leadScore = clampScore(score)
+  return {
+    lead_score: leadScore,
+    lead_route: classifyLead(leadScore, packageKey),
+  }
+}
+
 export function buildAutomationRecord(type, payload = {}) {
   const event = payload.event || payload
   const form = payload.form || event.form || {}
   const selectedPackage = payload.package || event.package || {}
+  const leadRoute = scoreAutomationLead(payload)
+  const actionMode =
+    selectedPackage.key === 'premiumReferral' ||
+    Number(selectedPackage.amount || 0) >= 2500 ||
+    leadRoute.lead_route === 'premium_review' ||
+    leadRoute.lead_route === 'full_growth_review'
+      ? 'owner_review'
+      : 'auto_route'
   return {
     event_type: type,
-    action_mode:
-      selectedPackage.key === 'premiumReferral' || Number(selectedPackage.amount || 0) >= 2500 ? 'owner_review' : 'auto_route',
+    action_mode: actionMode,
     timestamp: new Date().toISOString(),
     source: 'quantumaibusiness.com',
     target: form.website || form.company || payload.target || event.target || 'Unspecified',
     contact_email: form.email || payload.customer_email || event.customer_email || '',
     package: selectedPackage.title || payload.package_name || event.package_name || '',
     amount: selectedPackage.amount || payload.amount || event.amount || '',
+    lead_score: payload.lead_score || leadRoute.lead_score,
+    lead_route: payload.lead_route || leadRoute.lead_route,
     payload,
   }
 }

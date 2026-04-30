@@ -49,6 +49,9 @@ The sheet receives backend records from:
 - Approved draft sends
 - Growth campaign packs
 - Lead route reports
+- Daily owner digest rows
+
+New deployments of the Apps Script also include `lead_score` and `lead_route` columns.
 
 ## Later Upgrade Path
 

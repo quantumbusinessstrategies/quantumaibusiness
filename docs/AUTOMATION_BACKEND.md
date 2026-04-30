@@ -10,6 +10,7 @@ This repo includes a lightweight serverless backend for the money and notificati
 - `POST /api/growth-campaign`: creates owner-reviewed advertising, outreach, and growth campaign packs.
 - `POST /api/lead-router`: scores reviewed leads and recommends the next owner action.
 - `POST /api/send-approved-draft`: sends a reviewed fulfillment draft to a customer from the local owner console.
+- `GET /api/daily-digest`: sends a protected daily owner command digest through Vercel Cron.
 - Sends owner notifications to `quantumbusinessstrategies@gmail.com`.
 - Optionally forwards every record to Zapier, Make, Google Sheets, Airtable, HubSpot, or another CRM through `AUTOMATION_WEBHOOK_URL`.
 
@@ -30,6 +31,7 @@ Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to 
    - `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` to hold generated drafts for owner review, or `auto_send` only after testing
    - `STRIPE_CLIENT_ONBOARDING_MODE=auto_send` to email paid buyers the fulfillment intake link after checkout, or `off` to disable
    - `OWNER_ACTION_TOKEN=` a private random token used by the local owner console to send approved drafts to clients
+   - `CRON_SECRET=` a private random token used by Vercel Cron for the daily owner digest
    - `RESEND_API_KEY=` optional, for more reliable email than FormSubmit
    - `RESEND_FROM_EMAIL=` optional, requires a verified sender/domain in Resend
 3. Deploy in Vercel and copy the deployment URL, for example `https://quantumaibusiness.vercel.app`.
@@ -101,3 +103,12 @@ For the fastest useful operations stack, connect `AUTOMATION_WEBHOOK_URL` to a M
 - Tags the lead by package tier.
 - Creates a follow-up task only for full-growth or premium prospects.
 - Sends a client receipt/onboarding email after Stripe payment.
+
+## Daily Owner Digest
+
+The repo includes a Vercel Cron job in `vercel.json`:
+
+- Path: `/api/daily-digest`
+- Schedule: `0 14 * * *`
+
+That is 14:00 UTC daily, which is usually morning in the United States. Add `CRON_SECRET` in Vercel before relying on the cron. The endpoint can also be run manually with the owner token by calling it with an `X-Owner-Token` header.
