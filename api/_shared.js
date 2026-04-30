@@ -48,7 +48,8 @@ export function jsonResponse(res, statusCode, body) {
 
 export function verifyOwnerToken(req) {
   const expected = process.env.OWNER_ACTION_TOKEN || ''
-  const supplied = req.headers['x-owner-token'] || req.body?.owner_token || req.body?.ownerToken || ''
+  const headers = req.headers || {}
+  const supplied = headers['x-owner-token'] || headers['X-Owner-Token'] || req.body?.owner_token || req.body?.ownerToken || ''
   return Boolean(expected && supplied && supplied === expected)
 }
 
