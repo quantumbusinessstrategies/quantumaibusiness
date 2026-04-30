@@ -156,6 +156,7 @@ export default async function handler(req, res) {
       generation_reason: generation.reason || '',
       intake,
       deliverable_preview: generation.deliverable.slice(0, 1200),
+      deliverable_full: generation.deliverable,
     })
 
     const [notification, forwarding, clientEmail] = await Promise.allSettled([
