@@ -20,6 +20,7 @@ export default async function handler(req, res) {
     public_site_origin: process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com',
     fulfillment_mode: process.env.FULFILLMENT_MODE || 'intake_only',
     fulfillment_client_email_mode: process.env.FULFILLMENT_CLIENT_EMAIL_MODE || 'owner_review',
+    stripe_client_onboarding_mode: process.env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send',
     configured: {
       resend: configured(process.env.RESEND_API_KEY),
       resend_from_email: configured(process.env.RESEND_FROM_EMAIL),

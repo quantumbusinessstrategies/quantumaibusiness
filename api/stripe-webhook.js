@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { buildAutomationRecord, forwardAutomation, jsonResponse, notifyOwner, readRawBody } from './_shared.js'
+import { buildAutomationRecord, forwardAutomation, jsonResponse, notifyOwner, readRawBody, sendClientEmail } from './_shared.js'
 
 export const config = {
   api: {
@@ -35,6 +35,32 @@ function inferPackageName(session) {
   if (amount === 22999) return 'Automated Utility'
   if (amount === 250000) return 'Full Strategic Growth'
   return session.payment_link ? `Stripe Payment Link ${session.payment_link}` : 'Stripe Checkout'
+}
+
+function buildClientOnboardingEmail(session, packageName) {
+  const name = session.customer_details?.name || 'there'
+  const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2).replace(/\.00$/, '')}` : 'your payment'
+  const fulfillmentUrl = `${process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com'}/#fulfillment`
+
+  return {
+    to: session.customer_details?.email || session.customer_email || '',
+    subject: `Next step for your QuantumAiBusiness ${packageName}`,
+    text: [
+      `Hi ${name},`,
+      '',
+      `Your ${amount} checkout for ${packageName} was received.`,
+      '',
+      'Next step:',
+      `Please complete the fulfillment intake here: ${fulfillmentUrl}`,
+      '',
+      'Use the same email from checkout if possible. The intake asks for the business name, website, current tools, objective, and constraints so the strategy draft can be prepared and reviewed.',
+      '',
+      'Important note: QuantumAiBusiness provides strategic diagnostics and automation guidance. Results are not guaranteed and depend on execution, market conditions, platform policies, and data quality.',
+      '',
+      'Best,',
+      'QuantumAiBusiness',
+    ].join('\n'),
+  }
 }
 
 function stripeCheckoutRecord(event) {
@@ -81,12 +107,25 @@ export default async function handler(req, res) {
     }
 
     const record = stripeCheckoutRecord(event)
-    const [notification, forwarding] = await Promise.allSettled([notifyOwner(record), forwardAutomation(record)])
+    const session = event.data?.object || {}
+    const onboardingMode = process.env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send'
+    const onboardingEmail = buildClientOnboardingEmail(session, record.package || 'purchase')
+    const [notification, forwarding, clientOnboarding] = await Promise.allSettled([
+      notifyOwner(record),
+      forwardAutomation(record),
+      onboardingMode === 'auto_send' && onboardingEmail.to
+        ? sendClientEmail(onboardingEmail)
+        : Promise.resolve({ sent: false, reason: 'Stripe client onboarding disabled or missing customer email' }),
+    ])
     jsonResponse(res, 200, {
       ok: true,
       record,
       notification: notification.status === 'fulfilled' ? notification.value : { notified: false, error: notification.reason?.message },
       forwarding: forwarding.status === 'fulfilled' ? forwarding.value : { forwarded: false, error: forwarding.reason?.message },
+      client_onboarding:
+        clientOnboarding.status === 'fulfilled'
+          ? clientOnboarding.value
+          : { sent: false, error: clientOnboarding.reason?.message },
     })
   } catch (error) {
     jsonResponse(res, 500, { ok: false, error: error.message })

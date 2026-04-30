@@ -25,6 +25,7 @@ Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to 
    - `OPENAI_MODEL=gpt-5-mini`
    - `FULFILLMENT_MODE=intake_only` to collect paid intake for owner review, or `auto_generate` to generate AI drafts automatically
    - `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` to hold generated drafts for owner review, or `auto_send` only after testing
+   - `STRIPE_CLIENT_ONBOARDING_MODE=auto_send` to email paid buyers the fulfillment intake link after checkout, or `off` to disable
    - `OWNER_ACTION_TOKEN=` a private random token used by the local owner console to send approved drafts to clients
    - `RESEND_API_KEY=` optional, for more reliable email than FormSubmit
    - `RESEND_FROM_EMAIL=` optional, requires a verified sender/domain in Resend
@@ -48,6 +49,10 @@ In Stripe:
 5. Add it to Vercel as `STRIPE_WEBHOOK_SECRET`.
 
 When a checkout completes, the backend records the payment event, emails the owner, and forwards it to `AUTOMATION_WEBHOOK_URL` if configured.
+
+If `STRIPE_CLIENT_ONBOARDING_MODE=auto_send`, the backend also emails the buyer a transactional next-step message with the paid fulfillment form link:
+
+- `https://quantumaibusiness.com/#fulfillment`
 
 ## Paid Fulfillment Setup
 
