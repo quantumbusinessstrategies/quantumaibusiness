@@ -1766,6 +1766,10 @@ code {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.owner-ops-grid {
+  grid-template-columns: minmax(360px, 1.2fr) minmax(280px, 0.8fr);
+}
+
 .owner-panel {
   display: grid;
   gap: 14px;
@@ -1828,6 +1832,106 @@ code {
   line-height: 1.5;
 }
 
+.owner-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.owner-metrics span,
+.owner-next-action {
+  padding: 12px;
+  color: #bdfaff;
+  background: rgba(0, 8, 16, 0.7);
+  border: 1px solid rgba(125, 249, 255, 0.32);
+}
+
+.owner-metrics strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #fff1a6;
+  font-size: 14px;
+}
+
+.owner-pipeline {
+  display: grid;
+  gap: 10px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.owner-pipeline article {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(0, 8, 16, 0.7);
+  border: 1px solid rgba(152, 255, 221, 0.28);
+  box-shadow: 0 7px 0 #001133;
+}
+
+.owner-pipeline strong {
+  color: #eaffff;
+  font-size: 12px;
+}
+
+.owner-pipeline span,
+.owner-pipeline small,
+.owner-pipeline p {
+  margin: 0;
+  color: #bdfaff;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.owner-pipeline span {
+  color: #fff1a6;
+}
+
+.owner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.owner-action-list {
+  display: grid;
+  gap: 10px;
+}
+
+.owner-action-list label {
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  padding: 12px;
+  color: #eaffff;
+  background: rgba(0, 8, 16, 0.62);
+  border: 1px solid rgba(125, 249, 255, 0.28);
+  text-transform: none;
+}
+
+.owner-action-list input {
+  width: 16px;
+  min-height: 16px;
+  accent-color: #98ffdd;
+}
+
+.owner-next-action {
+  display: grid;
+  gap: 8px;
+}
+
+.owner-next-action strong {
+  color: #fff1a6;
+  font-size: 11px;
+}
+
+.owner-next-action p,
+.owner-next-action span {
+  margin: 0;
+  color: #eaffff;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
 .owner-toast {
   position: fixed;
   right: 18px;
@@ -1861,7 +1965,9 @@ code {
 
   .owner-hero,
   .owner-grid,
-  .owner-output-grid {
+  .owner-output-grid,
+  .owner-ops-grid,
+  .owner-metrics {
     grid-template-columns: 1fr;
   }
 
