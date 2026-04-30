@@ -26,6 +26,17 @@ function verifyStripeSignature(rawBody, signatureHeader, secret) {
   return expectedBuffer.length === receivedBuffer.length && crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
 }
 
+function inferPackageName(session) {
+  const metadataName = session.metadata?.package || session.metadata?.product || session.metadata?.package_name
+  if (metadataName) return metadataName
+
+  const amount = session.amount_total || 0
+  if (amount === 999) return 'Outlined Strategy'
+  if (amount === 22999) return 'Automated Utility'
+  if (amount === 250000) return 'Full Strategic Growth'
+  return session.payment_link ? `Stripe Payment Link ${session.payment_link}` : 'Stripe Checkout'
+}
+
 function stripeCheckoutRecord(event) {
   const session = event.data?.object || {}
   return buildAutomationRecord('stripe_checkout_completed', {
@@ -36,7 +47,9 @@ function stripeCheckoutRecord(event) {
     currency: session.currency || '',
     payment_status: session.payment_status || '',
     checkout_url: session.url || '',
-    package_name: session.metadata?.package || session.metadata?.product || '',
+    package_name: inferPackageName(session),
+    payment_link: session.payment_link || '',
+    customer_name: session.customer_details?.name || '',
     raw_stripe_object: session,
   })
 }
