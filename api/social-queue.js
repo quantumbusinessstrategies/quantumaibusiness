@@ -1,4 +1,4 @@
-import { buildAutomationRecord, forwardAutomation, jsonResponse, notifyOwner, setCors, verifyOwnerToken } from './_shared.js'
+import { buildAutomationRecord, forwardAutomation, jsonResponse, notifyOwner, setCors, verifyCronOrOwner } from './_shared.js'
 
 const SITE = 'https://quantumaibusiness.com'
 const MONEY_PAGE = `${SITE}/business-growth-scan.html`
@@ -113,13 +113,13 @@ export default async function handler(req, res) {
     return
   }
 
-  if (req.method !== 'POST') {
+  if (!['GET', 'POST'].includes(req.method)) {
     jsonResponse(res, 405, { ok: false, error: 'Method not allowed' })
     return
   }
 
-  if (!verifyOwnerToken(req)) {
-    jsonResponse(res, 401, { ok: false, error: 'OWNER_ACTION_TOKEN is missing or invalid' })
+  if (!verifyCronOrOwner(req)) {
+    jsonResponse(res, 401, { ok: false, error: 'CRON_SECRET or owner action token is missing or invalid' })
     return
   }
 

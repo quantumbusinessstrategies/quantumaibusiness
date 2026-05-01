@@ -907,8 +907,10 @@ export default function OwnerConsole() {
           </div>
           <button type="button" onClick={requestAiDraft}>REQUEST REVIEW DRAFT</button>
           <button type="button" onClick={runDailyDigest}>RUN DIGEST NOW</button>
+          <button type="button" onClick={requestSocialQueue}>SOCIAL QUEUE</button>
           {aiDraftStatus && <p className="owner-inline-status">{aiDraftStatus}</p>}
           {digestStatus && <p className="owner-inline-status">{digestStatus}</p>}
+          {socialQueueStatus && <p className="owner-inline-status">{socialQueueStatus}</p>}
           <label>
             Owner action token
             <input
@@ -999,7 +1001,6 @@ export default function OwnerConsole() {
           </div>
           {growthStatus && <p className="owner-inline-status">{growthStatus}</p>}
           {campaignBatchStatus && <p className="owner-inline-status">{campaignBatchStatus}</p>}
-          {socialQueueStatus && <p className="owner-inline-status">{socialQueueStatus}</p>}
         </div>
 
         <div className="owner-panel">
