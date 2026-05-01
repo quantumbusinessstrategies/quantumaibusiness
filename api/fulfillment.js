@@ -287,6 +287,7 @@ export default async function handler(req, res) {
     const clientDeliveryText = generation.deliverable ? buildClientDeliveryText(intake, generation.deliverable) : ''
 
     const record = buildAutomationRecord('paid_fulfillment_intake', {
+      package_key: intake.package_key,
       package_name: intake.package_name,
       customer_email: intake.customer_email || intake.payment_email,
       amount: body.amount || '',
