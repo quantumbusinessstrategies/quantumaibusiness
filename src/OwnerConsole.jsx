@@ -751,7 +751,7 @@ export default function OwnerConsole() {
 
     try {
       setOwnerKeyStatus('Checking owner key...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/owner-token-check`, {
+      const response = await fetch(`${AUTOMATION_API_URL}/api/health`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

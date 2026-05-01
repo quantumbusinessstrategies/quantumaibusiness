@@ -1,4 +1,4 @@
-import { handleOptions, jsonResponse, ownerEmail, setCors } from './_shared.js'
+import { handleOptions, jsonResponse, ownerEmail, setCors, verifyOwnerToken } from './_shared.js'
 
 function configured(value) {
   return Boolean(value && String(value).trim())
@@ -7,6 +7,16 @@ function configured(value) {
 export default async function handler(req, res) {
   setCors(req, res)
   if (handleOptions(req, res)) return
+
+  if (req.method === 'POST') {
+    if (!verifyOwnerToken(req)) {
+      jsonResponse(res, 401, { ok: false, valid: false, error: 'Owner action token is missing or invalid' })
+      return
+    }
+
+    jsonResponse(res, 200, { ok: true, valid: true })
+    return
+  }
 
   if (req.method !== 'GET') {
     jsonResponse(res, 405, { ok: false, error: 'Method not allowed' })
