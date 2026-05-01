@@ -224,6 +224,8 @@ export default function OwnerConsole() {
   const [growthPack, setGrowthPack] = useState('')
   const [campaignBatchStatus, setCampaignBatchStatus] = useState('')
   const [campaignBatch, setCampaignBatch] = useState('')
+  const [socialQueueStatus, setSocialQueueStatus] = useState('')
+  const [socialQueue, setSocialQueue] = useState('')
   const [digestStatus, setDigestStatus] = useState('')
   const [followUpStatus, setFollowUpStatus] = useState('')
   const [followUpDraft, setFollowUpDraft] = useState('')
@@ -584,6 +586,40 @@ export default function OwnerConsole() {
     }
   }
 
+  async function requestSocialQueue() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setDigestStatus('')
+    setRouteStatus('')
+    if (!ownerToken) {
+      setSocialQueueStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to generate the social queue.')
+      return
+    }
+
+    try {
+      setSocialQueueStatus('Building ad-ready organic social queue...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/social-queue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify({ source: 'owner_console_social_queue' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setSocialQueue(data.queue || 'No social queue returned.')
+      setSocialQueueStatus(
+        data.generated
+          ? 'Social queue generated, emailed to owner, and logged'
+          : `Fallback social queue returned: ${data.generation_reason || 'AI generation unavailable'}`,
+      )
+    } catch (error) {
+      setSocialQueueStatus(`Social queue failed: ${error.message}`)
+    }
+  }
+
   async function requestLeadRoute() {
     setAiDraftStatus('')
     setSendStatus('')
@@ -860,6 +896,7 @@ export default function OwnerConsole() {
                 <span className={backendHealth.configured?.owner_action_token ? 'is-on' : ''}>Owner Key</span>
                 <span className={backendHealth.configured?.cron_secret ? 'is-on' : ''}>Cron</span>
                 <span className={backendHealth.campaign_batch_mode === 'daily_cron_enabled' ? 'is-on' : ''}>Batch</span>
+                <span className={backendHealth.configured?.social_queue ? 'is-on' : ''}>Social</span>
               </div>
             )}
             {backendHealth && (
@@ -949,6 +986,7 @@ export default function OwnerConsole() {
             <h2>9. Growth Automation Pack</h2>
             <button type="button" onClick={requestGrowthPack}>GENERATE PACK</button>
             <button type="button" onClick={requestCampaignBatch}>DAILY BATCH</button>
+            <button type="button" onClick={requestSocialQueue}>SOCIAL QUEUE</button>
           </div>
           <p>
             Creates owner-reviewed ads, social posts, direct outreach, launch loop, and tracking actions for QuantumAiBusiness.
@@ -961,6 +999,7 @@ export default function OwnerConsole() {
           </div>
           {growthStatus && <p className="owner-inline-status">{growthStatus}</p>}
           {campaignBatchStatus && <p className="owner-inline-status">{campaignBatchStatus}</p>}
+          {socialQueueStatus && <p className="owner-inline-status">{socialQueueStatus}</p>}
         </div>
 
         <div className="owner-panel">
@@ -968,8 +1007,9 @@ export default function OwnerConsole() {
             <h2>10. Campaign Draft</h2>
             <button type="button" onClick={() => copyText('Growth pack', growthPack)}>COPY PACK</button>
             <button type="button" onClick={() => copyText('Daily campaign batch', campaignBatch)}>COPY BATCH</button>
+            <button type="button" onClick={() => copyText('Social queue', socialQueue)}>COPY QUEUE</button>
           </div>
-          <pre>{campaignBatch || growthPack || 'No growth pack generated yet. Use GENERATE PACK or DAILY BATCH after adding the owner token.'}</pre>
+          <pre>{socialQueue || campaignBatch || growthPack || 'No growth pack generated yet. Use GENERATE PACK, DAILY BATCH, or SOCIAL QUEUE after adding the owner token.'}</pre>
         </div>
       </section>
 

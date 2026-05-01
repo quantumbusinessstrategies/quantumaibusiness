@@ -27,6 +27,9 @@ export default async function handler(req, res) {
     campaign_batch_mode: configured(process.env.CRON_SECRET)
       ? 'daily_cron_enabled'
       : 'waiting_for_cron_secret',
+    social_queue_mode: configured(process.env.OWNER_ACTION_TOKEN)
+      ? 'owner_token_required'
+      : 'waiting_for_owner_action_token',
     lead_router_mode: configured(process.env.OWNER_ACTION_TOKEN)
       ? 'owner_token_required'
       : 'waiting_for_owner_action_token',
@@ -39,6 +42,9 @@ export default async function handler(req, res) {
       owner_notification_url: configured(process.env.OWNER_NOTIFICATION_URL),
       owner_action_token: configured(process.env.OWNER_ACTION_TOKEN),
       cron_secret: configured(process.env.CRON_SECRET),
+      social_queue: configured(process.env.OWNER_ACTION_TOKEN) && configured(process.env.OPENAI_API_KEY),
+      buffer_access_token: configured(process.env.BUFFER_ACCESS_TOKEN),
+      buffer_profile_ids: configured(process.env.BUFFER_PROFILE_IDS),
     },
   })
 }
