@@ -287,6 +287,30 @@ async function submitFulfillmentPacket(packet) {
   return { ok: response.ok, mode: 'static_email_fallback', generated: false, deliverable: '' }
 }
 
+async function requestBusinessDiagnostic({ target, form }) {
+  const diagnosticEndpoint = AUTOMATION_API_URL
+    ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/diagnostic') ? '' : '/api/diagnostic'}`
+    : ''
+
+  if (!diagnosticEndpoint) return null
+
+  const response = await fetch(diagnosticEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      target,
+      company: form.company,
+      website: form.website,
+      email: form.email,
+      objective: form.objective,
+      source: 'public_quantify_business',
+    }),
+  })
+
+  if (!response.ok) return null
+  return response.json()
+}
+
 function loadStoredEvents() {
   try {
     return JSON.parse(window.localStorage.getItem(EVENT_STORAGE_KEY) || '[]')
@@ -564,8 +588,34 @@ export default function QuantumAIWebsite() {
     setLeadStatus('SCAN GENERATED - OWNER NOTIFICATION READY')
     window.gtag?.('event', 'scan_generated', { event_category: 'diagnostic', value: generatedScan.score })
     window.fbq?.('trackCustom', 'BusinessScanGenerated')
+    try {
+      const aiDiagnostic = await requestBusinessDiagnostic({ target: scanTargetValue, form: nextForm })
+      if (aiDiagnostic?.ok) {
+        const enrichedScan = {
+          ...generatedScan,
+          aiGenerated: aiDiagnostic.generated,
+          diagnostic: aiDiagnostic.diagnostic,
+          opportunities: aiDiagnostic.opportunities || [],
+          risks: aiDiagnostic.risks || [],
+          recommendedPackage: aiDiagnostic.recommended_package,
+          nextStep: aiDiagnostic.next_step,
+          bottlenecks: aiDiagnostic.opportunities?.length ? aiDiagnostic.opportunities.slice(0, 3) : generatedScan.bottlenecks,
+          losses: aiDiagnostic.risks?.length ? aiDiagnostic.risks : generatedScan.losses,
+        }
+        setScan(enrichedScan)
+        setResp(
+          `AI DIAGNOSTIC READY :: ${scanTargetValue.toUpperCase()} :: ` +
+            `${aiDiagnostic.next_step || 'PACKAGE ROUTING READY'}`,
+        )
+        setLeadStatus('AI DIAGNOSTIC GENERATED - SENT TO AUTOMATION HUB')
+        return
+      }
+    } catch {
+      // The local scan remains available if the AI diagnostic endpoint is unavailable.
+    }
+
     const sent = await recordAutomationEvent('scan_generated', { form: nextForm, result, scan: generatedScan })
-    if (sent) setLeadStatus('SCAN GENERATED - SENT TO AUTOMATION HUB')
+    if (sent) setLeadStatus('LOCAL SCAN GENERATED - SENT TO AUTOMATION HUB')
   }
 
   async function submitLead(event) {
@@ -906,10 +956,14 @@ export default function QuantumAIWebsite() {
             {open && (
               <div className="response-console">
                 <p>{resp}</p>
+                {scan?.diagnostic && <p>{scan.diagnostic}</p>}
                 {scan && (
                   <ul>
                     {scan.losses.map((loss) => (
                       <li key={loss}>{loss}</li>
+                    ))}
+                    {(scan.opportunities || []).map((opportunity) => (
+                      <li key={opportunity}>{opportunity}</li>
                     ))}
                   </ul>
                 )}
