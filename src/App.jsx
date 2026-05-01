@@ -63,19 +63,19 @@ const AUTOMATION_FLOW = [
 const CAMPAIGN_LINKS = [
   {
     label: 'Business pressure scan',
-    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=pressure_scan#home`,
+    href: `${SITE_URL}/business-growth-scan.html?utm_source=organic&utm_medium=share&utm_campaign=pressure_scan`,
   },
   {
     label: '$9.99 strategy offer',
-    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=strategy_offer#packages`,
+    href: `${SITE_URL}/paid-growth-diagnostic.html?utm_source=organic&utm_medium=share&utm_campaign=strategy_offer`,
   },
   {
     label: '$49.99 scan pack',
-    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=growth_scan_pack#packages`,
+    href: `${SITE_URL}/growth-scan-pack.html?utm_source=organic&utm_medium=share&utm_campaign=growth_scan_pack`,
   },
   {
     label: 'Automation utility offer',
-    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=automation_utility#packages`,
+    href: `${SITE_URL}/automated-utility.html?utm_source=organic&utm_medium=share&utm_campaign=automation_utility`,
   },
 ]
 const AD_ANGLES = [
