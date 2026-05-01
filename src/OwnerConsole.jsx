@@ -132,7 +132,7 @@ function buildReport({ form, parsed }) {
     '5. Recommended Next Step',
     'The fastest upgrade path is Automated Utility. It connects intake, follow-up, alerts, and simple reporting so the business stops losing warm interest between visits, payments, and owner response.',
     '',
-    'Note: This strategy is informational and does not guarantee revenue, profit, ranking, ad approval, or platform performance. Results depend on execution, market conditions, data quality, and business constraints.',
+    'Note: This $9.99 outline is an entry-level strategy readout, not implementation, consulting, ad management, legal advice, or a guarantee of revenue, profit, ranking, ad approval, or platform performance.',
   ].join('\n')
 }
 
