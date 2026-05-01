@@ -6,7 +6,7 @@ const PAYMENT_LINKS = {
     import.meta.env.VITE_OUTLINED_STRATEGY_PAYMENT_URL ||
     import.meta.env.VITE_AUDIT_PAYMENT_URL ||
     'https://buy.stripe.com/fZu28qet66Ff2pE78Cfw401',
-  growthScanPack: import.meta.env.VITE_GROWTH_SCAN_PACK_PAYMENT_URL || '',
+  growthScanPack: import.meta.env.VITE_GROWTH_SCAN_PACK_PAYMENT_URL || 'https://buy.stripe.com/4gM00i4SwfbLfcq50ufw404',
   automatedUtility:
     import.meta.env.VITE_AUTOMATED_UTILITY_PAYMENT_URL ||
     import.meta.env.VITE_OVERHAUL_PAYMENT_URL ||
