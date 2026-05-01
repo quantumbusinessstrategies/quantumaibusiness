@@ -206,6 +206,7 @@ export default function OwnerConsole() {
   const [copied, setCopied] = useState('')
   const [backendHealth, setBackendHealth] = useState(null)
   const [backendStatus, setBackendStatus] = useState('Checking backend...')
+  const [ownerKeyStatus, setOwnerKeyStatus] = useState('')
   const [aiDraftStatus, setAiDraftStatus] = useState('')
   const [aiDraft, setAiDraft] = useState('')
   const [sendStatus, setSendStatus] = useState('')
@@ -348,6 +349,9 @@ export default function OwnerConsole() {
   }
 
   async function requestAiDraft() {
+    setSendStatus('')
+    setDigestStatus('')
+    setRouteStatus('')
     const payload = {
       package_key: effective.packageKey,
       package_name: packageDetail.label,
@@ -383,6 +387,9 @@ export default function OwnerConsole() {
   }
 
   async function sendApprovedDraft() {
+    setAiDraftStatus('')
+    setDigestStatus('')
+    setRouteStatus('')
     if (!ownerToken) {
       setSendStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here.')
       return
@@ -426,6 +433,10 @@ export default function OwnerConsole() {
   }
 
   async function requestGrowthPack() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setDigestStatus('')
+    setRouteStatus('')
     if (!ownerToken) {
       setGrowthStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to unlock protected growth generation.')
       return
@@ -466,6 +477,9 @@ export default function OwnerConsole() {
   }
 
   async function requestLeadRoute() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setDigestStatus('')
     if (!ownerToken) {
       setRouteStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to unlock lead routing.')
       return
@@ -509,6 +523,9 @@ export default function OwnerConsole() {
   }
 
   async function runDailyDigest() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setRouteStatus('')
     if (!ownerToken) {
       setDigestStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to run the owner digest.')
       return
@@ -534,6 +551,31 @@ export default function OwnerConsole() {
       )
     } catch (error) {
       setDigestStatus(`Digest failed: ${error.message}`)
+    }
+  }
+
+  async function testOwnerKey() {
+    if (!ownerToken) {
+      setOwnerKeyStatus('Paste the same OWNER_ACTION_TOKEN from Vercel first.')
+      return
+    }
+
+    try {
+      setOwnerKeyStatus('Checking owner key...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/owner-token-check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify({ source: 'owner_console_key_check' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setOwnerKeyStatus('Owner key is valid')
+    } catch (error) {
+      setOwnerKeyStatus(`Owner key failed: ${error.message}`)
     }
   }
 
@@ -682,6 +724,8 @@ export default function OwnerConsole() {
               value={ownerToken}
             />
           </label>
+          <button type="button" onClick={testOwnerKey}>TEST OWNER KEY</button>
+          {ownerKeyStatus && <p className="owner-inline-status">{ownerKeyStatus}</p>}
         </div>
       </section>
 
