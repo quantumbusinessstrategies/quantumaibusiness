@@ -14,6 +14,7 @@ function buildDigest() {
     amount: '',
     lead_score: 100,
     lead_route: 'owner_daily_review',
+    next_action: 'Review the ledger, fulfill paid drafts, score open leads, and approve only the strongest growth actions.',
     payload: {
       summary: 'Daily QuantumAiBusiness owner command digest.',
       links: {

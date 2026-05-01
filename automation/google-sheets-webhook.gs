@@ -25,6 +25,7 @@ function doPost(event) {
       payload.amount || '',
       payload.lead_score || '',
       payload.lead_route || '',
+      payload.next_action || '',
       shorten(JSON.stringify(payload.payload || payload, null, 2)),
     ])
 
@@ -55,6 +56,7 @@ function getEventSheet() {
       'amount',
       'lead_score',
       'lead_route',
+      'next_action',
       'payload_json',
     ])
     sheet.setFrozenRows(1)

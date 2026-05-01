@@ -6,6 +6,12 @@ const PACKAGE_WEIGHT = {
   fullStrategic: 58,
   premiumReferral: 64,
 }
+const PACKAGE_LABELS = {
+  outlinedStrategy: 'Outlined Strategy',
+  automatedUtility: 'Automated Utility',
+  fullStrategic: 'Full Strategic Growth',
+  premiumReferral: 'Premium Referral',
+}
 
 export function ownerEmail() {
   return process.env.OWNER_EMAIL || process.env.VITE_CONTACT_EMAIL || DEFAULT_OWNER_EMAIL
@@ -77,10 +83,49 @@ function classifyLead(score, packageKey) {
   return 'outlined_strategy_delivery'
 }
 
+export function inferPackageKey(payload = {}) {
+  const selectedPackage = payload.package || {}
+  const amount = Number(selectedPackage.amount || payload.amount || 0)
+  const packageText = String(
+    payload.package_key ||
+      payload.packageKey ||
+      selectedPackage.key ||
+      payload.package_name ||
+      payload.packageName ||
+      payload.package ||
+      selectedPackage.title ||
+      '',
+  ).toLowerCase()
+
+  if (packageText.includes('premium') || packageText.includes('referral')) return 'premiumReferral'
+  if (packageText.includes('full') || packageText.includes('strategic') || amount >= 2500) return 'fullStrategic'
+  if (packageText.includes('automated') || packageText.includes('utility') || amount >= 229) return 'automatedUtility'
+  if (packageText.includes('outlined') || packageText.includes('strategy') || amount >= 9.99) return 'outlinedStrategy'
+  return ''
+}
+
+export function routeNextAction(route) {
+  if (route === 'premium_review') {
+    return 'Owner review now: treat as high-touch, avoid automated promises, and route to QuantumBusinessStrategies if qualified.'
+  }
+  if (route === 'full_growth_review') {
+    return 'Owner review: confirm scope, budget, timeline, tools, and decision maker before any full-growth promise.'
+  }
+  if (route === 'automated_utility_upsell') {
+    return 'Deliver current value, then recommend Automated Utility for intake, alerts, follow-up, and reporting.'
+  }
+  if (route === 'outlined_strategy_delivery') {
+    return 'Deliver the outlined strategy cleanly, then watch for automation pain or upgrade signals.'
+  }
+  if (route === 'owner_daily_review') {
+    return 'Review the ledger, fulfill paid drafts, score open leads, and approve only the strongest growth actions.'
+  }
+  return 'Review the record and choose the safest next owner action.'
+}
+
 export function scoreAutomationLead(payload = {}) {
   const form = payload.form || payload
-  const selectedPackage = payload.package || {}
-  const packageKey = payload.package_key || payload.packageKey || selectedPackage.key || ''
+  const packageKey = inferPackageKey(payload)
   const business = form.company || form.business || payload.company || payload.business || ''
   const website = form.website || payload.website || ''
   const email = form.email || payload.customer_email || payload.email || ''
@@ -100,6 +145,7 @@ export function scoreAutomationLead(payload = {}) {
 
   const leadScore = clampScore(score)
   return {
+    package_key: packageKey,
     lead_score: leadScore,
     lead_route: classifyLead(leadScore, packageKey),
   }
@@ -111,7 +157,7 @@ export function buildAutomationRecord(type, payload = {}) {
   const selectedPackage = payload.package || event.package || {}
   const leadRoute = scoreAutomationLead(payload)
   const actionMode =
-    selectedPackage.key === 'premiumReferral' ||
+    leadRoute.package_key === 'premiumReferral' ||
     Number(selectedPackage.amount || 0) >= 2500 ||
     leadRoute.lead_route === 'premium_review' ||
     leadRoute.lead_route === 'full_growth_review'
@@ -124,10 +170,12 @@ export function buildAutomationRecord(type, payload = {}) {
     source: 'quantumaibusiness.com',
     target: form.website || form.company || payload.target || event.target || 'Unspecified',
     contact_email: form.email || payload.customer_email || event.customer_email || '',
-    package: selectedPackage.title || payload.package_name || event.package_name || '',
+    package: selectedPackage.title || payload.package_name || event.package_name || PACKAGE_LABELS[leadRoute.package_key] || '',
+    package_key: payload.package_key || payload.packageKey || selectedPackage.key || leadRoute.package_key,
     amount: selectedPackage.amount || payload.amount || event.amount || '',
     lead_score: payload.lead_score || leadRoute.lead_score,
     lead_route: payload.lead_route || leadRoute.lead_route,
+    next_action: payload.next_action || routeNextAction(payload.lead_route || leadRoute.lead_route),
     payload,
   }
 }
@@ -154,6 +202,19 @@ export async function notifyOwner(record) {
       ? 'PRIORITY'
       : 'LOG'
   const subject = `QuantumAiBusiness ${priority} ${record.event_type.replaceAll('_', ' ')} // ${scoreLabel} // ${routeLabel}`
+  const message = [
+    subject,
+    '',
+    `Target: ${record.target || 'Unspecified'}`,
+    `Contact: ${record.contact_email || 'Unspecified'}`,
+    `Package: ${record.package || 'Unspecified'}`,
+    `Amount: ${record.amount || 'Unspecified'}`,
+    `Action mode: ${record.action_mode || 'Unspecified'}`,
+    `Next action: ${record.next_action || routeNextAction(record.lead_route)}`,
+    '',
+    'Full record:',
+    JSON.stringify(record, null, 2),
+  ].join('\n')
   if (process.env.RESEND_API_KEY) {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -165,7 +226,7 @@ export async function notifyOwner(record) {
         from: process.env.RESEND_FROM_EMAIL || 'QuantumAiBusiness <onboarding@resend.dev>',
         to,
         subject,
-        text: JSON.stringify(record, null, 2),
+        text: message,
       }),
     })
     return { notified: response.ok, provider: 'resend', status: response.status }
@@ -183,7 +244,7 @@ export async function notifyOwner(record) {
       event_type: record.event_type,
       action_mode: record.action_mode,
       source: record.source,
-      message: JSON.stringify(record, null, 2),
+      message,
     }),
   })
 

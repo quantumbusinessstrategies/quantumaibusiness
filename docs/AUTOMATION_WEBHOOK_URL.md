@@ -51,7 +51,7 @@ The sheet receives backend records from:
 - Lead route reports
 - Daily owner digest rows
 
-New deployments of the Apps Script also include `lead_score` and `lead_route` columns.
+New deployments of the Apps Script also include `lead_score`, `lead_route`, and `next_action` columns.
 
 ## Later Upgrade Path
 
