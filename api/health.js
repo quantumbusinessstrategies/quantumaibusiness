@@ -24,6 +24,9 @@ export default async function handler(req, res) {
     growth_campaign_mode: configured(process.env.OWNER_ACTION_TOKEN)
       ? 'owner_token_required'
       : 'waiting_for_owner_action_token',
+    campaign_batch_mode: configured(process.env.CRON_SECRET)
+      ? 'daily_cron_enabled'
+      : 'waiting_for_cron_secret',
     lead_router_mode: configured(process.env.OWNER_ACTION_TOKEN)
       ? 'owner_token_required'
       : 'waiting_for_owner_action_token',

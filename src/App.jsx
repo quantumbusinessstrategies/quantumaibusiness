@@ -31,9 +31,11 @@ const OWNER_NOTIFICATION_URL =
 const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || ''
 const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || ''
 const SITE_URL = 'https://quantumaibusiness.com'
+const MONEY_PAGE_URL = `${SITE_URL}/business-growth-scan.html`
 const SHARE_TITLE = 'QuantumAiBusiness'
 const SHARE_TEXT = 'Run a cyber growth-pressure scan for business faults, profit leaks, and automation opportunities.'
 const EVENT_STORAGE_KEY = 'quantumaibusiness_event_log'
+const ATTRIBUTION_STORAGE_KEY = 'quantumaibusiness_attribution'
 const MAX_EVENT_LOG = 40
 const FULFILLMENT_PACKAGES = [
   ['outlinedStrategy', 'Outlined Strategy'],
@@ -63,7 +65,7 @@ const AUTOMATION_FLOW = [
 const CAMPAIGN_LINKS = [
   {
     label: 'Business pressure scan',
-    href: `${SITE_URL}/business-growth-scan.html?utm_source=organic&utm_medium=share&utm_campaign=pressure_scan`,
+    href: `${MONEY_PAGE_URL}?utm_source=organic&utm_medium=share&utm_campaign=pressure_scan`,
   },
   {
     label: '$9.99 strategy offer',
@@ -76,6 +78,10 @@ const CAMPAIGN_LINKS = [
   {
     label: 'Automation utility offer',
     href: `${SITE_URL}/automated-utility.html?utm_source=organic&utm_medium=share&utm_campaign=automation_utility`,
+  },
+  {
+    label: 'Referral link',
+    href: `${SITE_URL}/refer-business.html?utm_source=organic&utm_medium=share&utm_campaign=refer_business`,
   },
 ]
 const AD_ANGLES = [
@@ -90,7 +96,7 @@ const ORGANIC_POSTS = [
 ]
 const SOCIAL_SETUP = [
   'Claim QuantumAiBusiness on X, LinkedIn, TikTok, Instagram, Facebook, YouTube, Reddit, Threads, and Bluesky where available.',
-  'Use the same avatar, one-line promise, and link: quantumaibusiness.com/?utm_source=social&utm_medium=bio&utm_campaign=profile',
+  'Use the same avatar, one-line promise, and link: quantumaibusiness.com/business-growth-scan.html?utm_source=social&utm_medium=bio&utm_campaign=profile',
   'Post the same launch message manually across accounts first, then decide which platform is worth automating.',
 ]
 const PACKAGE_LADDER = [
@@ -332,6 +338,36 @@ function loadStoredEvents() {
   }
 }
 
+function loadStoredAttribution() {
+  try {
+    return JSON.parse(window.localStorage.getItem(ATTRIBUTION_STORAGE_KEY) || '{}')
+  } catch {
+    return {}
+  }
+}
+
+function captureAttribution() {
+  const params = new URLSearchParams(window.location.search)
+  const stored = loadStoredAttribution()
+  const next = {
+    ...stored,
+    landing_path: stored.landing_path || window.location.pathname,
+    referrer: stored.referrer || document.referrer || '',
+    first_seen: stored.first_seen || new Date().toISOString(),
+    last_seen: new Date().toISOString(),
+  }
+  for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref']) {
+    const value = params.get(key)
+    if (value) next[key] = value.slice(0, 160)
+  }
+  try {
+    window.localStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify(next))
+  } catch {
+    // Attribution is helpful but not required for the site to function.
+  }
+  return next
+}
+
 function serializeCsvValue(value) {
   const text = String(value ?? '')
   return `"${text.replaceAll('"', '""')}"`
@@ -379,6 +415,7 @@ export default function QuantumAIWebsite() {
   const [automationEvents, setAutomationEvents] = useState(loadStoredEvents)
   const [automationStatus, setAutomationStatus] = useState('AUTOPILOT READY - OWNER ALERTS ON - HIGH TIER REVIEW')
   const [campaignStatus, setCampaignStatus] = useState('')
+  const [attribution] = useState(captureAttribution)
   const [fulfillmentStatus, setFulfillmentStatus] = useState('')
   const [fulfillmentDeliverable, setFulfillmentDeliverable] = useState('')
   const [fulfillmentForm, setFulfillmentForm] = useState({
@@ -479,6 +516,11 @@ export default function QuantumAIWebsite() {
   }, [])
 
   useEffect(() => {
+    recordAutomationEvent('traffic_attribution_captured', { attribution }, { notify: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
     if (GOOGLE_TAG_ID && !document.querySelector(`[data-quantum-script="gtag-${GOOGLE_TAG_ID}"]`)) {
       const gtagScript = document.createElement('script')
       gtagScript.async = true
@@ -548,14 +590,15 @@ export default function QuantumAIWebsite() {
   }
 
   async function recordAutomationEvent(type, payload = {}, options = {}) {
-    const event = recordLocalAutomationEvent(type, payload)
+    const payloadWithAttribution = { ...payload, attribution }
+    const event = recordLocalAutomationEvent(type, payloadWithAttribution)
 
     if (options.notify === false) {
       setAutomationStatus(`${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY // SINGLE FULFILLMENT EMAIL SENT`)
       return true
     }
 
-    const sent = await notifyOwner(type, payload)
+    const sent = await notifyOwner(type, payloadWithAttribution)
     setAutomationStatus(
       sent
         ? `${type.replaceAll('_', ' ').toUpperCase()} SENT TO OWNER // ${event.actionMode.replaceAll('_', ' ').toUpperCase()}`
@@ -694,6 +737,7 @@ export default function QuantumAIWebsite() {
       current_tools: fulfillmentForm.currentTools,
       constraints: fulfillmentForm.constraints,
       source: 'site_paid_fulfillment_form',
+      attribution,
       amount: selectedPackage?.amount || '',
       review_only: !['outlinedStrategy', 'growthScanPack'].includes(fulfillmentForm.packageKey),
     }
@@ -725,9 +769,9 @@ export default function QuantumAIWebsite() {
 
   async function copyShareLink() {
     try {
-      await navigator.clipboard.writeText(SITE_URL)
+      await navigator.clipboard.writeText(`${MONEY_PAGE_URL}?utm_source=manual&utm_medium=share&utm_campaign=share_button`)
       setShareStatus('LINK COPIED')
-      recordAutomationEvent('share_link_copied', { destination: 'copy_link', url: SITE_URL })
+      recordAutomationEvent('share_link_copied', { destination: 'copy_link', url: MONEY_PAGE_URL })
       return true
     } catch {
       setShareStatus('COPY MANUALLY: QUANTUMAIBUSINESS.COM')
@@ -742,9 +786,9 @@ export default function QuantumAIWebsite() {
     }
 
     try {
-      await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SITE_URL })
+      await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: MONEY_PAGE_URL })
       setShareStatus('SHARE PANEL OPENED')
-      await recordAutomationEvent('system_share_started', { destination: 'system_share', url: SITE_URL })
+      await recordAutomationEvent('system_share_started', { destination: 'system_share', url: MONEY_PAGE_URL })
     } catch {
       setShareStatus('SHARE CANCELLED')
     }
@@ -757,7 +801,7 @@ export default function QuantumAIWebsite() {
 
     window.open(destination.href, '_blank', 'noopener,noreferrer')
     if (!destination.copyFirst) setShareStatus(`OPENED ${destination.label.toUpperCase()}`)
-    await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: SITE_URL })
+    await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: destination.shareUrl || MONEY_PAGE_URL })
   }
 
   async function copyCampaignLink(link) {
@@ -830,27 +874,33 @@ export default function QuantumAIWebsite() {
   const shareDestinations = [
     {
       label: 'Facebook',
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`,
+      shareUrl: `${MONEY_PAGE_URL}?utm_source=facebook&utm_medium=social_share&utm_campaign=share_dock`,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${MONEY_PAGE_URL}?utm_source=facebook&utm_medium=social_share&utm_campaign=share_dock`)}`,
     },
     {
       label: 'X',
-      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(`${SHARE_TITLE}: ${SHARE_TEXT}`)}`,
+      shareUrl: `${MONEY_PAGE_URL}?utm_source=x&utm_medium=social_share&utm_campaign=share_dock`,
+      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(`${MONEY_PAGE_URL}?utm_source=x&utm_medium=social_share&utm_campaign=share_dock`)}&text=${encodeURIComponent(`${SHARE_TITLE}: ${SHARE_TEXT}`)}`,
     },
     {
       label: 'LinkedIn',
-      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`,
+      shareUrl: `${MONEY_PAGE_URL}?utm_source=linkedin&utm_medium=social_share&utm_campaign=share_dock`,
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${MONEY_PAGE_URL}?utm_source=linkedin&utm_medium=social_share&utm_campaign=share_dock`)}`,
     },
     {
       label: 'Reddit',
-      href: `https://www.reddit.com/submit?url=${encodeURIComponent(SITE_URL)}&title=${encodeURIComponent(SHARE_TITLE)}`,
+      shareUrl: `${MONEY_PAGE_URL}?utm_source=reddit&utm_medium=social_share&utm_campaign=share_dock`,
+      href: `https://www.reddit.com/submit?url=${encodeURIComponent(`${MONEY_PAGE_URL}?utm_source=reddit&utm_medium=social_share&utm_campaign=share_dock`)}&title=${encodeURIComponent(SHARE_TITLE)}`,
     },
     {
       label: 'Threads',
-      href: `https://www.threads.net/intent/post?text=${encodeURIComponent(`${SHARE_TITLE} ${SITE_URL}`)}`,
+      shareUrl: `${MONEY_PAGE_URL}?utm_source=threads&utm_medium=social_share&utm_campaign=share_dock`,
+      href: `https://www.threads.net/intent/post?text=${encodeURIComponent(`${SHARE_TITLE} ${MONEY_PAGE_URL}?utm_source=threads&utm_medium=social_share&utm_campaign=share_dock`)}`,
     },
     {
       label: 'Bluesky',
-      href: `https://bsky.app/intent/compose?text=${encodeURIComponent(`${SHARE_TITLE}: ${SHARE_TEXT} ${SITE_URL}`)}`,
+      shareUrl: `${MONEY_PAGE_URL}?utm_source=bluesky&utm_medium=social_share&utm_campaign=share_dock`,
+      href: `https://bsky.app/intent/compose?text=${encodeURIComponent(`${SHARE_TITLE}: ${SHARE_TEXT} ${MONEY_PAGE_URL}?utm_source=bluesky&utm_medium=social_share&utm_campaign=share_dock`)}`,
     },
     {
       label: 'Instagram',

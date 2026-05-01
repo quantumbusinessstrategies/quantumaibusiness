@@ -6,6 +6,19 @@ Use this as the main link in bios, organic posts, replies, and early outreach:
 
 `https://quantumaibusiness.com/business-growth-scan.html?utm_source=manual&utm_medium=organic&utm_campaign=monetization_sprint`
 
+## Referral link
+
+Use this when someone wants to send a business owner over without explaining the whole offer:
+
+`https://quantumaibusiness.com/refer-business.html?utm_source=manual&utm_medium=referral&utm_campaign=refer_business`
+
+## Daily automation
+
+Vercel runs two daily backend jobs when deployed with `CRON_SECRET`:
+
+- `/api/daily-digest` sends/logs the owner operating checklist.
+- `/api/campaign-batch` generates/logs a daily monetization batch for organic posts, direct outreach, and owner-reviewed ads.
+
 ## Primary offer
 
 Push the `$49.99 Growth Scan Pack` first.

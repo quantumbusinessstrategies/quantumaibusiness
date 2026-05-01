@@ -222,6 +222,8 @@ export default function OwnerConsole() {
   const [sendStatus, setSendStatus] = useState('')
   const [growthStatus, setGrowthStatus] = useState('')
   const [growthPack, setGrowthPack] = useState('')
+  const [campaignBatchStatus, setCampaignBatchStatus] = useState('')
+  const [campaignBatch, setCampaignBatch] = useState('')
   const [digestStatus, setDigestStatus] = useState('')
   const [followUpStatus, setFollowUpStatus] = useState('')
   const [followUpDraft, setFollowUpDraft] = useState('')
@@ -259,12 +261,26 @@ export default function OwnerConsole() {
   const outreachCopy = useMemo(() => buildOutreachCopy({ form: effective, parsed }), [effective, parsed])
   const packageDetail = PACKAGE_DETAILS[effective.packageKey] || PACKAGE_DETAILS.outlinedStrategy
   const pipelineStats = useMemo(
-    () => ({
-      active: pipeline.filter((item) => !['closed', 'reply sent'].includes(item.status)).length,
-      paid: pipeline.filter((item) => item.status === 'paid intake').length,
-      upsell: pipeline.filter((item) => item.status === 'upsell target').length,
-      value: pipeline.reduce((sum, item) => sum + Number(item.numericValue || 0), 0),
-    }),
+    () => {
+      const activeItems = pipeline.filter((item) => !['closed', 'reply sent'].includes(item.status))
+      const paidItems = pipeline.filter((item) => item.status === 'paid intake')
+      const upsellItems = pipeline.filter((item) => item.status === 'upsell target')
+      const totalValue = pipeline.reduce((sum, item) => sum + Number(item.numericValue || 0), 0)
+      const activeValue = activeItems.reduce((sum, item) => sum + Number(item.numericValue || 0), 0)
+      const scanPackCount = pipeline.filter((item) => item.packageKey === 'growthScanPack').length
+      const automationCount = pipeline.filter((item) => ['automatedUtility', 'fullStrategic', 'premiumReferral'].includes(item.packageKey)).length
+      const averageValue = pipeline.length ? totalValue / pipeline.length : 0
+      return {
+        active: activeItems.length,
+        paid: paidItems.length,
+        upsell: upsellItems.length,
+        value: totalValue,
+        activeValue,
+        scanPackCount,
+        automationCount,
+        averageValue,
+      }
+    },
     [pipeline],
   )
 
@@ -534,6 +550,40 @@ export default function OwnerConsole() {
     }
   }
 
+  async function requestCampaignBatch() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setDigestStatus('')
+    setRouteStatus('')
+    if (!ownerToken) {
+      setCampaignBatchStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to generate the daily campaign batch.')
+      return
+    }
+
+    try {
+      setCampaignBatchStatus('Generating daily monetization campaign batch...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/campaign-batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify({ source: 'owner_console_campaign_batch' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setCampaignBatch(data.batch || 'No campaign batch returned.')
+      setCampaignBatchStatus(
+        data.generated
+          ? 'Daily campaign batch generated, emailed to owner, and logged'
+          : `Fallback campaign batch returned: ${data.generation_reason || 'AI generation unavailable'}`,
+      )
+    } catch (error) {
+      setCampaignBatchStatus(`Campaign batch failed: ${error.message}`)
+    }
+  }
+
   async function requestLeadRoute() {
     setAiDraftStatus('')
     setSendStatus('')
@@ -763,6 +813,10 @@ export default function OwnerConsole() {
             <span><strong>{pipelineStats.paid}</strong> paid</span>
             <span><strong>{pipelineStats.upsell}</strong> upsell</span>
             <span><strong>${pipelineStats.value.toFixed(2)}</strong> tracked</span>
+            <span><strong>${pipelineStats.activeValue.toFixed(2)}</strong> active value</span>
+            <span><strong>{pipelineStats.scanPackCount}</strong> scan packs</span>
+            <span><strong>{pipelineStats.automationCount}</strong> high-tier</span>
+            <span><strong>${pipelineStats.averageValue.toFixed(2)}</strong> avg lead</span>
           </div>
           <div className="owner-pipeline">
             {pipeline.length ? (
@@ -805,6 +859,7 @@ export default function OwnerConsole() {
                 <span className={backendHealth.configured?.automation_webhook ? 'is-on' : ''}>Webhook</span>
                 <span className={backendHealth.configured?.owner_action_token ? 'is-on' : ''}>Owner Key</span>
                 <span className={backendHealth.configured?.cron_secret ? 'is-on' : ''}>Cron</span>
+                <span className={backendHealth.campaign_batch_mode === 'daily_cron_enabled' ? 'is-on' : ''}>Batch</span>
               </div>
             )}
             {backendHealth && (
@@ -893,6 +948,7 @@ export default function OwnerConsole() {
           <div className="owner-panel-title">
             <h2>9. Growth Automation Pack</h2>
             <button type="button" onClick={requestGrowthPack}>GENERATE PACK</button>
+            <button type="button" onClick={requestCampaignBatch}>DAILY BATCH</button>
           </div>
           <p>
             Creates owner-reviewed ads, social posts, direct outreach, launch loop, and tracking actions for QuantumAiBusiness.
@@ -904,14 +960,16 @@ export default function OwnerConsole() {
             <span>Premium review</span>
           </div>
           {growthStatus && <p className="owner-inline-status">{growthStatus}</p>}
+          {campaignBatchStatus && <p className="owner-inline-status">{campaignBatchStatus}</p>}
         </div>
 
         <div className="owner-panel">
           <div className="owner-panel-title">
             <h2>10. Campaign Draft</h2>
             <button type="button" onClick={() => copyText('Growth pack', growthPack)}>COPY PACK</button>
+            <button type="button" onClick={() => copyText('Daily campaign batch', campaignBatch)}>COPY BATCH</button>
           </div>
-          <pre>{growthPack || 'No growth pack generated yet. Use GENERATE PACK after adding the owner token.'}</pre>
+          <pre>{campaignBatch || growthPack || 'No growth pack generated yet. Use GENERATE PACK or DAILY BATCH after adding the owner token.'}</pre>
         </div>
       </section>
 
