@@ -28,9 +28,10 @@ Set these as GitHub Pages repository variables or local `.env` values:
 - `VITE_LIFETIME_INSIGHT_PAYMENT_URL`: checkout link for the Lifetime Insight Vault.
 - `VITE_FULL_SPECTRUM_PAYMENT_URL`: checkout/application link for Full-Spectrum Growth.
 - `VITE_OUTLINED_STRATEGY_PAYMENT_URL`: package 1 checkout link, starting at `$9.99`.
-- `VITE_AUTOMATED_UTILITY_PAYMENT_URL`: package 2 checkout link, starting at `$229.99`.
-- `VITE_FULL_STRATEGIC_PAYMENT_URL`: package 3 checkout/application link, starting at `$2,500`.
-- `VITE_PREMIUM_REFERRAL_URL`: package 4 referral URL, defaulting to `https://quantumbusinessstrategies.com`.
+- `VITE_GROWTH_SCAN_PACK_PAYMENT_URL`: package 2 checkout link for the `$49.99` Growth Scan Pack.
+- `VITE_AUTOMATED_UTILITY_PAYMENT_URL`: package 3 checkout link, starting at `$229.99`.
+- `VITE_FULL_STRATEGIC_PAYMENT_URL`: package 4 checkout/application link, starting at `$2,500`.
+- `VITE_PREMIUM_REFERRAL_URL`: package 5 referral URL, defaulting to `https://quantumbusinessstrategies.com`.
 - `VITE_GOOGLE_TAG_ID`: Google Ads/Analytics tag ID for conversion tracking.
 - `VITE_META_PIXEL_ID`: Meta pixel ID for lead conversion tracking.
 
@@ -40,7 +41,7 @@ This repo includes optional Vercel-style API functions:
 
 - `api/lead.js`: receives scans, assessment submits, package selections, premium referrals, and share actions.
 - `api/stripe-webhook.js`: receives Stripe `checkout.session.completed` events.
-- `api/fulfillment.js`: generates paid fulfillment drafts and can auto-send the $9.99 outlined strategy when `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier`.
+- `api/fulfillment.js`: generates paid fulfillment drafts and can auto-send the $9.99 diagnostic and $49.99 growth scan pack when `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier`.
 
 See `docs/AUTOMATION_BACKEND.md` for deployment, Stripe webhook, and environment variable setup.
 

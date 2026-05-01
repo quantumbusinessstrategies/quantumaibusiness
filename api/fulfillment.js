@@ -10,6 +10,7 @@ import {
 
 const PACKAGE_NAMES = {
   outlinedStrategy: 'Outlined Strategy',
+  growthScanPack: 'Growth Scan Pack',
   automatedUtility: 'Automated Utility',
   fullStrategic: 'Full Strategic Growth',
   premiumReferral: 'Premium QuantumBusinessStrategies Referral',
@@ -28,6 +29,19 @@ const PACKAGE_SCOPES = {
       'Deliver a useful entry-level strategy: snapshot, likely leaks, top 5 fixes, 7-day action plan, and recommended upgrade path.',
       'Mention that Automated Utility is the next step for hands-on workflow setup.',
       'End with this exact line: End of outlined strategy.',
+    ].join(' '),
+  },
+  growthScanPack: {
+    maxTokens: 3000,
+    instructions: [
+      'This is the $49.99 Growth Scan Pack package.',
+      'Create an auto-deliverable pack with five concise scan slots/readouts.',
+      'The client may use the five scans for business pages, offers, competitors, products, or funnel steps based on the intake.',
+      'For each scan slot include: target/focus, likely weakness, growth opportunity, basic AI utility action, and next step.',
+      'Do not promise implementation, audits, ad management, dashboards, multi-day consulting, or custom build work.',
+      'Do not invent fees, timelines, hours, contracts, or access requirements.',
+      'Mention that Automated Utility is the next step if they want intake, alerts, follow-up, and reporting connected.',
+      'End with this exact line: End of growth scan pack.',
     ].join(' '),
   },
   automatedUtility: {
@@ -72,6 +86,7 @@ function normalizePackageKey(value, packageName = '') {
   if (text.includes('premium') || text.includes('referral')) return 'premiumReferral'
   if (text.includes('full') || text.includes('strategic')) return 'fullStrategic'
   if (text.includes('automated') || text.includes('utility')) return 'automatedUtility'
+  if (text.includes('scan pack') || text.includes('growth scan')) return 'growthScanPack'
   return 'outlinedStrategy'
 }
 
@@ -84,7 +99,7 @@ function normalizeClientEmailMode(value) {
 function canAutoSendClientDeliverable({ clientEmailMode, packageKey, reviewOnly, generated }) {
   if (!generated || reviewOnly) return false
   if (clientEmailMode === 'auto_send_all' || clientEmailMode === 'auto_send') return true
-  return clientEmailMode === 'auto_send_low_tier' && packageKey === 'outlinedStrategy'
+  return clientEmailMode === 'auto_send_low_tier' && ['outlinedStrategy', 'growthScanPack'].includes(packageKey)
 }
 
 function buildClientSubject(intake) {
@@ -95,7 +110,7 @@ function buildClientSubject(intake) {
 function buildClientDeliveryText(intake, deliverable) {
   const business = intake.company || intake.website || 'your business'
   const upgradePath =
-    intake.package_key === 'outlinedStrategy'
+    ['outlinedStrategy', 'growthScanPack'].includes(intake.package_key)
       ? [
           '',
           'Recommended upgrade path:',
@@ -156,6 +171,33 @@ function buildFallbackDeliverable(intake) {
       '- Automated Utility is the best upgrade if the business needs intake routing, follow-up, alerts, or reporting connected.',
       '',
       'Note: This is an entry-level strategy outline, not a guarantee of revenue or a full implementation plan.',
+    ].join('\n')
+  }
+  if (packageKey === 'growthScanPack') {
+    const target = intake.website || intake.company || 'Primary business'
+    return [
+      `QuantumAiBusiness Growth Scan Pack for ${business}`,
+      '',
+      'Business snapshot:',
+      `- Primary target: ${target}`,
+      `- Objective: ${intake.objective || 'Find growth leaks, scan multiple business angles, and identify automation-ready opportunities.'}`,
+      `- Current tools: ${intake.current_tools || 'Not provided'}`,
+      '',
+      'Five scan slots:',
+      '- Scan 1: Main offer clarity // Weakness: unclear first action // Utility: rewrite the offer into one direct promise and one next step.',
+      '- Scan 2: Lead capture path // Weakness: warm interest may not be saved // Utility: map every form, button, email, and contact action into a single lead record.',
+      '- Scan 3: Follow-up gap // Weakness: interested prospects can go cold // Utility: draft a simple 3-message follow-up path for non-buyers or incomplete inquiries.',
+      '- Scan 4: Traffic source logic // Weakness: source quality may be unknown // Utility: tag links and compare which sources create scans, payments, and replies.',
+      '- Scan 5: Upgrade readiness // Weakness: strategy may stay manual // Utility: identify whether Automated Utility should connect alerts, intake, follow-up, and reporting.',
+      '',
+      'Basic AI utility actions:',
+      '- Use each scan slot on one business page, service offer, competitor page, landing page, or workflow step.',
+      '- Compare the five outputs and prioritize the repeat problems first.',
+      '- Upgrade only if the business needs the recommendations turned into a connected system.',
+      '',
+      'Note: This pack provides automated strategic readouts and utility prompts, not implementation, legal advice, financial advice, ad management, or guaranteed outcomes.',
+      '',
+      'End of growth scan pack.',
     ].join('\n')
   }
   return [

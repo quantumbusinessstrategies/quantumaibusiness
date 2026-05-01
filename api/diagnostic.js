@@ -46,8 +46,8 @@ function fallbackDiagnostic(input) {
       'Untracked lead sources make growth decisions feel like guessing.',
       'A broad offer can attract curiosity without enough paid action.',
     ],
-    recommended_package: 'outlinedStrategy',
-    next_step: 'Start with the $9.99 Outlined Strategy, then upgrade to Automated Utility if follow-up or routing gaps are confirmed.',
+    recommended_package: 'growthScanPack',
+    next_step: 'Start with the Growth Scan Pack if they want multiple readouts; upgrade to Automated Utility when follow-up or routing gaps are confirmed.',
   }
 }
 
@@ -78,7 +78,7 @@ async function generateDiagnostic(input) {
               risks: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 4 },
               recommended_package: {
                 type: 'string',
-                enum: ['outlinedStrategy', 'automatedUtility', 'fullStrategic', 'premiumReferral'],
+                enum: ['outlinedStrategy', 'growthScanPack', 'automatedUtility', 'fullStrategic', 'premiumReferral'],
               },
               next_step: { type: 'string' },
             },

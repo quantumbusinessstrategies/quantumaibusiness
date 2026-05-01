@@ -32,6 +32,7 @@ function inferPackageName(session) {
 
   const amount = session.amount_total || 0
   if (amount === 999) return 'Outlined Strategy'
+  if (amount === 4999) return 'Growth Scan Pack'
   if (amount === 22999) return 'Automated Utility'
   if (amount === 250000) return 'Full Strategic Growth'
   return session.payment_link ? `Stripe Payment Link ${session.payment_link}` : 'Stripe Checkout'

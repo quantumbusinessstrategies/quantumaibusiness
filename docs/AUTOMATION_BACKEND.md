@@ -29,7 +29,7 @@ Keep `quantumaibusiness.com` on GitHub Pages for now and deploy only the API to 
    - `OPENAI_MODEL=gpt-5-mini`
    - `FULFILLMENT_MODE=intake_only` to collect paid intake for owner review, or `auto_generate` to generate AI drafts automatically
    - `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` to hold generated drafts for owner review
-   - `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier` to auto-send only the $9.99 Outlined Strategy after paid intake
+   - `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier` to auto-send only the $9.99 diagnostic and $49.99 Growth Scan Pack after paid intake
    - `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_all` only if you intentionally want every generated package draft sent without owner review
    - `STRIPE_CLIENT_ONBOARDING_MODE=auto_send` to email paid buyers the fulfillment intake link after checkout, or `off` to disable
    - `OWNER_ACTION_TOKEN=` a private random token used by the local owner console to send approved drafts to clients
@@ -71,7 +71,7 @@ When backend hosting is available:
 2. Start with `FULFILLMENT_MODE=intake_only` so requests go to owner review.
 3. Keep `FULFILLMENT_CLIENT_EMAIL_MODE=owner_review` while testing so drafts notify the owner but do not auto-send to clients.
 4. After testing, switch to `FULFILLMENT_MODE=auto_generate` if you want the backend to create the first AI deliverable immediately.
-5. Use `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier` for the recommended first automation stage. This auto-sends only package 1, while package 2, package 3, and premium referral stay owner-reviewed.
+5. Use `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier` for the recommended first automation stage. This auto-sends the low-tier $9.99 and $49.99 packages, while Automated Utility, Full Strategic Growth, and premium referral stay owner-reviewed.
 6. Only switch `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_all` after generated drafts are consistently acceptable for direct client delivery across every tier.
 7. Add `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL` if you want generated drafts emailed directly to clients.
 
@@ -81,7 +81,7 @@ Recommended live settings for the current business stage:
 - `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier`
 - `STRIPE_CLIENT_ONBOARDING_MODE=auto_send`
 
-With those values, Stripe checkout still sends the buyer to the intake form, the $9.99 Outlined Strategy can auto-generate and auto-send after intake, and higher-ticket packages remain held for owner review.
+With those values, Stripe checkout still sends the buyer to the intake form, the $9.99 diagnostic and $49.99 Growth Scan Pack can auto-generate and auto-send after intake, and higher-ticket packages remain held for owner review.
 
 ## Owner-Approved Draft Sending
 

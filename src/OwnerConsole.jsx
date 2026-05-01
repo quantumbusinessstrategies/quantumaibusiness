@@ -5,6 +5,7 @@ const OWNER_TOKEN_STORAGE_KEY = 'quantumaibusiness_owner_action_token'
 const AUTOMATION_API_URL = 'https://quantumaibusiness.vercel.app'
 const PACKAGE_OPTIONS = [
   ['outlinedStrategy', 'Outlined Strategy'],
+  ['growthScanPack', 'Growth Scan Pack'],
   ['automatedUtility', 'Automated Utility'],
   ['fullStrategic', 'Full Strategic Growth'],
   ['premiumReferral', 'Premium Referral'],
@@ -14,6 +15,11 @@ const PACKAGE_DETAILS = {
     label: 'Outlined Strategy',
     price: '$9.99',
     next: 'Deliver strategy outline, then recommend Automated Utility if follow-up or routing gaps are obvious.',
+  },
+  growthScanPack: {
+    label: 'Growth Scan Pack',
+    price: '$49.99',
+    next: 'Auto-deliver five scan readouts, then recommend Automated Utility if repeated automation gaps appear.',
   },
   automatedUtility: {
     label: 'Automated Utility',
@@ -35,7 +41,7 @@ const STATUS_OPTIONS = ['new', 'paid intake', 'report ready', 'reply sent', 'ups
 const DAILY_ACTIONS = [
   'Check Stripe for new payments and match them to fulfillment emails.',
   'Paste each paid packet into this console and save it to the pipeline.',
-  'Copy/send the customer reply for any $9.99 strategy buyers.',
+  'Confirm auto-delivery for $9.99 diagnostics and $49.99 growth scan packs.',
   'Mark obvious upgrade candidates as upsell target.',
   'Post one organic launch message using the outreach copy below.',
   'Export the pipeline at the end of the day for backup/accounting.',
@@ -291,7 +297,16 @@ export default function OwnerConsole() {
   }
 
   function saveCurrentLead() {
-    const numericValue = effective.packageKey === 'fullStrategic' ? 2500 : effective.packageKey === 'automatedUtility' ? 229.99 : effective.packageKey === 'outlinedStrategy' ? 9.99 : 0
+    const numericValue =
+      effective.packageKey === 'fullStrategic'
+        ? 2500
+        : effective.packageKey === 'automatedUtility'
+          ? 229.99
+          : effective.packageKey === 'growthScanPack'
+            ? 49.99
+            : effective.packageKey === 'outlinedStrategy'
+              ? 9.99
+              : 0
     const lead = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       created: new Date().toISOString(),

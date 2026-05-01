@@ -2,12 +2,14 @@ const DEFAULT_OWNER_EMAIL = 'quantumbusinessstrategies@gmail.com'
 const DEFAULT_SITE_ORIGIN = 'https://quantumaibusiness.com'
 const PACKAGE_WEIGHT = {
   outlinedStrategy: 14,
+  growthScanPack: 24,
   automatedUtility: 34,
   fullStrategic: 58,
   premiumReferral: 64,
 }
 const PACKAGE_LABELS = {
   outlinedStrategy: 'Outlined Strategy',
+  growthScanPack: 'Growth Scan Pack',
   automatedUtility: 'Automated Utility',
   fullStrategic: 'Full Strategic Growth',
   premiumReferral: 'Premium Referral',
@@ -100,6 +102,7 @@ export function inferPackageKey(payload = {}) {
   if (packageText.includes('premium') || packageText.includes('referral')) return 'premiumReferral'
   if (packageText.includes('full') || packageText.includes('strategic') || amount >= 2500) return 'fullStrategic'
   if (packageText.includes('automated') || packageText.includes('utility') || amount >= 229) return 'automatedUtility'
+  if (packageText.includes('scan pack') || packageText.includes('growth scan') || amount >= 49.99) return 'growthScanPack'
   if (packageText.includes('outlined') || packageText.includes('strategy') || amount >= 9.99) return 'outlinedStrategy'
   return ''
 }

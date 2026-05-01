@@ -6,6 +6,7 @@ const PAYMENT_LINKS = {
     import.meta.env.VITE_OUTLINED_STRATEGY_PAYMENT_URL ||
     import.meta.env.VITE_AUDIT_PAYMENT_URL ||
     'https://buy.stripe.com/fZu28qet66Ff2pE78Cfw401',
+  growthScanPack: import.meta.env.VITE_GROWTH_SCAN_PACK_PAYMENT_URL || '',
   automatedUtility:
     import.meta.env.VITE_AUTOMATED_UTILITY_PAYMENT_URL ||
     import.meta.env.VITE_OVERHAUL_PAYMENT_URL ||
@@ -36,6 +37,7 @@ const EVENT_STORAGE_KEY = 'quantumaibusiness_event_log'
 const MAX_EVENT_LOG = 40
 const FULFILLMENT_PACKAGES = [
   ['outlinedStrategy', 'Outlined Strategy'],
+  ['growthScanPack', 'Growth Scan Pack'],
   ['automatedUtility', 'Automated Utility'],
   ['fullStrategic', 'Full Strategic Growth'],
   ['premiumReferral', 'Premium Referral'],
@@ -51,7 +53,7 @@ const AUTOMATION_FLOW = [
   },
   {
     label: 'Auto-route',
-    copy: 'Packages 1-3 move prospects into checkout or contact paths without waiting for manual handling.',
+    copy: 'Low-tier packages move prospects into checkout and automated delivery while serious scopes are held for owner review.',
   },
   {
     label: 'Escalate',
@@ -66,6 +68,10 @@ const CAMPAIGN_LINKS = [
   {
     label: '$9.99 strategy offer',
     href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=strategy_offer#packages`,
+  },
+  {
+    label: '$49.99 scan pack',
+    href: `${SITE_URL}/?utm_source=organic&utm_medium=share&utm_campaign=growth_scan_pack#packages`,
   },
   {
     label: 'Automation utility offer',
@@ -89,6 +95,7 @@ const SOCIAL_SETUP = [
 ]
 const PACKAGE_LADDER = [
   ['Entry', '$9.99', 'Paid diagnostic gateway that can auto-deliver after intake.'],
+  ['Pack', '$49.99', 'Five-scan AI utility pack that can auto-deliver without owner approval.'],
   ['Core', '$229.99+', 'Automation utility path for businesses ready to connect workflow pieces.'],
   ['Anchor', '$2,500+', 'Owner-reviewed strategic build for serious growth-system work.'],
   ['Premier', 'Referral', 'High-touch QuantumBusinessStrategies routing when scope is bigger.'],
@@ -653,6 +660,11 @@ export default function QuantumAIWebsite() {
       return
     }
 
+    if (!PAYMENT_LINKS[offer.key]) {
+      setPackageStatus(`${offer.title.toUpperCase()} IS READY IN CODE - CREATE + ADD THE STRIPE PAYMENT LINK TO ACTIVATE CHECKOUT`)
+      return
+    }
+
     setPackageStatus(`${offer.title.toUpperCase()} SELECTED - OWNER NOTIFIED - OPENING CHECKOUT`)
     window.location.assign(PAYMENT_LINKS[offer.key])
   }
@@ -683,7 +695,7 @@ export default function QuantumAIWebsite() {
       constraints: fulfillmentForm.constraints,
       source: 'site_paid_fulfillment_form',
       amount: selectedPackage?.amount || '',
-      review_only: fulfillmentForm.packageKey !== 'outlinedStrategy',
+      review_only: !['outlinedStrategy', 'growthScanPack'].includes(fulfillmentForm.packageKey),
     }
 
     try {
@@ -771,8 +783,19 @@ export default function QuantumAIWebsite() {
       cta: 'Unlock Diagnostic',
     },
     {
-      key: 'automatedUtility',
+      key: 'growthScanPack',
       number: '02',
+      title: 'Growth Scan Pack',
+      price: '$49.99 one-time',
+      amount: 49.99,
+      eyebrow: 'AUTO-DELIVERABLE PACK',
+      copy: 'Five AI-assisted growth scans for businesses, pages, offers, or competitors with reusable notes, risks, and next-action maps.',
+      bullets: ['5 scan credits', 'Basic AI utility', 'Auto-send eligible'],
+      cta: 'Unlock Scan Pack',
+    },
+    {
+      key: 'automatedUtility',
+      number: '03',
       title: 'Automated Utility',
       price: 'Starts at $229.99',
       amount: 229.99,
@@ -783,7 +806,7 @@ export default function QuantumAIWebsite() {
     },
     {
       key: 'fullStrategic',
-      number: '03',
+      number: '04',
       title: 'Full Strategic Growth',
       price: 'Starts at $2,500',
       amount: 2500,
@@ -794,7 +817,7 @@ export default function QuantumAIWebsite() {
     },
     {
       key: 'premiumReferral',
-      number: '04',
+      number: '05',
       title: 'Premium QuantumBusinessStrategies Referral',
       price: 'Price upon referral',
       amount: 0,
