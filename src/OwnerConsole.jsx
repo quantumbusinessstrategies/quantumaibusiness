@@ -80,6 +80,54 @@ const TRAFFIC_CHANNELS = [
   ['email_signature', 'Email Signature', 'Add the scan link under every outbound email.'],
   ['google_business', 'Google Business', 'If eligible, post the scan offer as a business update.'],
 ]
+const PASSIVE_TRAFFIC_ASSETS = [
+  {
+    label: 'Email Signature',
+    purpose: 'Always-on link under every outbound email.',
+    text:
+      'AI-assisted business pressure scans: https://quantumaibusiness.com/business-growth-scan.html?utm_source=email_signature&utm_medium=passive&utm_campaign=always_on',
+  },
+  {
+    label: 'Social Bio',
+    purpose: 'Use in X, LinkedIn, Facebook, YouTube, TikTok, or forum bios.',
+    text:
+      'AI business pressure scans for weak offers, missed follow-up, and unused automation paths. Start: https://quantumaibusiness.com/business-growth-scan.html?utm_source=social_bio&utm_medium=passive&utm_campaign=always_on',
+  },
+  {
+    label: 'Pinned Post',
+    purpose: 'Pin where possible so every profile visit has a next step.',
+    text:
+      'Most businesses do not only need more traffic. They need a cleaner path from interest to action. QuantumAiBusiness scans weak offers, missing follow-up, and unused automation paths: https://quantumaibusiness.com/business-growth-scan.html?utm_source=pinned_post&utm_medium=passive&utm_campaign=always_on',
+  },
+  {
+    label: 'QR / Offline',
+    purpose: 'Use for direct conversations, screenshots, print, or local outreach.',
+    text:
+      'https://quantumaibusiness.com/business-growth-scan.html?utm_source=qr&utm_medium=offline&utm_campaign=always_on',
+  },
+]
+const PAID_TRAFFIC_TESTS = [
+  {
+    channel: 'Meta / Facebook',
+    budget: '$5-$10 per day for 2-3 days',
+    setup: 'Use Traffic or Leads objective, send to the scan page, and stop fast if clicks do not become scans.',
+  },
+  {
+    channel: 'Google Search',
+    budget: '$5-$15 per day exact-intent test',
+    setup: 'Test phrases around business automation audit, website conversion audit, AI business audit, and follow-up automation.',
+  },
+  {
+    channel: 'Reddit Ads',
+    budget: '$5 per day tiny test',
+    setup: 'Only use helpful no-hype copy in entrepreneur or operator audiences. Watch comments closely.',
+  },
+  {
+    channel: 'LinkedIn',
+    budget: 'Hold until the offer proves itself',
+    setup: 'Good business audience, but usually expensive. Use organic LinkedIn first, then paid only for proven copy.',
+  },
+]
 
 function isLocalHost() {
   return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
@@ -309,6 +357,23 @@ function buildTrafficCsv() {
   ].join('\n')
 }
 
+function buildPaidTestCsv() {
+  const header = ['channel', 'budget', 'landing_page', 'setup', 'kill_rule']
+  const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
+  return [
+    header.join(','),
+    ...PAID_TRAFFIC_TESTS.map((test) =>
+      [
+        test.channel,
+        test.budget,
+        'https://quantumaibusiness.com/business-growth-scan.html?utm_source=paid_test&utm_medium=paid&utm_campaign=rapid_intake',
+        test.setup,
+        'Pause if spend produces clicks but no scans, or scans but no paid intent.',
+      ].map(escape).join(','),
+    ),
+  ].join('\n')
+}
+
 export default function OwnerConsole() {
   const localOnly = isLocalHost()
   const [rawPacket, setRawPacket] = useState('')
@@ -533,6 +598,17 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied('Traffic links CSV export ready')
+  }
+
+  function exportPaidTestCsv() {
+    const blob = new Blob([buildPaidTestCsv()], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'quantumaibusiness-paid-test-plan.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+    setCopied('Paid test CSV export ready')
   }
 
   async function copyQuickXPost() {
@@ -1193,9 +1269,42 @@ export default function OwnerConsole() {
           </div>
         </div>
 
+        <div className="owner-panel owner-passive-paid">
+          <div className="owner-panel-title">
+            <h2>14. Passive + Paid Launch</h2>
+            <button type="button" onClick={() => copyText('Email signature', PASSIVE_TRAFFIC_ASSETS[0].text)}>COPY EMAIL SIG</button>
+            <button type="button" onClick={() => copyText('Social bio', PASSIVE_TRAFFIC_ASSETS[1].text)}>COPY BIO</button>
+            <button type="button" onClick={exportPaidTestCsv}>EXPORT PAID</button>
+          </div>
+          <p>
+            Best fast route: set the passive links once, then run one tiny paid test at a time. Keep spend low until a channel creates scans, paid intent, or replies.
+          </p>
+          <div className="owner-passive-grid">
+            {PASSIVE_TRAFFIC_ASSETS.map((asset) => (
+              <article key={asset.label}>
+                <strong>{asset.label}</strong>
+                <p>{asset.purpose}</p>
+                <code>{asset.text}</code>
+                <button type="button" onClick={() => copyText(asset.label, asset.text)}>COPY</button>
+              </article>
+            ))}
+          </div>
+          <div className="owner-paid-grid">
+            {PAID_TRAFFIC_TESTS.map((test) => (
+              <article key={test.channel}>
+                <strong>{test.channel}</strong>
+                <span>{test.budget}</span>
+                <p>{test.setup}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>14. Rapid Intake</h2>
+            <h2>15. Rapid Intake</h2>
           </div>
           <div className="owner-action-list">
             <label><input type="checkbox" /> Post one X or LinkedIn link using the traffic-board UTM.</label>
@@ -1204,12 +1313,10 @@ export default function OwnerConsole() {
             <label><input type="checkbox" /> Check owner console, Gmail, Stripe, and Sheet after posting.</label>
           </div>
         </div>
-      </section>
 
-      <section className="owner-grid owner-ops-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>15. Follow-Up Draft</h2>
+            <h2>16. Follow-Up Draft</h2>
             <button type="button" onClick={requestFollowUpDraft}>GENERATE FOLLOW-UP</button>
           </div>
           <p className="owner-inline-status">
@@ -1217,10 +1324,12 @@ export default function OwnerConsole() {
           </p>
           {followUpStatus && <p className="owner-inline-status">{followUpStatus}</p>}
         </div>
+      </section>
 
+      <section className="owner-grid owner-ops-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>16. Follow-Up Copy</h2>
+            <h2>17. Follow-Up Copy</h2>
             <button type="button" onClick={() => copyText('Follow-up draft', followUpDraft)}>COPY FOLLOW-UP</button>
           </div>
           <pre>{followUpDraft || 'No follow-up generated yet. Review the fields above, then use GENERATE FOLLOW-UP.'}</pre>
@@ -1230,28 +1339,28 @@ export default function OwnerConsole() {
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>17. Strategy Report</h2>
+            <h2>18. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>18. Customer Reply</h2>
+            <h2>19. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>19. Upgrade Follow-Up</h2>
+            <h2>20. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>20. Outreach Copy</h2>
+            <h2>21. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>
