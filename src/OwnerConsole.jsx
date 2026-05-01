@@ -87,6 +87,10 @@ function summarizeInput(raw) {
   }
 }
 
+function fieldValue(current, fallback) {
+  return current || fallback || ''
+}
+
 function buildReport({ form, parsed }) {
   const business = form.business || parsed.business
   const website = form.website || parsed.website
@@ -232,12 +236,12 @@ export default function OwnerConsole() {
   const effective = useMemo(
     () => ({
       ...form,
-      business: form.business || parsed.business,
-      website: form.website || parsed.website,
-      email: form.email || parsed.email,
-      objective: form.objective || parsed.objective,
-      tools: form.tools || parsed.tools,
-      constraints: form.constraints || parsed.constraints,
+      business: fieldValue(form.business, parsed.business),
+      website: fieldValue(form.website, parsed.website),
+      email: fieldValue(form.email, parsed.email),
+      objective: fieldValue(form.objective, parsed.objective),
+      tools: fieldValue(form.tools, parsed.tools),
+      constraints: fieldValue(form.constraints, parsed.constraints),
     }),
     [form, parsed],
   )
@@ -624,27 +628,27 @@ export default function OwnerConsole() {
           </label>
           <label>
             Business
-            <input name="business" value={effective.business} onChange={updateField} />
+            <input name="business" placeholder={parsed.business} value={form.business} onChange={updateField} />
           </label>
           <label>
             Website
-            <input name="website" value={effective.website} onChange={updateField} />
+            <input name="website" placeholder={parsed.website} value={form.website} onChange={updateField} />
           </label>
           <label>
             Customer email
-            <input name="email" value={effective.email} onChange={updateField} />
+            <input name="email" placeholder={parsed.email} value={form.email} onChange={updateField} />
           </label>
           <label>
             Objective
-            <textarea name="objective" value={effective.objective} onChange={updateField} />
+            <textarea name="objective" placeholder={parsed.objective} value={form.objective} onChange={updateField} />
           </label>
           <label>
             Current tools
-            <input name="tools" value={effective.tools} onChange={updateField} />
+            <input name="tools" placeholder={parsed.tools} value={form.tools} onChange={updateField} />
           </label>
           <label>
             Constraints
-            <input name="constraints" value={effective.constraints} onChange={updateField} />
+            <input name="constraints" placeholder={parsed.constraints} value={form.constraints} onChange={updateField} />
           </label>
         </div>
       </section>
