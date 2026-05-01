@@ -46,6 +46,30 @@ const DAILY_ACTIONS = [
   'Post one organic launch message using the outreach copy below.',
   'Export the pipeline at the end of the day for backup/accounting.',
 ]
+const SOCIAL_PLATFORMS = [
+  {
+    platform: 'X',
+    timing: 'Today',
+    action: 'Post one main thread/post, pin it, then manually reply to 3-5 relevant conversations.',
+  },
+  {
+    platform: 'LinkedIn',
+    timing: 'Next business morning',
+    action: 'Post the professional version with a practical no-guarantee CTA.',
+  },
+  {
+    platform: 'Facebook',
+    timing: 'After LinkedIn',
+    action: 'Use the softer local-business version; avoid posting in groups unless it clearly fits rules.',
+  },
+  {
+    platform: 'Reddit',
+    timing: 'Only when relevant',
+    action: 'Comment helpfully first. Link only when someone asks for tools, diagnostics, or examples.',
+  },
+]
+const DEFAULT_SOCIAL_POST =
+  'Most businesses do not just need more traffic. They lose money between the first visit, the unclear next step, weak follow-up, and offers that never get routed. I built QuantumAiBusiness to pressure-scan that path and turn gaps into next actions: https://quantumaibusiness.com/business-growth-scan.html?utm_source=x&utm_medium=organic&utm_campaign=owner_console_quick_post'
 
 function isLocalHost() {
   return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
@@ -206,6 +230,56 @@ function buildOutreachCopy({ form, parsed }) {
 
 function buildCsv(rows) {
   const header = ['created', 'business', 'website', 'email', 'package', 'price', 'status', 'nextAction']
+  const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
+  return [header.join(','), ...rows.map((row) => header.map((key) => escape(row[key])).join(','))].join('\n')
+}
+
+function extractFirstPost(text) {
+  if (!text) return DEFAULT_SOCIAL_POST
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+  const firstUrl = lines.find((line) => line.includes('https://')) || ''
+  const firstQuoted = lines.find((line) => line.startsWith('"') && line.endsWith('"'))
+  const firstAction = lines.find((line) => /x|post|twitter/i.test(line)) || ''
+  return [firstQuoted || firstAction || lines[0], firstUrl].filter(Boolean).join('\n')
+}
+
+function buildSchedulerCsv({ command, queue }) {
+  const source = command || queue || DEFAULT_SOCIAL_POST
+  const xPost = extractFirstPost(source)
+  const rows = [
+    {
+      channel: 'X',
+      text: xPost,
+      link: 'https://quantumaibusiness.com/business-growth-scan.html?utm_source=x&utm_medium=organic&utm_campaign=scheduler_export',
+      timing: 'Next open slot',
+      status: 'Owner approved before posting',
+    },
+    {
+      channel: 'LinkedIn',
+      text:
+        'If your site gets attention but not enough action, the issue may be routing, follow-up, or offer clarity. QuantumAiBusiness runs an AI-assisted pressure scan and gives practical next steps. No guaranteed profits, just structured diagnostics.',
+      link: 'https://quantumaibusiness.com/business-growth-scan.html?utm_source=linkedin&utm_medium=organic&utm_campaign=scheduler_export',
+      timing: 'Next business morning',
+      status: 'Owner approved before posting',
+    },
+    {
+      channel: 'Facebook',
+      text:
+        'Testing a practical AI-assisted business pressure scan for owners who want to find weak follow-up, unclear offers, and missed automation paths. Useful first read, no hype or guaranteed outcomes.',
+      link: 'https://quantumaibusiness.com/business-growth-scan.html?utm_source=facebook&utm_medium=organic&utm_campaign=scheduler_export',
+      timing: 'After LinkedIn',
+      status: 'Owner approved before posting',
+    },
+    {
+      channel: 'Bluesky/Threads',
+      text:
+        'Business growth is often less about more noise and more about fixing the path from interest to action. QuantumAiBusiness scans that path and turns gaps into next steps.',
+      link: 'https://quantumaibusiness.com/business-growth-scan.html?utm_source=threads_bluesky&utm_medium=organic&utm_campaign=scheduler_export',
+      timing: 'Later today',
+      status: 'Owner approved before posting',
+    },
+  ]
+  const header = ['channel', 'text', 'link', 'timing', 'status']
   const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
   return [header.join(','), ...rows.map((row) => header.map((key) => escape(row[key])).join(','))].join('\n')
 }
@@ -411,6 +485,22 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied(`${format.toUpperCase()} export ready`)
+  }
+
+  function exportSchedulerCsv() {
+    const content = buildSchedulerCsv({ command: dailyCommand, queue: socialQueue || campaignBatch || growthPack })
+    const blob = new Blob([content], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'quantumaibusiness-social-scheduler.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+    setCopied('Social scheduler CSV export ready')
+  }
+
+  async function copyQuickXPost() {
+    await copyText('Quick X post', extractFirstPost(dailyCommand || socialQueue || campaignBatch || growthPack || DEFAULT_SOCIAL_POST))
   }
 
   async function refreshBackendHealth() {
@@ -1017,9 +1107,39 @@ export default function OwnerConsole() {
       </section>
 
       <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-social-plan">
+          <div className="owner-panel-title">
+            <h2>11. Social Scheduler</h2>
+            <button type="button" onClick={copyQuickXPost}>COPY X POST</button>
+            <button type="button" onClick={exportSchedulerCsv}>EXPORT CSV</button>
+          </div>
+          <p>
+            Best automation route: generate here, approve here, schedule in Buffer/Typefully/Hypefury. Keep auto-posting off until the accounts have momentum.
+          </p>
+          <div className="owner-social-grid">
+            {SOCIAL_PLATFORMS.map((item) => (
+              <article key={item.platform}>
+                <strong>{item.platform}</strong>
+                <span>{item.timing}</span>
+                <p>{item.action}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>11. Follow-Up Draft</h2>
+            <h2>12. Quick Post</h2>
+            <button type="button" onClick={copyQuickXPost}>COPY</button>
+          </div>
+          <pre>{extractFirstPost(dailyCommand || socialQueue || campaignBatch || growthPack || DEFAULT_SOCIAL_POST)}</pre>
+        </div>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>13. Follow-Up Draft</h2>
             <button type="button" onClick={requestFollowUpDraft}>GENERATE FOLLOW-UP</button>
           </div>
           <p className="owner-inline-status">
@@ -1030,7 +1150,7 @@ export default function OwnerConsole() {
 
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>12. Follow-Up Copy</h2>
+            <h2>14. Follow-Up Copy</h2>
             <button type="button" onClick={() => copyText('Follow-up draft', followUpDraft)}>COPY FOLLOW-UP</button>
           </div>
           <pre>{followUpDraft || 'No follow-up generated yet. Review the fields above, then use GENERATE FOLLOW-UP.'}</pre>
@@ -1040,28 +1160,28 @@ export default function OwnerConsole() {
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>13. Strategy Report</h2>
+            <h2>15. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>14. Customer Reply</h2>
+            <h2>16. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>15. Upgrade Follow-Up</h2>
+            <h2>17. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>16. Outreach Copy</h2>
+            <h2>18. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>
