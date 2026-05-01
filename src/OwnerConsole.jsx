@@ -227,6 +227,7 @@ export default function OwnerConsole() {
   const [socialQueueStatus, setSocialQueueStatus] = useState('')
   const [socialQueue, setSocialQueue] = useState('')
   const [digestStatus, setDigestStatus] = useState('')
+  const [dailyCommand, setDailyCommand] = useState('')
   const [followUpStatus, setFollowUpStatus] = useState('')
   const [followUpDraft, setFollowUpDraft] = useState('')
   const [routeStatus, setRouteStatus] = useState('')
@@ -733,9 +734,10 @@ export default function OwnerConsole() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setDailyCommand(data.command_text || '')
       setDigestStatus(
         data.notification?.notified
-          ? 'Owner digest sent and logged to automation ledger'
+          ? 'Daily revenue command sent and logged to automation ledger'
           : `Digest ran but email was not confirmed: ${data.notification?.error || 'unknown'}`,
       )
     } catch (error) {
@@ -906,7 +908,7 @@ export default function OwnerConsole() {
             )}
           </div>
           <button type="button" onClick={requestAiDraft}>REQUEST REVIEW DRAFT</button>
-          <button type="button" onClick={runDailyDigest}>RUN DIGEST NOW</button>
+          <button type="button" onClick={runDailyDigest}>DAILY COMMAND</button>
           <button type="button" onClick={requestSocialQueue}>SOCIAL QUEUE</button>
           {aiDraftStatus && <p className="owner-inline-status">{aiDraftStatus}</p>}
           {digestStatus && <p className="owner-inline-status">{digestStatus}</p>}
@@ -1010,7 +1012,7 @@ export default function OwnerConsole() {
             <button type="button" onClick={() => copyText('Daily campaign batch', campaignBatch)}>COPY BATCH</button>
             <button type="button" onClick={() => copyText('Social queue', socialQueue)}>COPY QUEUE</button>
           </div>
-          <pre>{socialQueue || campaignBatch || growthPack || 'No growth pack generated yet. Use GENERATE PACK, DAILY BATCH, or SOCIAL QUEUE after adding the owner token.'}</pre>
+          <pre>{dailyCommand || socialQueue || campaignBatch || growthPack || 'No growth pack generated yet. Use DAILY COMMAND, SOCIAL QUEUE, GENERATE PACK, or DAILY BATCH after adding the owner token.'}</pre>
         </div>
       </section>
 
