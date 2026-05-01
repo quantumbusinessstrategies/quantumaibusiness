@@ -70,6 +70,16 @@ const SOCIAL_PLATFORMS = [
 ]
 const DEFAULT_SOCIAL_POST =
   'Most businesses do not just need more traffic. They lose money between the first visit, the unclear next step, weak follow-up, and offers that never get routed. I built QuantumAiBusiness to pressure-scan that path and turn gaps into next actions: https://quantumaibusiness.com/business-growth-scan.html?utm_source=x&utm_medium=organic&utm_campaign=owner_console_quick_post'
+const TRAFFIC_CHANNELS = [
+  ['linkedin', 'LinkedIn', 'Post once, then leave 3 useful comments under business-owner posts.'],
+  ['facebook', 'Facebook', 'Post to your page/profile; group posts only when rules allow useful tools.'],
+  ['reddit', 'Reddit', 'Answer pain-point questions first; link only when directly useful.'],
+  ['quora', 'Quora', 'Answer one lead-gen/automation question with a practical checklist.'],
+  ['youtube_shorts', 'YouTube Shorts', 'Use a 20-second script: problem, scan, no-guarantee CTA.'],
+  ['tiktok', 'TikTok', 'Same short script; keep it direct and visually punchy.'],
+  ['email_signature', 'Email Signature', 'Add the scan link under every outbound email.'],
+  ['google_business', 'Google Business', 'If eligible, post the scan offer as a business update.'],
+]
 
 function isLocalHost() {
   return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
@@ -282,6 +292,21 @@ function buildSchedulerCsv({ command, queue }) {
   const header = ['channel', 'text', 'link', 'timing', 'status']
   const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
   return [header.join(','), ...rows.map((row) => header.map((key) => escape(row[key])).join(','))].join('\n')
+}
+
+function trafficLink(source) {
+  return `https://quantumaibusiness.com/business-growth-scan.html?utm_source=${source}&utm_medium=organic&utm_campaign=traffic_board`
+}
+
+function buildTrafficCsv() {
+  const header = ['source', 'platform', 'link', 'action']
+  const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
+  return [
+    header.join(','),
+    ...TRAFFIC_CHANNELS.map(([source, platform, action]) =>
+      [source, platform, trafficLink(source), action].map(escape).join(','),
+    ),
+  ].join('\n')
 }
 
 export default function OwnerConsole() {
@@ -497,6 +522,17 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied('Social scheduler CSV export ready')
+  }
+
+  function exportTrafficCsv() {
+    const blob = new Blob([buildTrafficCsv()], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'quantumaibusiness-traffic-links.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+    setCopied('Traffic links CSV export ready')
   }
 
   async function copyQuickXPost() {
@@ -1137,9 +1173,43 @@ export default function OwnerConsole() {
       </section>
 
       <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-traffic-board">
+          <div className="owner-panel-title">
+            <h2>13. Traffic Board</h2>
+            <button type="button" onClick={exportTrafficCsv}>EXPORT LINKS</button>
+          </div>
+          <p>
+            Fast free traffic comes from targeted usefulness: posts, comments, answers, shorts, and email signatures. Use these links so analytics can separate channels.
+          </p>
+          <div className="owner-traffic-grid">
+            {TRAFFIC_CHANNELS.map(([source, platform, action]) => (
+              <article key={source}>
+                <strong>{platform}</strong>
+                <p>{action}</p>
+                <code>{trafficLink(source)}</code>
+                <button type="button" onClick={() => copyText(`${platform} traffic link`, trafficLink(source))}>COPY LINK</button>
+              </article>
+            ))}
+          </div>
+        </div>
+
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>13. Follow-Up Draft</h2>
+            <h2>14. Rapid Intake</h2>
+          </div>
+          <div className="owner-action-list">
+            <label><input type="checkbox" /> Post one X or LinkedIn link using the traffic-board UTM.</label>
+            <label><input type="checkbox" /> Make three useful comments before dropping any link.</label>
+            <label><input type="checkbox" /> Add the scan link to email signature and social bios.</label>
+            <label><input type="checkbox" /> Check owner console, Gmail, Stripe, and Sheet after posting.</label>
+          </div>
+        </div>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>15. Follow-Up Draft</h2>
             <button type="button" onClick={requestFollowUpDraft}>GENERATE FOLLOW-UP</button>
           </div>
           <p className="owner-inline-status">
@@ -1150,7 +1220,7 @@ export default function OwnerConsole() {
 
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>14. Follow-Up Copy</h2>
+            <h2>16. Follow-Up Copy</h2>
             <button type="button" onClick={() => copyText('Follow-up draft', followUpDraft)}>COPY FOLLOW-UP</button>
           </div>
           <pre>{followUpDraft || 'No follow-up generated yet. Review the fields above, then use GENERATE FOLLOW-UP.'}</pre>
@@ -1160,28 +1230,28 @@ export default function OwnerConsole() {
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>15. Strategy Report</h2>
+            <h2>17. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>16. Customer Reply</h2>
+            <h2>18. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>17. Upgrade Follow-Up</h2>
+            <h2>19. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>18. Outreach Copy</h2>
+            <h2>20. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>

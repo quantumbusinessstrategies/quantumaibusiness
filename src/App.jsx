@@ -319,6 +319,26 @@ function captureAttribution() {
   return next
 }
 
+function pushAnalyticsEvent(name, params = {}) {
+  const payload = {
+    event_category: params.category || 'quantumaibusiness_funnel',
+    event_label: params.label || params.package || params.destination || '',
+    value: params.value || 0,
+    ...params,
+  }
+  window.dataLayer?.push({ event: name, ...payload })
+  window.gtag?.('event', name, payload)
+  if (window.fbq) {
+    if (name === 'assessment_submitted') {
+      window.fbq('track', 'Lead', payload)
+    } else if (name === 'package_checkout_started') {
+      window.fbq('track', 'InitiateCheckout', payload)
+    } else {
+      window.fbq('trackCustom', name, payload)
+    }
+  }
+}
+
 function createAutomationEvent(type, payload, fallbackTarget) {
   const packageTitle = payload.package?.title || ''
   const isPremium = payload.package?.key === 'premiumReferral' || packageTitle.toLowerCase().includes('premium')
@@ -551,8 +571,14 @@ export default function QuantumAIWebsite() {
         `FAULTS FOUND: ${generatedScan.bottlenecks.join(' / ')} :: PACKAGE ROUTING READY`,
     )
     setLeadStatus('SCAN GENERATED - OWNER NOTIFICATION READY')
-    window.gtag?.('event', 'scan_generated', { event_category: 'diagnostic', value: generatedScan.score })
-    window.fbq?.('trackCustom', 'BusinessScanGenerated')
+    pushAnalyticsEvent('scan_generated', {
+      category: 'diagnostic',
+      label: scanTargetValue,
+      value: generatedScan.score,
+      target: scanTargetValue,
+      utm_source: attribution.utm_source || '',
+      utm_campaign: attribution.utm_campaign || '',
+    })
     try {
       const aiDiagnostic = await requestBusinessDiagnostic({ target: scanTargetValue, form: nextForm })
       if (aiDiagnostic?.ok) {
@@ -590,15 +616,29 @@ export default function QuantumAIWebsite() {
     setLeadStatus('ASSESSMENT PACKET GENERATED')
     setOpen(true)
     setResp(`READINESS ${generatedScan.readiness}% :: UNLOCKED GAPS: ${result.gaps.join(' / ')} :: SELECT PACKAGE 1-4 BELOW`)
-    window.gtag?.('event', 'generate_lead', { event_category: 'assessment', value: generatedScan.readiness })
-    window.fbq?.('track', 'Lead')
+    pushAnalyticsEvent('assessment_submitted', {
+      category: 'assessment',
+      label: form.company || form.website || 'assessment',
+      value: generatedScan.readiness,
+      target: form.website || form.company,
+      gaps: result.gaps.join(', '),
+      utm_source: attribution.utm_source || '',
+      utm_campaign: attribution.utm_campaign || '',
+    })
     const sent = await recordAutomationEvent('assessment_submitted', { form, result, scan: generatedScan })
     if (sent) setLeadStatus('ASSESSMENT SENT TO AUTOMATION HUB')
   }
 
   async function trackPackage(offer) {
-    window.gtag?.('event', 'select_package', { event_category: 'commerce', item_name: offer.title, value: offer.amount || 0 })
-    window.fbq?.('trackCustom', 'PackageSelected', { package: offer.title })
+    pushAnalyticsEvent('package_selected', {
+      category: 'commerce',
+      package: offer.title,
+      package_key: offer.key,
+      value: offer.amount || 0,
+      target: form.website || form.company,
+      utm_source: attribution.utm_source || '',
+      utm_campaign: attribution.utm_campaign || '',
+    })
     await recordAutomationEvent('package_selected', { form, result, scan, package: offer })
   }
 
@@ -617,6 +657,13 @@ export default function QuantumAIWebsite() {
       return
     }
 
+    pushAnalyticsEvent('package_checkout_started', {
+      category: 'commerce',
+      package: offer.title,
+      package_key: offer.key,
+      value: offer.amount || 0,
+      checkout_type: 'stripe',
+    })
     setPackageStatus(`${offer.title.toUpperCase()} SELECTED - OWNER NOTIFIED - OPENING CHECKOUT`)
     window.location.assign(PAYMENT_LINKS[offer.key])
   }
@@ -625,6 +672,7 @@ export default function QuantumAIWebsite() {
     event.preventDefault()
     setPackageStatus('SENDING PREMIUM REFERRAL REQUEST...')
     const premiumOffer = offers.find((offer) => offer.key === 'premiumReferral')
+    pushAnalyticsEvent('premium_referral_requested', { category: 'referral', package: premiumOffer?.title || 'Premium Referral' })
     const sent = await recordAutomationEvent('premium_referral_requested', { form, result, scan, package: premiumOffer })
     setPackageStatus(sent ? 'PREMIUM REFERRAL SENT TO OWNER EMAIL' : 'REFERRAL READY - USE EMAIL OR SITE LINK BELOW')
   }
@@ -652,6 +700,12 @@ export default function QuantumAIWebsite() {
     }
 
     try {
+      pushAnalyticsEvent('paid_fulfillment_intake_submitted', {
+        category: 'fulfillment',
+        package: selectedPackage?.title || fulfillmentForm.packageKey,
+        package_key: fulfillmentForm.packageKey,
+        value: selectedPackage?.amount || 0,
+      })
       const response = await submitFulfillmentPacket(packet)
       const useSingleStaticEmail = response.mode === 'static_email_fallback'
       await recordAutomationEvent('paid_fulfillment_intake', {
@@ -680,6 +734,7 @@ export default function QuantumAIWebsite() {
     try {
       await navigator.clipboard.writeText(`${MONEY_PAGE_URL}?utm_source=manual&utm_medium=share&utm_campaign=share_button`)
       setShareStatus('LINK COPIED')
+      pushAnalyticsEvent('share_link_copied', { category: 'sharing', destination: 'copy_link' })
       recordAutomationEvent('share_link_copied', { destination: 'copy_link', url: MONEY_PAGE_URL })
       return true
     } catch {
@@ -697,6 +752,7 @@ export default function QuantumAIWebsite() {
     try {
       await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: MONEY_PAGE_URL })
       setShareStatus('SHARE PANEL OPENED')
+      pushAnalyticsEvent('system_share_started', { category: 'sharing', destination: 'system_share' })
       await recordAutomationEvent('system_share_started', { destination: 'system_share', url: MONEY_PAGE_URL })
     } catch {
       setShareStatus('SHARE CANCELLED')
@@ -710,11 +766,23 @@ export default function QuantumAIWebsite() {
 
     window.open(destination.href, '_blank', 'noopener,noreferrer')
     if (!destination.copyFirst) setShareStatus(`OPENED ${destination.label.toUpperCase()}`)
+    pushAnalyticsEvent('share_destination_opened', {
+      category: 'sharing',
+      destination: destination.label,
+      url: destination.shareUrl || MONEY_PAGE_URL,
+    })
     await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: destination.shareUrl || MONEY_PAGE_URL })
   }
 
   async function handleCryptoCheckout(offer) {
     const url = CRYPTO_PAYMENT_LINKS[offer.key]
+    pushAnalyticsEvent('crypto_checkout_selected', {
+      category: 'commerce',
+      package: offer.title,
+      package_key: offer.key,
+      value: offer.amount || 0,
+      crypto_ready: Boolean(url),
+    })
     await recordAutomationEvent('crypto_checkout_selected', { form, result, scan, package: offer, crypto_ready: Boolean(url) })
     if (url) {
       window.location.assign(url)
