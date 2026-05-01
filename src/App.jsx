@@ -87,6 +87,12 @@ const SOCIAL_SETUP = [
   'Use the same avatar, one-line promise, and link: quantumaibusiness.com/?utm_source=social&utm_medium=bio&utm_campaign=profile',
   'Post the same launch message manually across accounts first, then decide which platform is worth automating.',
 ]
+const PACKAGE_LADDER = [
+  ['Entry', '$9.99', 'Paid diagnostic gateway that can auto-deliver after intake.'],
+  ['Core', '$229.99+', 'Automation utility path for businesses ready to connect workflow pieces.'],
+  ['Anchor', '$2,500+', 'Owner-reviewed strategic build for serious growth-system work.'],
+  ['Premier', 'Referral', 'High-touch QuantumBusinessStrategies routing when scope is bigger.'],
+]
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -756,11 +762,13 @@ export default function QuantumAIWebsite() {
     {
       key: 'outlinedStrategy',
       number: '01',
-      title: 'Outlined Strategy',
+      title: 'Paid Growth Diagnostic',
       price: '$9.99 one-time',
       amount: 9.99,
-      copy: 'A compact AI-assisted readout: visible faults, missed growth lanes, fastest fixes, and an ordered strategy map for the owner.',
-      cta: 'Buy Strategy',
+      eyebrow: 'AUTO-DELIVERABLE ENTRY',
+      copy: 'A compact AI-assisted first pass that turns a business/site into useful growth pressure, likely leaks, priority fixes, and a next-step map.',
+      bullets: ['Fast paid readout', 'Auto-send eligible', 'Upgrade path included'],
+      cta: 'Unlock Diagnostic',
     },
     {
       key: 'automatedUtility',
@@ -768,7 +776,9 @@ export default function QuantumAIWebsite() {
       title: 'Automated Utility',
       price: 'Starts at $229.99',
       amount: 229.99,
-      copy: 'Automation setup for intake, owner alerts, follow-up, simple reporting, lead routing, and recurring growth prompts.',
+      eyebrow: 'CORE AUTOMATION PATH',
+      copy: 'For businesses ready to turn the readout into utility: intake routing, owner alerts, follow-up logic, lead status, and simple reporting.',
+      bullets: ['Owner-reviewed scope', 'Workflow map', 'Implementation checklist'],
       cta: 'Start Automation',
     },
     {
@@ -777,7 +787,9 @@ export default function QuantumAIWebsite() {
       title: 'Full Strategic Growth',
       price: 'Starts at $2,500',
       amount: 2500,
-      copy: 'A deeper operating-system build: offer architecture, funnel logic, analytics, client delivery workflows, and strategic execution.',
+      eyebrow: 'HIGH-TICKET REVIEW',
+      copy: 'A premium strategic build lane for offer architecture, funnel logic, analytics, delivery workflows, and growth execution planning.',
+      bullets: ['Manual owner review', 'Deeper scope', 'Serious buyer lane'],
       cta: 'Begin Growth Build',
     },
     {
@@ -786,7 +798,9 @@ export default function QuantumAIWebsite() {
       title: 'Premium QuantumBusinessStrategies Referral',
       price: 'Price upon referral',
       amount: 0,
-      copy: 'For businesses that need premier-tier intervention, strategic review, and referral into the Quantumbusinessstrategies growth track.',
+      eyebrow: 'PREMIER ESCALATION',
+      copy: 'For prospects that look bigger than a standard package and need direct routing into QuantumBusinessStrategies for strategic review.',
+      bullets: ['Referral form', 'Direct email option', 'Strategy-site path'],
       cta: 'Request Premium Referral',
     },
   ]
@@ -1046,14 +1060,40 @@ export default function QuantumAIWebsite() {
           </form>
         </section>
 
+        <section className="value-ladder" aria-label="Package value ladder">
+          <div>
+            <div className="brand-chip">REVENUE LADDER</div>
+            <h2>Start Low-Friction. Route Serious Buyers Up.</h2>
+            <p>
+              The first purchase proves intent, the automation tier turns strategy into utility, and higher-ticket paths stay owner-reviewed.
+              No revenue promises; just structured opportunity, delivery, and escalation.
+            </p>
+          </div>
+          <div className="ladder-steps">
+            {PACKAGE_LADDER.map(([label, price, copy]) => (
+              <article key={label}>
+                <span>{label}</span>
+                <strong>{price}</strong>
+                <p>{copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="offers" id="packages" aria-label="Paid growth paths">
           {offers.map((offer) => {
             const emailHref = mailtoHref({ form, result, scan, packageName: offer.title })
             return (
               <article key={offer.key}>
                 <span>PACKAGE {offer.number} // {offer.price}</span>
+                <small>{offer.eyebrow}</small>
                 <h2>{offer.title}</h2>
                 <p>{offer.copy}</p>
+                <ul>
+                  {offer.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
                 <button type="button" onClick={() => handleOfferAction(offer)}>{offer.cta}</button>
                 {(offer.key === 'automatedUtility' || offer.key === 'fullStrategic') && (
                   <a className="quiet-link" href={emailHref} onClick={() => trackPackage(offer)}>Email Before Checkout</a>

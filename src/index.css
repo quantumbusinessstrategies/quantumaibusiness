@@ -662,7 +662,8 @@ button:hover,
 }
 
 .system-grid,
-.offers {
+.offers,
+.value-ladder {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
@@ -671,6 +672,7 @@ button:hover,
 
 .system-grid > div,
 .offers article,
+.value-ladder,
 .assessment,
 .fulfillment-console,
 .launch-board,
@@ -691,6 +693,7 @@ button:hover,
 
 .system-grid > div::after,
 .offers article::after,
+.value-ladder::after,
 .assessment::after,
 .fulfillment-console::after,
 .launch-board::after,
@@ -709,6 +712,7 @@ button:hover,
 
 .system-grid > div > *,
 .offers article > *,
+.value-ladder > *,
 .assessment > *,
 .fulfillment-console > *,
 .launch-board > *,
@@ -721,6 +725,7 @@ button:hover,
 
 .system-grid > div::before,
 .offers article::before,
+.value-ladder::before,
 .assessment::before,
 .fulfillment-console::before,
 .launch-board::before,
@@ -746,6 +751,7 @@ button:hover,
 
 .system-grid p,
 .offers p,
+.value-ladder p,
 .assessment-copy p,
 .fulfillment-copy p,
 .launch-board li,
@@ -834,9 +840,58 @@ button:hover,
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.value-ladder {
+  grid-template-columns: minmax(260px, 0.9fr) minmax(420px, 1.4fr);
+  padding: 28px;
+}
+
+.value-ladder h2 {
+  margin-top: 14px;
+  font-size: clamp(24px, 3.6vw, 44px);
+}
+
+.ladder-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ladder-steps article {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 178px;
+  padding: 14px;
+  background: rgba(0, 8, 16, 0.42);
+  border: 1px solid rgba(255, 241, 166, 0.36);
+  box-shadow: inset 0 0 18px rgba(255, 184, 243, 0.08), 0 0 18px rgba(0, 255, 255, 0.12);
+  clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px));
+}
+
+.ladder-steps span,
+.offers small {
+  color: #98ffdd;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1.5;
+  text-shadow: 0 0 10px rgba(152, 255, 221, 0.28);
+}
+
+.ladder-steps strong {
+  color: #fff1a6;
+  font-size: clamp(18px, 2.4vw, 28px);
+  line-height: 1.1;
+  text-shadow: 0 0 14px rgba(255, 241, 166, 0.28);
+}
+
+.ladder-steps p {
+  margin: 0;
+  font-size: 9px;
+}
+
 .offers article {
   display: flex;
-  min-height: 320px;
+  min-height: 390px;
   flex-direction: column;
 }
 
@@ -856,7 +911,18 @@ button:hover,
 }
 
 .offers p {
-  min-height: 138px;
+  min-height: 116px;
+}
+
+.offers ul {
+  display: grid;
+  gap: 7px;
+  min-height: 92px;
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: #98ffdd;
+  font-size: 9px;
+  line-height: 1.5;
 }
 
 .offers a {
@@ -1639,6 +1705,8 @@ code {
   .assessment,
   .fulfillment-console,
   .offers,
+  .value-ladder,
+  .ladder-steps,
   .campaign-links,
   .launch-copy-grid,
   .automation-flow,
