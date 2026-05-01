@@ -44,67 +44,12 @@ const FULFILLMENT_PACKAGES = [
   ['fullStrategic', 'Full Strategic Growth'],
   ['premiumReferral', 'Premium Referral'],
 ]
-const AUTOMATION_FLOW = [
-  {
-    label: 'Capture',
-    copy: 'Business names, websites, scan results, package selections, and share actions become structured events.',
-  },
-  {
-    label: 'Notify',
-    copy: `Each major event attempts an owner email notification to ${CONTACT_EMAIL} through the configured notification route.`,
-  },
-  {
-    label: 'Auto-route',
-    copy: 'Low-tier packages move prospects into checkout and automated delivery while serious scopes are held for owner review.',
-  },
-  {
-    label: 'Escalate',
-    copy: 'Premium referral and higher-ticket growth signals are marked for owner review so serious prospects get attention.',
-  },
-]
-const CAMPAIGN_LINKS = [
-  {
-    label: 'Business pressure scan',
-    href: `${MONEY_PAGE_URL}?utm_source=organic&utm_medium=share&utm_campaign=pressure_scan`,
-  },
-  {
-    label: '$9.99 strategy offer',
-    href: `${SITE_URL}/paid-growth-diagnostic.html?utm_source=organic&utm_medium=share&utm_campaign=strategy_offer`,
-  },
-  {
-    label: '$49.99 scan pack',
-    href: `${SITE_URL}/growth-scan-pack.html?utm_source=organic&utm_medium=share&utm_campaign=growth_scan_pack`,
-  },
-  {
-    label: 'Automation utility offer',
-    href: `${SITE_URL}/automated-utility.html?utm_source=organic&utm_medium=share&utm_campaign=automation_utility`,
-  },
-  {
-    label: 'Referral link',
-    href: `${SITE_URL}/refer-business.html?utm_source=organic&utm_medium=share&utm_campaign=refer_business`,
-  },
-]
-const AD_ANGLES = [
-  'Your business may not need more effort. It may need fewer leaks. Run the QuantumAiBusiness pressure scan.',
-  'Missing follow-up, weak routing, and unclear offers quietly drain revenue. Quantify the gaps before they compound.',
-  'Turn a business name or website into an AI-assisted growth readout, then choose the strategy or automation path that fits.',
-]
-const ORGANIC_POSTS = [
-  'Built a cyber business-pressure scanner for owners who want to find profit leaks, weak follow-up, and unused automation paths.',
-  'If your website gets attention but not enough paid action, the problem may be routing. QuantumAiBusiness scans the pressure points.',
-  'New offer: $9.99 AI-assisted strategy outline for business owners who want a fast first read on growth gaps.',
-]
-const SOCIAL_SETUP = [
-  'Claim QuantumAiBusiness on X, LinkedIn, TikTok, Instagram, Facebook, YouTube, Reddit, Threads, and Bluesky where available.',
-  'Use the same avatar, one-line promise, and link: quantumaibusiness.com/business-growth-scan.html?utm_source=social&utm_medium=bio&utm_campaign=profile',
-  'Post the same launch message manually across accounts first, then decide which platform is worth automating.',
-]
 const PACKAGE_LADDER = [
-  ['Entry', '$9.99', 'Paid diagnostic gateway that can auto-deliver after intake.'],
-  ['Pack', '$49.99', 'Five-scan AI utility pack that can auto-deliver without owner approval.'],
-  ['Core', '$229.99+', 'Automation utility path for businesses ready to connect workflow pieces.'],
-  ['Anchor', '$2,500+', 'Owner-reviewed strategic build for serious growth-system work.'],
-  ['Premier', 'Referral', 'High-touch QuantumBusinessStrategies routing when scope is bigger.'],
+  ['Entry', '$9.99', 'A fast paid diagnostic for owners who want a practical first read.'],
+  ['Pack', '$49.99', 'Five scan readouts for offers, pages, competitors, or growth paths.'],
+  ['Core', '$229.99+', 'Workflow utility planning for intake, alerts, follow-up, and reporting.'],
+  ['Anchor', '$2,500+', 'Deeper strategic growth work for bigger business systems.'],
+  ['Premier', 'Referral', 'High-touch QuantumBusinessStrategies routing for larger scopes.'],
 ]
 
 function rand(seed, min, max) {
@@ -368,19 +313,6 @@ function captureAttribution() {
   return next
 }
 
-function serializeCsvValue(value) {
-  const text = String(value ?? '')
-  return `"${text.replaceAll('"', '""')}"`
-}
-
-function buildCsv(events) {
-  const header = ['timestamp', 'event', 'target', 'package', 'score', 'readiness']
-  const rows = events.map((event) =>
-    [event.timestamp, event.type, event.target, event.package, event.score, event.readiness].map(serializeCsvValue).join(','),
-  )
-  return [header.join(','), ...rows].join('\n')
-}
-
 function createAutomationEvent(type, payload, fallbackTarget) {
   const packageTitle = payload.package?.title || ''
   const isPremium = payload.package?.key === 'premiumReferral' || packageTitle.toLowerCase().includes('premium')
@@ -412,9 +344,7 @@ export default function QuantumAIWebsite() {
   const [activeHash, setActiveHash] = useState(() => window.location.hash)
   const [shareOpen, setShareOpen] = useState(false)
   const [shareStatus, setShareStatus] = useState('')
-  const [automationEvents, setAutomationEvents] = useState(loadStoredEvents)
-  const [automationStatus, setAutomationStatus] = useState('AUTOPILOT READY - OWNER ALERTS ON - HIGH TIER REVIEW')
-  const [campaignStatus, setCampaignStatus] = useState('')
+  const [, setAutomationEvents] = useState(loadStoredEvents)
   const [attribution] = useState(captureAttribution)
   const [fulfillmentStatus, setFulfillmentStatus] = useState('')
   const [fulfillmentDeliverable, setFulfillmentDeliverable] = useState('')
@@ -591,42 +521,14 @@ export default function QuantumAIWebsite() {
 
   async function recordAutomationEvent(type, payload = {}, options = {}) {
     const payloadWithAttribution = { ...payload, attribution }
-    const event = recordLocalAutomationEvent(type, payloadWithAttribution)
+    recordLocalAutomationEvent(type, payloadWithAttribution)
 
     if (options.notify === false) {
-      setAutomationStatus(`${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY // SINGLE FULFILLMENT EMAIL SENT`)
       return true
     }
 
     const sent = await notifyOwner(type, payloadWithAttribution)
-    setAutomationStatus(
-      sent
-        ? `${type.replaceAll('_', ' ').toUpperCase()} SENT TO OWNER // ${event.actionMode.replaceAll('_', ' ').toUpperCase()}`
-        : `${type.replaceAll('_', ' ').toUpperCase()} RECORDED LOCALLY // CHECK NOTIFICATION ROUTE`,
-    )
     return sent
-  }
-
-  function exportAutomationLog(format) {
-    const text = format === 'csv' ? buildCsv(automationEvents) : JSON.stringify(automationEvents, null, 2)
-    const blob = new Blob([text], { type: format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `quantumaibusiness-events.${format}`
-    link.click()
-    URL.revokeObjectURL(url)
-    setAutomationStatus(`LOCAL EVENT LOG EXPORTED AS ${format.toUpperCase()}`)
-  }
-
-  function clearAutomationLog() {
-    try {
-      window.localStorage.removeItem(EVENT_STORAGE_KEY)
-    } catch {
-      // Ignore storage cleanup failures; clearing state is still useful.
-    }
-    setAutomationEvents([])
-    setAutomationStatus('LOCAL EVENT LOG CLEARED')
   }
 
   async function runScan() {
@@ -802,16 +704,6 @@ export default function QuantumAIWebsite() {
     window.open(destination.href, '_blank', 'noopener,noreferrer')
     if (!destination.copyFirst) setShareStatus(`OPENED ${destination.label.toUpperCase()}`)
     await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: destination.shareUrl || MONEY_PAGE_URL })
-  }
-
-  async function copyCampaignLink(link) {
-    try {
-      await navigator.clipboard.writeText(link.href)
-      setCampaignStatus(`${link.label.toUpperCase()} LINK COPIED`)
-      await recordAutomationEvent('campaign_link_copied', { destination: link.label, url: link.href })
-    } catch {
-      setCampaignStatus(`COPY MANUALLY: ${link.href}`)
-    }
   }
 
   const offers = [
@@ -998,12 +890,6 @@ export default function QuantumAIWebsite() {
             <h2>Transparency</h2>
             <a href="#transparency">Read site transparency</a>
           </section>
-          <section>
-            <h2>Owner</h2>
-            <a href="#automation-control">Automation control</a>
-            <a href="#fulfillment">Fulfillment intake</a>
-            <a href="#growth-launch">Growth launch kit</a>
-          </section>
         </div>
       </details>
 
@@ -1135,11 +1021,11 @@ export default function QuantumAIWebsite() {
 
         <section className="value-ladder" aria-label="Package value ladder">
           <div>
-            <div className="brand-chip">REVENUE LADDER</div>
-            <h2>Start Low-Friction. Route Serious Buyers Up.</h2>
+            <div className="brand-chip">SERVICE LADDER</div>
+            <h2>Start With Clarity. Move Into Utility.</h2>
             <p>
-              The first purchase proves intent, the automation tier turns strategy into utility, and higher-ticket paths stay owner-reviewed.
-              No revenue promises; just structured opportunity, delivery, and escalation.
+              Choose the depth that fits the moment: a quick diagnostic, a multi-scan pack, automation utility planning,
+              deeper growth work, or premium strategy routing. No guaranteed outcomes; just structured analysis, delivery, and next steps.
             </p>
           </div>
           <div className="ladder-steps">
@@ -1241,47 +1127,6 @@ export default function QuantumAIWebsite() {
           )}
         </section>
 
-        <section className="growth-launch" id="growth-launch" aria-labelledby="growth-launch-title">
-          <div>
-            <div className="brand-chip">MONETIZATION LAUNCH</div>
-            <h2 id="growth-launch-title">Organic + Ad Launch Kit</h2>
-            <p>
-              Use these links and copy blocks for manual posting, direct outreach, social bios, and future paid campaigns. This keeps the
-              message consistent with the landing page and avoids overpromising results.
-            </p>
-          </div>
-          <div className="campaign-links">
-            {CAMPAIGN_LINKS.map((link) => (
-              <article key={link.label}>
-                <strong>{link.label}</strong>
-                <code>{link.href}</code>
-                <button type="button" onClick={() => copyCampaignLink(link)}>COPY LINK</button>
-              </article>
-            ))}
-          </div>
-          {campaignStatus && <p className="campaign-status">{campaignStatus}</p>}
-          <div className="launch-copy-grid">
-            <section>
-              <h3>Ad Angles</h3>
-              {AD_ANGLES.map((copy) => (
-                <p key={copy}>{copy}</p>
-              ))}
-            </section>
-            <section>
-              <h3>Organic Posts</h3>
-              {ORGANIC_POSTS.map((copy) => (
-                <p key={copy}>{copy}</p>
-              ))}
-            </section>
-            <section>
-              <h3>Social Setup</h3>
-              {SOCIAL_SETUP.map((copy) => (
-                <p key={copy}>{copy}</p>
-              ))}
-            </section>
-          </div>
-        </section>
-
         {referralOpen && (
           <section className="referral-panel" aria-labelledby="premium-referral-title">
             <div>
@@ -1305,73 +1150,12 @@ export default function QuantumAIWebsite() {
         <section className="launch-board" aria-labelledby="launch-title">
           <h2 id="launch-title">What Happens After Selection</h2>
           <ul>
-            <li>Routine scans and assessments are captured, logged, and sent through the owner notification route when available.</li>
-            <li>Packages 1-3 auto-route prospects toward checkout or direct contact with the submitted business context attached.</li>
-            <li>Paid buyers can submit fulfillment details through the command packet so delivery is ready for owner review or backend AI generation.</li>
-            <li>Full strategic growth and premium referral activity is marked for owner review so higher-value prospects get human attention.</li>
-            <li>The control log can be exported so lead, package, and outreach activity can move into accounting, CRM, or automation tools.</li>
+            <li>Your scan or assessment creates a structured first-pass readout from the information submitted.</li>
+            <li>Package selections route you to checkout, intake, referral, or direct contact depending on the offer selected.</li>
+            <li>Paid buyers can submit fulfillment details so the requested deliverable has the right business context.</li>
+            <li>Higher-scope growth and premium referral requests receive additional review before deeper commitments are made.</li>
+            <li>Diagnostics are informational and are designed to support better decisions, not promise revenue or replace professional advice.</li>
           </ul>
-        </section>
-
-        <section className="automation-control" id="automation-control" aria-labelledby="automation-control-title">
-          <div>
-            <div className="brand-chip">AUTOMATION OPS</div>
-            <h2 id="automation-control-title">Automation Control</h2>
-            <p>
-              Recent scans, package selections, referral requests, and share actions are captured for review. The site auto-routes
-              routine prospects while higher-ticket and premium signals are separated for owner response.
-            </p>
-          </div>
-          <div className="automation-flow" aria-label="Autopilot flow">
-            {AUTOMATION_FLOW.map((step) => (
-              <article key={step.label}>
-                <strong>{step.label}</strong>
-                <p>{step.copy}</p>
-              </article>
-            ))}
-          </div>
-          <div className="automation-metrics">
-            <div>
-              <strong>{automationEvents.length}</strong>
-              <span>local events</span>
-            </div>
-            <div>
-              <strong>{LEAD_WEBHOOK ? 'WEBHOOK' : 'EMAIL'}</strong>
-              <span>notification route</span>
-            </div>
-            <div>
-              <strong>AUTO</strong>
-              <span>routine routing</span>
-            </div>
-            <div>
-              <strong>REVIEW</strong>
-              <span>premium prospects</span>
-            </div>
-          </div>
-          <div className="automation-actions">
-            <button type="button" onClick={() => exportAutomationLog('json')}>EXPORT JSON</button>
-            <button type="button" onClick={() => exportAutomationLog('csv')}>EXPORT CSV</button>
-            <button type="button" onClick={clearAutomationLog}>CLEAR LOCAL LOG</button>
-          </div>
-          <p className="automation-status">{automationStatus}</p>
-          <div className="event-log">
-            {automationEvents.length ? (
-              automationEvents.slice(0, 6).map((event) => (
-                <article key={event.id}>
-                  <span>{new Date(event.timestamp).toLocaleString()}</span>
-                  <strong>{event.type.replaceAll('_', ' ')}</strong>
-                  <p>
-                    {event.target}
-                    {event.package ? ` // ${event.package}` : ''}
-                    {event.actionMode ? ` // ${event.actionMode.replaceAll('_', ' ')}` : ''}
-                    {event.score !== '' ? ` // pressure ${event.score}` : ''}
-                  </p>
-                </article>
-              ))
-            ) : (
-              <p>No local events yet. Run a scan or select a package to populate the control log.</p>
-            )}
-          </div>
         </section>
 
         <footer className="transparency" id="transparency">

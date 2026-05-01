@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /owner
+Disallow: /owner/
 
 Sitemap: https://quantumaibusiness.com/sitemap.xml
