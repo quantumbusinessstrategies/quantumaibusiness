@@ -81,6 +81,49 @@ function stripeCheckoutRecord(event) {
   })
 }
 
+function paymentMomentumRecord(session, packageName) {
+  const site = process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com'
+  const amount = session.amount_total ? session.amount_total / 100 : ''
+  const campaign = `post_payment_${new Date().toISOString().slice(0, 10).replaceAll('-', '')}`
+  const moneyPage = `${site}/business-growth-scan.html?utm_source=owner&utm_medium=post_payment&utm_campaign=${campaign}`
+  const scanPackPage = `${site}/growth-scan-pack.html?utm_source=owner&utm_medium=post_payment&utm_campaign=${campaign}`
+  const referralPage = `${site}/refer-business.html?utm_source=owner&utm_medium=post_payment&utm_campaign=${campaign}`
+
+  return buildAutomationRecord('post_payment_growth_push', {
+    target: site,
+    customer_email: session.customer_details?.email || session.customer_email || '',
+    amount,
+    package_name: packageName,
+    payment_link: session.payment_link || '',
+    stripe_checkout_session: session.id || '',
+    next_action:
+      'Fresh payment received: post one tracked organic link, send one direct outreach note, and check whether this buyer should receive an upgrade path.',
+    payload: {
+      source_event: 'checkout.session.completed',
+      buyer_name: session.customer_details?.name || '',
+      buyer_email: session.customer_details?.email || session.customer_email || '',
+      package_name: packageName,
+      amount,
+      tracked_links: {
+        pressure_scan: moneyPage,
+        growth_scan_pack: scanPackPage,
+        premium_referral: referralPage,
+      },
+      copy_blocks: [
+        `Fresh example of why this exists: businesses often have interest already, but the path from visit to follow-up to paid action leaks. Run a pressure scan here: ${moneyPage}`,
+        `If your site gets attention but not enough action, pressure-test the routing, follow-up, and offer clarity. Start with the scan pack: ${scanPackPage}`,
+        `Know a business owner with weak follow-up or unclear conversion? Send them through the referral route: ${referralPage}`,
+      ],
+      owner_checklist: [
+        'Confirm Stripe payment and customer onboarding email.',
+        'Watch for fulfillment intake from the buyer.',
+        'Post one tracked organic link or send one direct outreach note.',
+        'If the buyer has automation pain, prepare Automated Utility follow-up.',
+      ],
+    },
+  })
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     jsonResponse(res, 405, { ok: false, error: 'Method not allowed' })
@@ -111,12 +154,17 @@ export default async function handler(req, res) {
     const session = event.data?.object || {}
     const onboardingMode = process.env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send'
     const onboardingEmail = buildClientOnboardingEmail(session, record.package || 'purchase')
+    const momentumRecord = paymentMomentumRecord(session, record.package || 'Stripe Checkout')
     const [notification, forwarding, clientOnboarding] = await Promise.allSettled([
       notifyOwner(record),
       forwardAutomation(record),
       onboardingMode === 'auto_send' && onboardingEmail.to
         ? sendClientEmail(onboardingEmail)
         : Promise.resolve({ sent: false, reason: 'Stripe client onboarding disabled or missing customer email' }),
+    ])
+    const [momentumNotification, momentumForwarding] = await Promise.allSettled([
+      notifyOwner(momentumRecord),
+      forwardAutomation(momentumRecord),
     ])
     jsonResponse(res, 200, {
       ok: true,
@@ -127,6 +175,17 @@ export default async function handler(req, res) {
         clientOnboarding.status === 'fulfilled'
           ? clientOnboarding.value
           : { sent: false, error: clientOnboarding.reason?.message },
+      post_payment_growth_push: {
+        record: momentumRecord,
+        notification:
+          momentumNotification.status === 'fulfilled'
+            ? momentumNotification.value
+            : { notified: false, error: momentumNotification.reason?.message },
+        forwarding:
+          momentumForwarding.status === 'fulfilled'
+            ? momentumForwarding.value
+            : { forwarded: false, error: momentumForwarding.reason?.message },
+      },
     })
   } catch (error) {
     jsonResponse(res, 500, { ok: false, error: error.message })
