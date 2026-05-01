@@ -64,7 +64,7 @@ async function generateDiagnostic(input) {
     },
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL || 'gpt-5-mini',
-      max_output_tokens: 1100,
+      max_output_tokens: 1800,
       text: {
         format: {
           type: 'json_schema',
@@ -90,7 +90,7 @@ async function generateDiagnostic(input) {
         {
           role: 'system',
           content:
-            'Create concise first-pass business growth diagnostics. Do not promise or guarantee profit, revenue, rankings, ad results, or outcomes. Give useful opportunity framing and package routing. Keep it ethical, practical, and direct.',
+            'Create concise first-pass business growth diagnostics. Return only valid JSON matching the schema. Do not promise or guarantee profit, revenue, rankings, ad results, or outcomes. Keep diagnostic under 420 characters, each opportunity/risk under 160 characters, and next_step under 180 characters. Give useful opportunity framing and package routing. Keep it ethical, practical, and direct.',
         },
         {
           role: 'user',
@@ -116,7 +116,7 @@ async function generateDiagnostic(input) {
   try {
     return { generated: true, ...JSON.parse(outputText) }
   } catch {
-    return { generated: true, ...fallbackDiagnostic(input), diagnostic: outputText || fallbackDiagnostic(input).diagnostic }
+    return { generated: false, ...fallbackDiagnostic(input), reason: 'OpenAI returned an unparsable diagnostic' }
   }
 }
 
