@@ -309,6 +309,43 @@ export default function OwnerConsole() {
       return next
     })
     setCopied('Lead saved to pipeline')
+    syncLeadToBackend(lead)
+  }
+
+  async function syncLeadToBackend(lead) {
+    try {
+      const response = await fetch(`${AUTOMATION_API_URL}/api/lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          event_type: 'owner_pipeline_saved',
+          form: {
+            company: lead.business,
+            website: lead.website,
+            email: lead.email,
+            objective: effective.objective,
+            current_tools: effective.tools,
+            constraints: effective.constraints,
+          },
+          package: {
+            key: lead.packageKey,
+            title: lead.package,
+            amount: lead.numericValue || '',
+          },
+          payload: {
+            local_pipeline_id: lead.id,
+            status: lead.status,
+            next_action: lead.nextAction,
+            source: 'owner_console_save_lead',
+          },
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setCopied(data.forwarding?.forwarded ? 'Lead saved locally and logged to Sheet' : 'Lead saved locally; Sheet forwarding not confirmed')
+    } catch (error) {
+      setCopied(`Lead saved locally; backend sync failed: ${error.message}`)
+    }
   }
 
   function updateLeadStatus(id, status) {
