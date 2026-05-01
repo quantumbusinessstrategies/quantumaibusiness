@@ -367,6 +367,68 @@ a {
   text-align: center;
 }
 
+.crypto-dock {
+  position: fixed;
+  top: 78px;
+  right: 18px;
+  z-index: 6;
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.crypto-toggle {
+  min-height: 38px;
+  padding: 10px 14px;
+  color: #061018;
+  cursor: pointer;
+  background:
+    linear-gradient(135deg, rgba(255, 241, 166, 0.92), rgba(152, 255, 221, 0.9), rgba(255, 184, 243, 0.82)) padding-box,
+    linear-gradient(90deg, #fff1a6, #98ffdd, #ffb8f3, #7df9ff, #fff1a6) border-box;
+  background-size: 220% 100%, 260% 100%;
+  border: 2px solid transparent;
+  box-shadow: 0 7px 0 #001133, 0 0 24px rgba(255, 241, 166, 0.24);
+  font-size: 9px;
+  font-weight: 900;
+  clip-path: polygon(0 9px, 9px 9px, 9px 0, calc(100% - 9px) 0, calc(100% - 9px) 9px, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 9px calc(100% - 9px), 0 calc(100% - 9px));
+  animation: inputSkin 9s linear infinite;
+}
+
+.crypto-panel {
+  display: grid;
+  width: min(310px, calc(100vw - 36px));
+  gap: 9px;
+  padding: 14px;
+  background: rgba(0, 8, 16, 0.86);
+  border: 1px solid rgba(255, 241, 166, 0.58);
+  box-shadow: 0 10px 0 rgba(0, 17, 51, 0.82), 0 0 28px rgba(255, 241, 166, 0.16), inset 0 0 24px rgba(152, 255, 221, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.crypto-panel strong {
+  color: #fff1a6;
+  font-size: 11px;
+}
+
+.crypto-panel p,
+.crypto-panel small {
+  margin: 0;
+  color: #d5fbff;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.crypto-panel button {
+  min-height: 36px;
+  color: #061018;
+  cursor: pointer;
+  background: linear-gradient(135deg, #eaffff, #fff1a6, #98ffdd);
+  border: 1px solid #effcff;
+  box-shadow: 0 5px 0 #001133;
+  font-size: 8px;
+  font-weight: 900;
+}
+
 .brand-chip {
   color: transparent;
   font-size: 10px;

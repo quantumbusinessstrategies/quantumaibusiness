@@ -17,6 +17,12 @@ const PAYMENT_LINKS = {
     'https://buy.stripe.com/aFa00iet6d3D8O21Oifw403',
   premiumReferral: import.meta.env.VITE_PREMIUM_REFERRAL_URL || 'https://quantumbusinessstrategies.com',
 }
+const CRYPTO_PAYMENT_LINKS = {
+  outlinedStrategy: import.meta.env.VITE_CRYPTO_OUTLINED_STRATEGY_URL || '',
+  growthScanPack: import.meta.env.VITE_CRYPTO_GROWTH_SCAN_PACK_URL || '',
+  automatedUtility: import.meta.env.VITE_CRYPTO_AUTOMATED_UTILITY_URL || '',
+  fullStrategic: import.meta.env.VITE_CRYPTO_FULL_STRATEGIC_URL || '',
+}
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'quantumbusinessstrategies@gmail.com'
 const PARTNER_LINKS = {
@@ -343,6 +349,7 @@ export default function QuantumAIWebsite() {
   const [scanBurst, setScanBurst] = useState(0)
   const [activeHash, setActiveHash] = useState(() => window.location.hash)
   const [shareOpen, setShareOpen] = useState(false)
+  const [cryptoOpen, setCryptoOpen] = useState(false)
   const [shareStatus, setShareStatus] = useState('')
   const [, setAutomationEvents] = useState(loadStoredEvents)
   const [attribution] = useState(captureAttribution)
@@ -706,6 +713,16 @@ export default function QuantumAIWebsite() {
     await recordAutomationEvent('share_destination_opened', { destination: destination.label, url: destination.shareUrl || MONEY_PAGE_URL })
   }
 
+  async function handleCryptoCheckout(offer) {
+    const url = CRYPTO_PAYMENT_LINKS[offer.key]
+    await recordAutomationEvent('crypto_checkout_selected', { form, result, scan, package: offer, crypto_ready: Boolean(url) })
+    if (url) {
+      window.location.assign(url)
+      return
+    }
+    window.location.href = mailtoHref({ form, result, scan, packageName: `Crypto checkout request: ${offer.title}` })
+  }
+
   const offers = [
     {
       key: 'outlinedStrategy',
@@ -907,6 +924,24 @@ export default function QuantumAIWebsite() {
             ))}
             <button type="button" onClick={copyShareLink}>COPY LINK</button>
             {shareStatus && <p>{shareStatus}</p>}
+          </div>
+        )}
+      </div>
+
+      <div className="crypto-dock">
+        <button type="button" className="crypto-toggle" onClick={() => setCryptoOpen((current) => !current)}>
+          CRYPTO
+        </button>
+        {cryptoOpen && (
+          <div className="crypto-panel" aria-label="Crypto checkout">
+            <strong>Crypto Checkout</strong>
+            <p>Use hosted checkout for wallet payments. Supports the networks enabled by the processor.</p>
+            {offers.filter((offer) => offer.key !== 'premiumReferral').map((offer) => (
+              <button type="button" key={offer.key} onClick={() => handleCryptoCheckout(offer)}>
+                {offer.title} {CRYPTO_PAYMENT_LINKS[offer.key] ? 'PAY' : 'REQUEST'}
+              </button>
+            ))}
+            <small>BTC, ETH, SOL, BNB, and stablecoin availability depends on the checkout provider and network support.</small>
           </div>
         )}
       </div>
