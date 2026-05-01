@@ -40,6 +40,7 @@ This repo includes optional Vercel-style API functions:
 
 - `api/lead.js`: receives scans, assessment submits, package selections, premium referrals, and share actions.
 - `api/stripe-webhook.js`: receives Stripe `checkout.session.completed` events.
+- `api/fulfillment.js`: generates paid fulfillment drafts and can auto-send the $9.99 outlined strategy when `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier`.
 
 See `docs/AUTOMATION_BACKEND.md` for deployment, Stripe webhook, and environment variable setup.
 

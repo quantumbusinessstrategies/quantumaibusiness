@@ -15,6 +15,7 @@ const PACKAGE_NAMES = {
   premiumReferral: 'Premium QuantumBusinessStrategies Referral',
 }
 const CLIENT_EMAIL_MODES = new Set(['owner_review', 'auto_send'])
+const AUTO_SEND_MODES = new Set(['auto_send', 'auto_send_low_tier', 'auto_send_all'])
 const PACKAGE_SCOPES = {
   outlinedStrategy: {
     maxTokens: 2600,
@@ -72,6 +73,49 @@ function normalizePackageKey(value, packageName = '') {
   if (text.includes('full') || text.includes('strategic')) return 'fullStrategic'
   if (text.includes('automated') || text.includes('utility')) return 'automatedUtility'
   return 'outlinedStrategy'
+}
+
+function normalizeClientEmailMode(value) {
+  if (AUTO_SEND_MODES.has(value)) return value
+  if (CLIENT_EMAIL_MODES.has(value)) return value
+  return 'owner_review'
+}
+
+function canAutoSendClientDeliverable({ clientEmailMode, packageKey, reviewOnly, generated }) {
+  if (!generated || reviewOnly) return false
+  if (clientEmailMode === 'auto_send_all' || clientEmailMode === 'auto_send') return true
+  return clientEmailMode === 'auto_send_low_tier' && packageKey === 'outlinedStrategy'
+}
+
+function buildClientSubject(intake) {
+  const business = intake.company || intake.website || 'your business'
+  return `Your QuantumAiBusiness ${intake.package_name || PACKAGE_NAMES[intake.package_key] || 'Strategy'} for ${business}`
+}
+
+function buildClientDeliveryText(intake, deliverable) {
+  const business = intake.company || intake.website || 'your business'
+  const upgradePath =
+    intake.package_key === 'outlinedStrategy'
+      ? [
+          '',
+          'Recommended upgrade path:',
+          'If you want this turned into connected intake, owner alerts, follow-up, and reporting, the Automated Utility package is the next practical step.',
+        ].join('\n')
+      : ''
+
+  return [
+    `Hi,`,
+    '',
+    `Thanks for submitting your QuantumAiBusiness intake for ${business}. Your package-scoped strategy draft is below.`,
+    '',
+    deliverable,
+    upgradePath,
+    '',
+    'Important note: QuantumAiBusiness provides strategic diagnostics, automation guidance, and opportunity mapping. Results are not guaranteed and depend on execution, market conditions, platform policies, data quality, and the actions taken by the business.',
+    '',
+    'Best,',
+    'QuantumAiBusiness',
+  ].join('\n')
 }
 
 function buildFallbackDeliverable(intake) {
@@ -228,16 +272,19 @@ export default async function handler(req, res) {
     }
 
     const mode = process.env.FULFILLMENT_MODE || 'intake_only'
-    const clientEmailMode = CLIENT_EMAIL_MODES.has(process.env.FULFILLMENT_CLIENT_EMAIL_MODE)
-      ? process.env.FULFILLMENT_CLIENT_EMAIL_MODE
-      : 'owner_review'
+    const clientEmailMode = normalizeClientEmailMode(process.env.FULFILLMENT_CLIENT_EMAIL_MODE)
     const reviewOnly = body.review_only !== false
     const shouldGenerate = mode === 'auto_generate' || body.owner_approved === true
     const generation = shouldGenerate
       ? await generateDeliverable(intake)
       : { generated: false, deliverable: '', reason: 'FULFILLMENT_MODE is intake_only' }
-    const shouldEmailClient =
-      clientEmailMode === 'auto_send' && generation.generated && generation.deliverable && !reviewOnly
+    const shouldEmailClient = canAutoSendClientDeliverable({
+      clientEmailMode,
+      packageKey: intake.package_key,
+      reviewOnly,
+      generated: generation.generated && Boolean(generation.deliverable),
+    })
+    const clientDeliveryText = generation.deliverable ? buildClientDeliveryText(intake, generation.deliverable) : ''
 
     const record = buildAutomationRecord('paid_fulfillment_intake', {
       package_name: intake.package_name,
@@ -266,13 +313,13 @@ export default async function handler(req, res) {
       shouldEmailClient
         ? sendClientEmail({
             to: intake.customer_email || intake.payment_email,
-            subject: `QuantumAiBusiness ${intake.package_name || 'Fulfillment'} Draft`,
-            text: generation.deliverable,
+            subject: buildClientSubject(intake),
+            text: clientDeliveryText,
           })
         : Promise.resolve({
             sent: false,
             reason: generation.deliverable
-              ? 'Client auto-send disabled; deliverable held for owner review'
+              ? `Client auto-send not eligible for mode ${clientEmailMode}; deliverable held for owner review`
               : 'No deliverable generated yet',
           }),
     ])
@@ -283,10 +330,12 @@ export default async function handler(req, res) {
       client_email_mode: clientEmailMode,
       review_only: reviewOnly,
       owner_review_required: !shouldEmailClient,
+      auto_send_eligible: shouldEmailClient,
       generated: generation.generated,
       generation_status: generation.status || '',
       generation_reason: generation.reason || '',
       deliverable: generation.deliverable,
+      client_delivery_text: clientDeliveryText,
       record,
       notification: notification.status === 'fulfilled' ? notification.value : { notified: false, error: notification.reason?.message },
       forwarding: forwarding.status === 'fulfilled' ? forwarding.value : { forwarded: false, error: forwarding.reason?.message },

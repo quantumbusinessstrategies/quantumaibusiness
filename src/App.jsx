@@ -677,6 +677,7 @@ export default function QuantumAIWebsite() {
       constraints: fulfillmentForm.constraints,
       source: 'site_paid_fulfillment_form',
       amount: selectedPackage?.amount || '',
+      review_only: fulfillmentForm.packageKey !== 'outlinedStrategy',
     }
 
     try {
@@ -693,7 +694,9 @@ export default function QuantumAIWebsite() {
       }, { notify: !useSingleStaticEmail })
       setFulfillmentDeliverable(response.deliverable || '')
       setFulfillmentStatus(
-        response.generated
+        response.client_email?.sent
+          ? 'AI FULFILLMENT GENERATED + SENT TO CLIENT - OWNER BCC LOGGED'
+          : response.generated
           ? 'AI FULFILLMENT GENERATED - OWNER NOTIFIED'
           : 'INTAKE SENT - PAYMENT REVIEW + DELIVERY QUEUED',
       )
