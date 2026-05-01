@@ -217,6 +217,8 @@ export default function OwnerConsole() {
   const [growthStatus, setGrowthStatus] = useState('')
   const [growthPack, setGrowthPack] = useState('')
   const [digestStatus, setDigestStatus] = useState('')
+  const [followUpStatus, setFollowUpStatus] = useState('')
+  const [followUpDraft, setFollowUpDraft] = useState('')
   const [routeStatus, setRouteStatus] = useState('')
   const [routeReport, setRouteReport] = useState('')
   const [routeResult, setRouteResult] = useState(null)
@@ -563,6 +565,51 @@ export default function OwnerConsole() {
     }
   }
 
+  async function requestFollowUpDraft() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setDigestStatus('')
+    if (!ownerToken) {
+      setFollowUpStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to generate follow-up drafts.')
+      return
+    }
+
+    const payload = {
+      package_key: effective.packageKey,
+      package_name: packageDetail.label,
+      business: effective.business,
+      website: effective.website,
+      email: effective.email,
+      objective: effective.objective,
+      tools: effective.tools,
+      constraints: effective.constraints,
+      source: 'owner_console_follow_up',
+    }
+
+    try {
+      setFollowUpStatus('Generating owner-reviewed follow-up draft...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/follow-up-draft`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify(payload),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setFollowUpDraft(data.draft || 'No follow-up draft returned.')
+      setFollowUpStatus(
+        data.generated
+          ? `Follow-up generated for ${data.route.replaceAll('_', ' ')} at ${data.score}/100`
+          : `Fallback follow-up created: ${data.generation_reason || 'AI generation unavailable'}`,
+      )
+    } catch (error) {
+      setFollowUpStatus(`Follow-up draft failed: ${error.message}`)
+    }
+  }
+
   async function runDailyDigest() {
     setAiDraftStatus('')
     setSendStatus('')
@@ -853,31 +900,52 @@ export default function OwnerConsole() {
         </div>
       </section>
 
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>11. Follow-Up Draft</h2>
+            <button type="button" onClick={requestFollowUpDraft}>GENERATE FOLLOW-UP</button>
+          </div>
+          <p className="owner-inline-status">
+            Creates a review-only customer follow-up or upsell message based on the current fields and route.
+          </p>
+          {followUpStatus && <p className="owner-inline-status">{followUpStatus}</p>}
+        </div>
+
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>12. Follow-Up Copy</h2>
+            <button type="button" onClick={() => copyText('Follow-up draft', followUpDraft)}>COPY FOLLOW-UP</button>
+          </div>
+          <pre>{followUpDraft || 'No follow-up generated yet. Review the fields above, then use GENERATE FOLLOW-UP.'}</pre>
+        </div>
+      </section>
+
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>11. Strategy Report</h2>
+            <h2>13. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>12. Customer Reply</h2>
+            <h2>14. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>13. Upgrade Follow-Up</h2>
+            <h2>15. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>14. Outreach Copy</h2>
+            <h2>16. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>
