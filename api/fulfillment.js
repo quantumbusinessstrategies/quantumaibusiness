@@ -17,42 +17,47 @@ const PACKAGE_NAMES = {
 const CLIENT_EMAIL_MODES = new Set(['owner_review', 'auto_send'])
 const PACKAGE_SCOPES = {
   outlinedStrategy: {
-    maxTokens: 1200,
+    maxTokens: 2600,
     instructions: [
       'This is the $9.99 Outlined Strategy package.',
       'Keep the draft concise: 700-1000 words maximum.',
+      'Finish the complete draft. Do not stop mid-list or mid-sentence.',
       'Do not promise implementation, audits, ad management, dashboards, multi-day consulting, or custom build work.',
       'Do not invent fees, timelines, hours, contracts, or access requirements.',
       'Deliver a useful entry-level strategy: snapshot, likely leaks, top 5 fixes, 7-day action plan, and recommended upgrade path.',
       'Mention that Automated Utility is the next step for hands-on workflow setup.',
+      'End with this exact line: End of outlined strategy.',
     ].join(' '),
   },
   automatedUtility: {
-    maxTokens: 1600,
+    maxTokens: 2800,
     instructions: [
       'This is the Automated Utility package starting at $229.99.',
       'Focus on automation design and implementation planning, not unlimited done-for-you service.',
       'Define intake routing, owner alerts, follow-up sequence, tracking, and handoff checklist.',
       'Flag any owner decisions needed before implementation.',
       'Do not guarantee profit or platform performance.',
+      'Finish the complete draft and do not stop mid-list or mid-sentence.',
     ].join(' '),
   },
   fullStrategic: {
-    maxTokens: 1800,
+    maxTokens: 3200,
     instructions: [
       'This is the Full Strategic Growth package starting at $2,500.',
       'Create an owner-review strategic growth brief, not a final implementation contract.',
       'Include growth architecture, priority risks, automation opportunities, acquisition/conversion/retention plan, and owner review questions.',
       'Do not invent contract terms, legal terms, or guaranteed outcomes.',
+      'Finish the complete draft and do not stop mid-list or mid-sentence.',
     ].join(' '),
   },
   premiumReferral: {
-    maxTokens: 1200,
+    maxTokens: 2200,
     instructions: [
       'This is a premium referral to QuantumBusinessStrategies.',
       'Create a concise referral briefing for owner review.',
       'Summarize why the prospect may require premium handling, what to ask next, and what risks to avoid.',
       'Do not send direct client promises.',
+      'Finish the complete draft and do not stop mid-list or mid-sentence.',
     ].join(' '),
   },
 }
