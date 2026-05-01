@@ -55,6 +55,7 @@ export default async function handler(req, res) {
       social_queue: configured(process.env.OWNER_ACTION_TOKEN) && configured(process.env.OPENAI_API_KEY),
       buffer_access_token: configured(process.env.BUFFER_ACCESS_TOKEN),
       buffer_profile_ids: configured(process.env.BUFFER_PROFILE_IDS),
+      social_auto_schedule: process.env.SOCIAL_AUTO_SCHEDULE === 'true',
     },
   })
 }

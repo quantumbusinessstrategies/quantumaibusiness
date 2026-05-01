@@ -4,6 +4,7 @@ const SITE = 'https://quantumaibusiness.com'
 const MONEY_PAGE = `${SITE}/business-growth-scan.html`
 const SCAN_PACK_PAGE = `${SITE}/growth-scan-pack.html`
 const REFERRAL_PAGE = `${SITE}/refer-business.html`
+const MAX_SCHEDULED_POSTS = 3
 
 function campaignDate() {
   return new Date().toISOString().slice(0, 10)
@@ -105,6 +106,97 @@ async function generateQueue() {
   return { generated: true, queue: outputText || buildFallbackQueue() }
 }
 
+function fallbackSchedulePosts() {
+  const campaign = `buffer_queue_${campaignDate().replaceAll('-', '')}`
+  return [
+    `Most businesses do not lose money only from low traffic. They lose it between the first visit, the unclear next step, the missed follow-up, and the offer that never gets routed. ${MONEY_PAGE}?utm_source=buffer&utm_medium=social&utm_campaign=${campaign}_traffic_leak`,
+    `A pressure scan is simple: name the business, find conversion gaps, find unused follow-up paths, and decide whether strategy or automation is the next best move. ${SCAN_PACK_PAGE}?utm_source=buffer&utm_medium=social&utm_campaign=${campaign}_pressure_scan`,
+    `Know a business owner whose website looks active but the follow-up path feels weak? Send them here: ${REFERRAL_PAGE}?utm_source=buffer&utm_medium=social&utm_campaign=${campaign}_referral`,
+  ]
+}
+
+function extractSchedulePosts(queue) {
+  const posts = []
+  const lines = String(queue || '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  for (let index = 0; index < lines.length && posts.length < MAX_SCHEDULED_POSTS; index += 1) {
+    const line = lines[index]
+    const next = lines[index + 1] || ''
+    const isHeading = /^\d+\.\s|^(x|linkedin|facebook|short|post|caption|referral|direct)/i.test(line)
+    const hasUrl = /https:\/\/quantumaibusiness\.com/.test(line)
+    const nextHasUrl = /https:\/\/quantumaibusiness\.com/.test(next)
+
+    if (hasUrl && !/^https?:\/\//i.test(line)) {
+      posts.push(line)
+      continue
+    }
+
+    if (isHeading && next && !/^https?:\/\//i.test(next)) {
+      const url = nextHasUrl ? '' : lines.slice(index + 2, index + 5).find((candidate) => /^https?:\/\//i.test(candidate)) || ''
+      posts.push([next, url].filter(Boolean).join(' '))
+    }
+  }
+
+  return posts
+    .map((post) => post.replace(/^[-*]\s*/, '').trim())
+    .filter((post) => post.length > 40)
+    .slice(0, MAX_SCHEDULED_POSTS)
+}
+
+async function scheduleBufferQueue(queue) {
+  const token = process.env.BUFFER_ACCESS_TOKEN || ''
+  const profileIds = (process.env.BUFFER_PROFILE_IDS || '')
+    .split(',')
+    .map((profile) => profile.trim())
+    .filter(Boolean)
+
+  if (process.env.SOCIAL_AUTO_SCHEDULE !== 'true') {
+    return { scheduled: false, reason: 'SOCIAL_AUTO_SCHEDULE is not enabled' }
+  }
+  if (!token || profileIds.length === 0) {
+    return { scheduled: false, reason: 'Buffer token or profile IDs are missing' }
+  }
+
+  const posts = extractSchedulePosts(queue)
+  const selectedPosts = posts.length ? posts : fallbackSchedulePosts()
+  const results = []
+
+  for (let index = 0; index < selectedPosts.length; index += 1) {
+    const scheduledAt = new Date(Date.now() + (index + 1) * 2 * 60 * 60 * 1000).toISOString()
+    const form = new URLSearchParams()
+    form.set('access_token', token)
+    form.set('text', selectedPosts[index])
+    form.set('scheduled_at', scheduledAt)
+    form.set('shorten', 'false')
+    profileIds.forEach((profileId) => form.append('profile_ids[]', profileId))
+
+    const response = await fetch('https://api.bufferapp.com/1/updates/create.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form,
+    })
+
+    const payload = await response.json().catch(() => ({ parse_error: true }))
+
+    results.push({
+      ok: response.ok,
+      status: response.status,
+      scheduled_at: scheduledAt,
+      text_preview: selectedPosts[index].slice(0, 180),
+      buffer_response: payload,
+    })
+  }
+
+  return {
+    scheduled: results.some((result) => result.ok),
+    attempted: results.length,
+    results,
+  }
+}
+
 export default async function handler(req, res) {
   setCors(req, res)
 
@@ -125,6 +217,7 @@ export default async function handler(req, res) {
 
   try {
     const generation = await generateQueue()
+    const bufferSchedule = await scheduleBufferQueue(generation.queue)
     const record = buildAutomationRecord('organic_social_queue', {
       target: SITE,
       package_name: 'Growth Scan Pack',
@@ -136,8 +229,12 @@ export default async function handler(req, res) {
       queue_preview: generation.queue.slice(0, 1600),
       queue_full: generation.queue,
       scheduler_ready: Boolean(process.env.BUFFER_ACCESS_TOKEN && process.env.BUFFER_PROFILE_IDS),
+      auto_schedule_enabled: process.env.SOCIAL_AUTO_SCHEDULE === 'true',
+      buffer_schedule: bufferSchedule,
       next_action:
-        'Review queue, copy strongest posts into current social accounts or a scheduler, and keep paid ads owner-approved.',
+        bufferSchedule.scheduled
+          ? 'Buffer scheduling attempted. Review Buffer, then monitor clicks, scans, paid intent, and replies.'
+          : 'Review queue, copy strongest posts into current social accounts or a scheduler, and keep paid ads owner-approved.',
     })
 
     const [notification, forwarding] = await Promise.allSettled([notifyOwner(record), forwardAutomation(record)])
@@ -148,6 +245,8 @@ export default async function handler(req, res) {
       generation_reason: generation.reason || '',
       queue: generation.queue,
       scheduler_ready: record.payload.scheduler_ready,
+      auto_schedule_enabled: record.payload.auto_schedule_enabled,
+      buffer_schedule: bufferSchedule,
       record,
       notification: notification.status === 'fulfilled' ? notification.value : { notified: false, error: notification.reason?.message },
       forwarding: forwarding.status === 'fulfilled' ? forwarding.value : { forwarded: false, error: forwarding.reason?.message },
