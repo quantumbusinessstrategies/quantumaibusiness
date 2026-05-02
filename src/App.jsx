@@ -1458,6 +1458,11 @@ export default function QuantumAIWebsite() {
             <a href={PARTNER_LINKS.riskforge}>riskforgeai.xyz</a>
             <a href={PARTNER_LINKS.strategies}>quantumbusinessstrategies.com</a>
             <a href={PARTNER_LINKS.pepes}>quantumpepes.xyz</a>
+            <a href="/growth-tools.html">growth tools</a>
+            <a href="/terms.html">terms</a>
+            <a href="/privacy.html">privacy</a>
+            <a href="/refund-policy.html">refund policy</a>
+            <a href="/scope-of-service.html">scope</a>
           </nav>
           </div>
           {activeHash === '#transparency' && <a className="home-link" href="#home">RETURN TO HOME</a>}
