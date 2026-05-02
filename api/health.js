@@ -30,6 +30,7 @@ export default async function handler(req, res) {
     public_site_origin: process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com',
     fulfillment_mode: process.env.FULFILLMENT_MODE || 'intake_only',
     fulfillment_client_email_mode: process.env.FULFILLMENT_CLIENT_EMAIL_MODE || 'owner_review',
+    lead_follow_up_mode: process.env.LEAD_FOLLOW_UP_MODE || 'owner_review',
     stripe_client_onboarding_mode: process.env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send',
     growth_campaign_mode: configured(process.env.OWNER_ACTION_TOKEN)
       ? 'owner_token_required'
@@ -53,6 +54,7 @@ export default async function handler(req, res) {
       owner_notification_url: configured(process.env.OWNER_NOTIFICATION_URL),
       owner_action_token: configured(process.env.OWNER_ACTION_TOKEN),
       cron_secret: configured(process.env.CRON_SECRET),
+      lead_follow_up: configured(process.env.LEAD_FOLLOW_UP_MODE),
       social_queue: configured(process.env.OWNER_ACTION_TOKEN) && configured(process.env.OPENAI_API_KEY),
       buffer_api_key: configured(process.env.BUFFER_API_KEY),
       buffer_channel_ids: configured(process.env.BUFFER_CHANNEL_IDS),

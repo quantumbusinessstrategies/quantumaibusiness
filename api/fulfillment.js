@@ -17,6 +17,8 @@ export const PACKAGE_NAMES = {
 }
 const CLIENT_EMAIL_MODES = new Set(['owner_review', 'auto_send'])
 const AUTO_SEND_MODES = new Set(['auto_send', 'auto_send_low_tier', 'auto_send_all'])
+const PUBLIC_SITE = process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com'
+const AUTOMATED_UTILITY_LINK = `${PUBLIC_SITE}/business-growth-scan.html?utm_source=fulfillment&utm_medium=email&utm_campaign=automated_utility_upgrade`
 const PACKAGE_SCOPES = {
   outlinedStrategy: {
     maxTokens: 2600,
@@ -115,6 +117,7 @@ function buildClientDeliveryText(intake, deliverable) {
           '',
           'Recommended upgrade path:',
           'If you want this turned into connected intake, owner alerts, follow-up, and reporting, the Automated Utility package is the next practical step.',
+          `Continue here: ${AUTOMATED_UTILITY_LINK}`,
         ].join('\n')
       : ''
 

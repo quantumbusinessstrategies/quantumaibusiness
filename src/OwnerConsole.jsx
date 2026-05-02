@@ -1226,7 +1226,7 @@ export default function OwnerConsole() {
             )}
             {backendHealth && (
               <p>
-                Fulfillment: {backendHealth.fulfillment_mode} // Client email: {backendHealth.fulfillment_client_email_mode}
+                Fulfillment: {backendHealth.fulfillment_mode} // Client email: {backendHealth.fulfillment_client_email_mode} // Lead follow-up: {backendHealth.lead_follow_up_mode || 'owner_review'}
               </p>
             )}
           </div>

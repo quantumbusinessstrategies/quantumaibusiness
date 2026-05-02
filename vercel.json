@@ -1,16 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/daily-digest",
+      "path": "/api/ops-runner",
       "schedule": "0 14 * * *"
-    },
-    {
-      "path": "/api/campaign-batch",
-      "schedule": "30 14 * * *"
-    },
-    {
-      "path": "/api/social-queue",
-      "schedule": "0 15 * * *"
     }
   ],
   "rewrites": [
