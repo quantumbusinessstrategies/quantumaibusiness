@@ -28,7 +28,11 @@ async function callAutomation(path, source) {
         ? {
             scheduled: payload.buffer_schedule.scheduled,
             attempted: payload.buffer_schedule.attempted,
-            successful: payload.buffer_schedule.results?.filter((result) => result.ok).length || 0,
+            successful:
+              typeof payload.buffer_schedule.successful === 'number'
+                ? payload.buffer_schedule.successful
+                : payload.buffer_schedule.results?.filter((result) => result.ok).length || 0,
+            reason: payload.buffer_schedule.reason || '',
           }
         : undefined,
       error: payload.error,

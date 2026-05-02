@@ -6,6 +6,7 @@ const SCAN_PACK_PAGE = `${SITE}/growth-scan-pack.html`
 const REFERRAL_PAGE = `${SITE}/refer-business.html`
 const MAX_SCHEDULED_POSTS = 3
 const FACEBOOK_TYPE_REQUIRED = /facebook posts require a type/i
+const BUFFER_LIMIT_REACHED = /scheduled posts limit reached/i
 
 function campaignDate() {
   return new Date().toISOString().slice(0, 10)
@@ -260,9 +261,15 @@ async function scheduleBufferQueue(queue) {
       }
     }
 
+    const successful = results.filter((result) => result.ok).length
+    const limitReached = results.some((result) =>
+      BUFFER_LIMIT_REACHED.test(result.buffer_response?.data?.createPost?.message || ''),
+    )
     return {
-      scheduled: results.some((result) => result.ok),
+      scheduled: successful > 0,
       attempted: results.length,
+      successful,
+      reason: limitReached ? 'Buffer scheduled-post limit reached. Let queued posts publish or clear space before scheduling more.' : '',
       results,
     }
   }
@@ -294,9 +301,12 @@ async function scheduleBufferQueue(queue) {
     })
   }
 
+  const successful = results.filter((result) => result.ok).length
   return {
-    scheduled: results.some((result) => result.ok),
+    scheduled: successful > 0,
     attempted: results.length,
+    successful,
+    reason: successful ? '' : results[0]?.buffer_response?.message || results[0]?.buffer_response?.error || '',
     results,
   }
 }
