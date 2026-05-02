@@ -20,6 +20,12 @@
       p,li{font-size:16px;line-height:1.7}
       ul{display:grid;gap:8px;padding-left:22px}
       a{display:inline-block;margin:10px 10px 0 0;padding:16px 18px;color:#061018;background:linear-gradient(135deg,#eaffff,#ffb8f3,#fff1a6);border:2px solid #effcff;font-weight:900;text-decoration:none;box-shadow:0 10px 0 #001133,0 0 28px rgba(0,255,255,.3)}
+      form.checkout-form{display:grid;gap:12px;margin:18px 0;padding:18px;border:1px solid rgba(143,252,255,.45);background:rgba(143,252,255,.06);box-shadow:inset 0 0 24px rgba(255,184,243,.08)}
+      .checkout-form label{display:grid;gap:6px;color:#98ffdd;font-weight:900}
+      .checkout-form input,.checkout-form textarea{width:100%;padding:13px 14px;border:1px solid rgba(143,252,255,.72);background:rgba(0,8,14,.72);color:#eaffff;font:inherit;box-shadow:inset 0 0 16px rgba(143,252,255,.12)}
+      .checkout-form textarea{min-height:86px;resize:vertical}
+      .checkout-form button{display:inline-block;width:max-content;max-width:100%;margin-top:4px;padding:16px 18px;color:#061018;background:linear-gradient(135deg,#eaffff,#ffb8f3,#fff1a6);border:2px solid #effcff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 10px 0 #001133,0 0 28px rgba(0,255,255,.3)}
+      .checkout-status{min-height:24px;margin:2px 0 0;color:#fff1a6;font-weight:900}
       small{display:block;margin-top:18px;color:#9ff;line-height:1.6}
     </style>
     <script>
@@ -43,6 +49,7 @@
         }
       });
     </script>
+    <script defer src="/landing-checkout.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCLMY2RC5S"></script>  </head>
   <body>
     <main>
@@ -53,7 +60,23 @@
         <li>Useful growth notes without promising outcomes.</li>
         <li>Best entry point before the Growth Scan Pack or Automated Utility.</li>
       </ul>
-      <a href="https://buy.stripe.com/fZu28qet66Ff2pE78Cfw401">Unlock Diagnostic</a>
+      <form class="checkout-form" data-package-key="outlinedStrategy" data-package-name="Paid Growth Diagnostic" data-fallback-url="https://buy.stripe.com/fZu28qet66Ff2pE78Cfw401">
+        <label>Business or website
+          <input name="company" placeholder="Business name" required />
+        </label>
+        <label>Website or profile
+          <input name="website" placeholder="https://example.com" />
+        </label>
+        <label>Delivery email
+          <input name="customer_email" type="email" placeholder="owner@example.com" required />
+        </label>
+        <label>Primary growth objective
+          <textarea name="objective" placeholder="Leads, conversion, follow-up, automation, reporting, offers..."></textarea>
+        </label>
+        <button type="submit">Unlock Diagnostic</button>
+        <p class="checkout-status"></p>
+      </form>
+      <a href="https://buy.stripe.com/fZu28qet66Ff2pE78Cfw401">Backup Stripe Checkout</a>
       <a href="https://quantumaibusiness.com/#packages">View All Packages</a>
       <small>QuantumAiBusiness provides strategic diagnostics and automation guidance. Results are not guaranteed and depend on execution, data quality, market conditions, and platform policies.</small>
     </main>
