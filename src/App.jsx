@@ -409,6 +409,14 @@ export default function QuantumAIWebsite() {
     automation: '2',
     objective: '',
   })
+  const checkoutReturn = useMemo(() => {
+    const params = new URLSearchParams(window.location.search)
+    return {
+      status: params.get('checkout') || '',
+      packageKey: params.get('package') || '',
+      sessionId: params.get('session_id') || '',
+    }
+  }, [])
 
   const stars = useMemo(
     () => createField(56, (i) => ({ id: i, x: rand(i, 0, 100), y: rand(i + 3, 0, 100), s: rand(i + 7, 1, 3) })),
@@ -488,6 +496,24 @@ export default function QuantumAIWebsite() {
     recordAutomationEvent('traffic_attribution_captured', { attribution }, { notify: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (checkoutReturn.status === 'success') {
+      pushAnalyticsEvent('checkout_return_success', {
+        category: 'commerce',
+        package_key: checkoutReturn.packageKey,
+        checkout_session: checkoutReturn.sessionId,
+      })
+      recordAutomationEvent('checkout_return_success', { checkout: checkoutReturn }, { notify: false })
+    }
+    if (checkoutReturn.status === 'cancel') {
+      pushAnalyticsEvent('checkout_return_cancel', {
+        category: 'commerce',
+        package_key: checkoutReturn.packageKey,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkoutReturn.status])
 
   useEffect(() => {
     if (GOOGLE_TAG_ID && !document.querySelector(`[data-quantum-script="gtag-${GOOGLE_TAG_ID}"]`)) {
@@ -1208,6 +1234,25 @@ export default function QuantumAIWebsite() {
           })}
         </section>
         {packageStatus && <p className="package-status">{packageStatus}</p>}
+
+        {checkoutReturn.status && (
+          <section className={`checkout-return is-${checkoutReturn.status}`} aria-label="Checkout status">
+            <div>
+              <div className="brand-chip">CHECKOUT STATUS</div>
+              <h2>{checkoutReturn.status === 'success' ? 'Payment Return Received' : 'Checkout Canceled'}</h2>
+              <p>
+                {checkoutReturn.status === 'success'
+                  ? 'If payment completed, the intake is attached to the Stripe session. The backend webhook handles low-tier fulfillment automatically and keeps owner records updated.'
+                  : 'No payment was captured from this return. You can adjust the intake above and try again when ready.'}
+              </p>
+            </div>
+            <div className="checkout-return-grid">
+              <span><strong>Package</strong>{checkoutReturn.packageKey || 'Unspecified'}</span>
+              <span><strong>Session</strong>{checkoutReturn.sessionId ? checkoutReturn.sessionId.slice(0, 28) : 'No paid session'}</span>
+              <span><strong>Next</strong>{checkoutReturn.status === 'success' ? 'Watch email/Sheet for PAYMENT + CLIENT logs' : 'Return to package selection'}</span>
+            </div>
+          </section>
+        )}
 
         <section className="fulfillment-console" id="fulfillment" aria-labelledby="fulfillment-title">
           <div className="fulfillment-copy">

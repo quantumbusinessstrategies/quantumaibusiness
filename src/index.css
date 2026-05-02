@@ -1052,6 +1052,61 @@ button:active,
   font-size: 10px;
 }
 
+.checkout-return {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 18px;
+  background: rgba(0, 20, 30, 0.7);
+  border: 1px solid rgba(152, 255, 221, 0.44);
+  box-shadow: inset 0 0 22px rgba(125, 249, 255, 0.08), 0 10px 0 rgba(0, 17, 51, 0.72), 0 0 28px rgba(152, 255, 221, 0.12);
+}
+
+.checkout-return h2 {
+  margin: 8px 0 10px;
+  color: #fff1a6;
+  font-size: clamp(20px, 3vw, 34px);
+}
+
+.checkout-return p {
+  margin: 0;
+  color: #eaffff;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.checkout-return-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.checkout-return-grid span {
+  display: grid;
+  gap: 8px;
+  min-height: 86px;
+  padding: 12px;
+  color: #061018;
+  overflow-wrap: anywhere;
+  background: linear-gradient(135deg, #eaffff, #98ffdd, #fff1a6);
+  border: 2px solid rgba(234, 255, 255, 0.78);
+  box-shadow: 0 7px 0 #001133;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.checkout-return-grid strong {
+  color: #061018;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.checkout-return.is-cancel .checkout-return-grid span {
+  background: linear-gradient(135deg, #ffb8f3, #eaffff);
+}
+
 .fulfillment-console {
   display: grid;
   grid-template-columns: minmax(240px, 0.75fr) minmax(320px, 1.25fr);
@@ -1784,6 +1839,8 @@ code {
   .system-grid,
   .assessment,
   .fulfillment-console,
+  .checkout-return,
+  .checkout-return-grid,
   .offers,
   .value-ladder,
   .ladder-steps,
