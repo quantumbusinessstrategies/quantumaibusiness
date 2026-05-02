@@ -65,6 +65,11 @@ const PACKAGE_VALUES = {
   automatedUtility: 229.99,
   fullStrategic: 2500,
 }
+const GOOGLE_KEY_EVENT_ALIASES = {
+  assessment_submitted: ['qualify_lead'],
+  package_checkout_started: ['close_convert_lead'],
+  checkout_return_success: ['purchase'],
+}
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -393,6 +398,10 @@ function pushAnalyticsEvent(name, params = {}) {
   }
   window.dataLayer?.push({ event: name, ...payload })
   window.gtag?.('event', name, payload)
+  ;(GOOGLE_KEY_EVENT_ALIASES[name] || []).forEach((alias) => {
+    window.dataLayer?.push({ event: alias, original_event: name, ...payload })
+    window.gtag?.('event', alias, { original_event: name, ...payload })
+  })
   if (window.fbq) {
     const standardEvent = metaEventName(name)
     if (standardEvent === 'Purchase') {

@@ -103,6 +103,11 @@
         event_category: 'commerce',
         event_label: packageName,
       })
+      window.gtag?.('event', 'close_convert_lead', {
+        event_category: 'commerce',
+        event_label: packageName,
+        original_event: 'static_one_step_checkout_started',
+      })
       window.fbq?.('track', 'InitiateCheckout', { content_name: packageName, currency: 'USD' })
 
       var response = await fetch('https://quantumaibusiness.vercel.app/api/checkout-session', {
