@@ -978,8 +978,8 @@ export default function OwnerConsole() {
     }
 
     try {
-      setFollowUpStatus('Generating owner-reviewed follow-up draft...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/follow-up-draft`, {
+      setFollowUpStatus('Generating owner-reviewed follow-up route brief...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/lead-router`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -990,11 +990,11 @@ export default function OwnerConsole() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
-      setFollowUpDraft(data.draft || 'No follow-up draft returned.')
+      setFollowUpDraft(data.report || 'No follow-up route brief returned.')
       setFollowUpStatus(
         data.generated
-          ? `Follow-up generated for ${data.route.replaceAll('_', ' ')} at ${data.score}/100`
-          : `Fallback follow-up created: ${data.generation_reason || 'AI generation unavailable'}`,
+          ? `Follow-up route generated for ${data.route.replaceAll('_', ' ')} at ${data.score}/100`
+          : `Fallback follow-up route created: ${data.generation_reason || 'AI generation unavailable'}`,
       )
     } catch (error) {
       setFollowUpStatus(`Follow-up draft failed: ${error.message}`)
