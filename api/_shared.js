@@ -200,14 +200,25 @@ export async function notifyOwner(record) {
   const to = ownerEmail()
   const routeLabel = record.lead_route ? record.lead_route.replaceAll('_', ' ') : 'unrouted'
   const scoreLabel = record.lead_score ? `${record.lead_score}/100` : 'no score'
+  const eventType = record.event_type || 'owner_event'
+  const eventLabel = eventType.replaceAll('_', ' ')
+  const category = /(stripe|checkout|payment)/i.test(eventType)
+    ? 'PAYMENT'
+    : /(lead|intake|fulfillment|referral|diagnostic)/i.test(eventType)
+      ? 'CLIENT'
+      : /(growth|campaign|social|digest|post_payment)/i.test(eventType)
+        ? 'OWNER AUTOMATION'
+        : 'SYSTEM'
   const priority =
     record.action_mode === 'owner_review' || record.lead_route === 'premium_review' || Number(record.lead_score || 0) >= 58
       ? 'PRIORITY'
       : 'LOG'
-  const subject = `QuantumAiBusiness ${priority} ${record.event_type.replaceAll('_', ' ')} // ${scoreLabel} // ${routeLabel}`
+  const subject = `QuantumAiBusiness ${category} ${priority} // ${eventLabel} // ${scoreLabel} // ${routeLabel}`
   const message = [
     subject,
     '',
+    `Category: ${category}`,
+    `Event: ${eventLabel}`,
     `Target: ${record.target || 'Unspecified'}`,
     `Contact: ${record.contact_email || 'Unspecified'}`,
     `Package: ${record.package || 'Unspecified'}`,
