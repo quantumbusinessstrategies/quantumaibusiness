@@ -54,7 +54,7 @@ const FULFILLMENT_PACKAGES = [
 ]
 const PACKAGE_LADDER = [
   ['Entry', '$9.99', 'A fast paid diagnostic for owners who want a practical first read.'],
-  ['Pack', '$49.99', 'Five scan readouts for offers, pages, competitors, or growth paths.'],
+  ['Recommended', '$49.99', 'Five scan readouts for offers, pages, competitors, or growth paths.'],
   ['Core', '$229.99+', 'Workflow utility planning for intake, alerts, follow-up, and reporting.'],
   ['Anchor', '$2,500+', 'Deeper strategic growth work for bigger business systems.'],
   ['Premier', 'Referral', 'High-touch QuantumBusinessStrategies routing for larger scopes.'],
@@ -1305,11 +1305,43 @@ export default function QuantumAIWebsite() {
           </div>
         </section>
 
+        <section className="proof-panel" aria-labelledby="proof-title">
+          <div>
+            <div className="brand-chip">WHAT BUYERS RECEIVE</div>
+            <h2 id="proof-title">A clean readout, not a vague hype blast.</h2>
+            <p>
+              The strongest first buy is the Growth Scan Pack: five focused readouts that expose weak routing,
+              missed follow-up, unclear offers, automation gaps, and practical next actions.
+            </p>
+            <a href="/sample-growth-scan.html?utm_source=homepage&utm_medium=proof&utm_campaign=sample_to_scan_pack">
+              View Sample Output
+            </a>
+          </div>
+          <div className="proof-steps" aria-label="Buyer delivery path">
+            <article>
+              <span>01</span>
+              <strong>Submit</strong>
+              <p>Business, website, objective, and current growth blockers.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <strong>Receive</strong>
+              <p>Package-scoped AI-assisted readout routed through the automation backend.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <strong>Act</strong>
+              <p>Use the most repeated bottleneck first, then upgrade if workflow utility is needed.</p>
+            </article>
+          </div>
+        </section>
+
         <section className="offers" id="packages" aria-label="Paid growth paths">
           {offers.map((offer) => {
             const emailHref = mailtoHref({ form, result, scan, packageName: offer.title })
             return (
-              <article key={offer.key}>
+              <article key={offer.key} className={offer.key === 'growthScanPack' ? 'recommended-offer' : ''}>
+                {offer.key === 'growthScanPack' && <b className="offer-ribbon">BEST FIRST BUY</b>}
                 <span>PACKAGE {offer.number} // {offer.price}</span>
                 <small>{offer.eyebrow}</small>
                 <h2>{offer.title}</h2>
@@ -1354,13 +1386,17 @@ export default function QuantumAIWebsite() {
           </section>
         )}
 
-        <section className="fulfillment-console" id="fulfillment" aria-labelledby="fulfillment-title">
+        <details className="fulfillment-console recovery-console" id="fulfillment">
+          <summary>
+            <span>Already paid or using backup checkout?</span>
+            <strong>Open delivery recovery form</strong>
+          </summary>
           <div className="fulfillment-copy">
             <div className="brand-chip">PAID DELIVERY INTAKE</div>
-            <h2 id="fulfillment-title">Fulfillment Command Packet</h2>
+            <h2>Delivery Recovery Packet</h2>
             <p>
-              New package checkouts now carry the intake into Stripe, then the backend can generate the package-scoped
-              deliverable after payment. Use this form only for older payment links, crypto payments, or manual recovery.
+              Normal card checkout already carries the intake into Stripe for backend delivery. Use this only if
+              payment happened through an older link, crypto route, or a support recovery path.
             </p>
             <div className="fulfillment-next">
               <strong>After payment:</strong>
@@ -1410,7 +1446,7 @@ export default function QuantumAIWebsite() {
           {fulfillmentDeliverable && (
             <pre className="fulfillment-output">{fulfillmentDeliverable}</pre>
           )}
-        </section>
+        </details>
 
         {referralOpen && (
           <section className="referral-panel" aria-labelledby="premium-referral-title">
@@ -1436,8 +1472,8 @@ export default function QuantumAIWebsite() {
           <h2 id="launch-title">What Happens After Selection</h2>
           <ul>
             <li>Your scan or assessment creates a structured first-pass readout from the information submitted.</li>
-            <li>Package selections route you to checkout, intake, referral, or direct contact depending on the offer selected.</li>
-            <li>Paid buyers can submit fulfillment details so the requested deliverable has the right business context.</li>
+            <li>Package selections route into one-step checkout, referral, or direct contact depending on the offer selected.</li>
+            <li>Paid card buyers can be fulfilled from the checkout intake without needing a second manual form.</li>
             <li>Higher-scope growth and premium referral requests receive additional review before deeper commitments are made.</li>
             <li>Diagnostics are informational and are designed to support better decisions, not promise revenue or replace professional advice.</li>
           </ul>
