@@ -42,6 +42,8 @@ const SHARE_TITLE = 'QuantumAiBusiness'
 const SHARE_TEXT = 'Run a cyber growth-pressure scan for business faults, profit leaks, and automation opportunities.'
 const EVENT_STORAGE_KEY = 'quantumaibusiness_event_log'
 const ATTRIBUTION_STORAGE_KEY = 'quantumaibusiness_attribution'
+const META_PURCHASE_STORAGE_KEY = 'quantumaibusiness_meta_purchase_events'
+const META_MATCH_STORAGE_KEY = 'quantumaibusiness_meta_match_email'
 const MAX_EVENT_LOG = 40
 const FULFILLMENT_PACKAGES = [
   ['outlinedStrategy', 'Outlined Strategy'],
@@ -57,6 +59,12 @@ const PACKAGE_LADDER = [
   ['Anchor', '$2,500+', 'Deeper strategic growth work for bigger business systems.'],
   ['Premier', 'Referral', 'High-touch QuantumBusinessStrategies routing for larger scopes.'],
 ]
+const PACKAGE_VALUES = {
+  outlinedStrategy: 9.99,
+  growthScanPack: 49.99,
+  automatedUtility: 229.99,
+  fullStrategic: 2500,
+}
 
 function rand(seed, min, max) {
   const n = Math.sin(seed * 9999) * 10000
@@ -331,23 +339,71 @@ function captureAttribution() {
   return next
 }
 
+function loadStoredMetaPurchases() {
+  try {
+    return JSON.parse(window.localStorage.getItem(META_PURCHASE_STORAGE_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+function rememberMetaPurchase(eventId) {
+  try {
+    const current = loadStoredMetaPurchases()
+    window.localStorage.setItem(META_PURCHASE_STORAGE_KEY, JSON.stringify([eventId, ...current].slice(0, 30)))
+  } catch {
+    // Purchase dedupe is helpful but not required.
+  }
+}
+
+function metaEventName(name) {
+  if (name === 'assessment_submitted') return 'Lead'
+  if (name === 'package_checkout_started') return 'InitiateCheckout'
+  if (name === 'checkout_return_success') return 'Purchase'
+  if (name === 'package_selected') return 'ViewContent'
+  if (name === 'premium_referral_requested') return 'Contact'
+  if (name === 'scan_generated') return 'Search'
+  return ''
+}
+
+function cleanMetaEmail(email) {
+  const value = String(email || '').trim().toLowerCase()
+  return value.includes('@') ? value : ''
+}
+
+function updateMetaAdvancedMatching(email) {
+  const cleanEmail = cleanMetaEmail(email)
+  if (!cleanEmail || !META_PIXEL_ID || !window.fbq) return
+  try {
+    if (window.localStorage.getItem(META_MATCH_STORAGE_KEY) === cleanEmail) return
+    window.localStorage.setItem(META_MATCH_STORAGE_KEY, cleanEmail)
+  } catch {
+    // Advanced matching can still run even if local storage is unavailable.
+  }
+  window.fbq('init', META_PIXEL_ID, { em: cleanEmail })
+}
+
 function pushAnalyticsEvent(name, params = {}) {
   const payload = {
     event_category: params.category || 'quantumaibusiness_funnel',
     event_label: params.label || params.package || params.destination || '',
     value: params.value || 0,
+    currency: params.currency || 'USD',
     ...params,
   }
   window.dataLayer?.push({ event: name, ...payload })
   window.gtag?.('event', name, payload)
   if (window.fbq) {
-    if (name === 'assessment_submitted') {
-      window.fbq('track', 'Lead', payload)
-    } else if (name === 'package_checkout_started') {
-      window.fbq('track', 'InitiateCheckout', payload)
-    } else {
-      window.fbq('trackCustom', name, payload)
+    const standardEvent = metaEventName(name)
+    if (standardEvent === 'Purchase') {
+      const eventId = params.event_id || params.checkout_session || ''
+      if (eventId && loadStoredMetaPurchases().includes(eventId)) return
+      window.fbq('track', 'Purchase', payload, eventId ? { eventID: eventId } : undefined)
+      if (eventId) rememberMetaPurchase(eventId)
+    } else if (standardEvent) {
+      window.fbq('track', standardEvent, payload)
     }
+    window.fbq('trackCustom', name, payload)
   }
 }
 
@@ -503,6 +559,9 @@ export default function QuantumAIWebsite() {
         category: 'commerce',
         package_key: checkoutReturn.packageKey,
         checkout_session: checkoutReturn.sessionId,
+        event_id: checkoutReturn.sessionId,
+        value: PACKAGE_VALUES[checkoutReturn.packageKey] || 0,
+        currency: 'USD',
       })
       recordAutomationEvent('checkout_return_success', { checkout: checkoutReturn }, { notify: false })
     }
@@ -654,6 +713,7 @@ export default function QuantumAIWebsite() {
     setLeadStatus('ASSESSMENT PACKET GENERATED')
     setOpen(true)
     setResp(`READINESS ${generatedScan.readiness}% :: UNLOCKED GAPS: ${result.gaps.join(' / ')} :: SELECT PACKAGE 1-4 BELOW`)
+    updateMetaAdvancedMatching(form.email)
     pushAnalyticsEvent('assessment_submitted', {
       category: 'assessment',
       label: form.company || form.website || 'assessment',
@@ -668,11 +728,14 @@ export default function QuantumAIWebsite() {
   }
 
   async function trackPackage(offer) {
+    updateMetaAdvancedMatching(form.email)
     pushAnalyticsEvent('package_selected', {
       category: 'commerce',
       package: offer.title,
       package_key: offer.key,
       value: offer.amount || 0,
+      content_name: offer.title,
+      content_category: 'growth_package',
       target: form.website || form.company,
       utm_source: attribution.utm_source || '',
       utm_campaign: attribution.utm_campaign || '',
@@ -713,6 +776,9 @@ export default function QuantumAIWebsite() {
       package: offer.title,
       package_key: offer.key,
       value: offer.amount || 0,
+      currency: 'USD',
+      content_name: offer.title,
+      content_category: 'growth_package',
       checkout_type: 'stripe_one_step',
     })
 
@@ -768,6 +834,7 @@ export default function QuantumAIWebsite() {
         package: selectedPackage?.title || fulfillmentForm.packageKey,
         package_key: fulfillmentForm.packageKey,
         value: selectedPackage?.amount || 0,
+        currency: 'USD',
       })
       const response = await submitFulfillmentPacket(packet)
       const useSingleStaticEmail = response.mode === 'static_email_fallback'
