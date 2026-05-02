@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Submit QuantumAiBusiness client feedback, implementation notes, results, blockers, referrals, or upgrade interest." />
+    <title>Client Results Feedback | QuantumAiBusiness</title>
+    <link rel="canonical" href="https://quantumaibusiness.com/client-results-feedback.html" />
+    <style>
+      body{margin:0;background:#020509;color:#eaffff;font-family:"Courier New",monospace}main{width:min(980px,100%);margin:0 auto;padding:36px 18px}.panel{border:1px solid #8ffcff;background:rgba(0,10,18,.78);padding:24px;box-shadow:0 0 34px rgba(143,252,255,.18)}h1{margin:0 0 12px;color:#fff1a6;font-size:clamp(34px,7vw,72px);line-height:1;text-shadow:0 0 16px #0ff,6px 6px 0 rgba(255,184,243,.24)}h2{color:#98ffdd}p,label{line-height:1.7}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}form{display:grid;gap:12px;margin-top:18px}label{display:grid;gap:6px;color:#98ffdd;font-weight:900}input,select,textarea{width:100%;min-height:48px;padding:14px;color:#eaffff;background:rgba(0,8,16,.72);border:1px solid rgba(143,252,255,.62);font:inherit}textarea{min-height:120px}button,a{display:inline-flex;align-items:center;justify-content:center;min-height:52px;margin-top:8px;padding:14px 16px;color:#061018;background:linear-gradient(135deg,#eaffff,#98ffdd,#fff1a6);border:2px solid #effcff;font-weight:900;text-decoration:none;box-shadow:0 9px 0 #001133;font-family:inherit}.status{color:#fff1a6;font-weight:900}small{display:block;margin-top:18px;color:#9ff;line-height:1.6}@media(max-width:780px){.grid{grid-template-columns:1fr}h1{font-size:42px}}
+    </style>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-RCLMY2RC5S');!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','2036989413889891');fbq('track','PageView');</script><script async src="https://www.googletagmanager.com/gtag/js?id=G-RCLMY2RC5S"></script>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <h1>Client Results Feedback</h1>
+        <p>This route turns delivery into growth intelligence: proof, blockers, referrals, upgrade signals, and better future offers.</p>
+        <form id="feedback-form">
+          <div class="grid">
+            <label>Business name <input name="company" required placeholder="Business name" /></label>
+            <label>Email <input name="email" type="email" required placeholder="owner@example.com" /></label>
+          </div>
+          <label>Package used
+            <select name="package_key">
+              <option value="outlinedStrategy">Paid Growth Diagnostic</option>
+              <option value="growthScanPack" selected>Growth Scan Pack</option>
+              <option value="automatedUtility">Automated Utility</option>
+              <option value="fullStrategic">Full Strategic Growth</option>
+            </select>
+          </label>
+          <label>What did you implement or notice?
+            <textarea name="implemented" required placeholder="Example: changed CTA, added follow-up, found weak intake, clarified offer..."></textarea>
+          </label>
+          <label>Any measurable signal?
+            <textarea name="result_signal" placeholder="Example: more replies, clearer owner decision, checkout starts, booked calls, no change yet..."></textarea>
+          </label>
+          <label>Biggest blocker now?
+            <textarea name="blocker" placeholder="Example: need automation setup, better offer, ad traffic, reporting, follow-up..."></textarea>
+          </label>
+          <label>Referral or business that should be scanned next
+            <input name="referral" placeholder="Business/name/email/site if available" />
+          </label>
+          <button type="submit">Send Feedback + Next-Step Signal</button>
+          <p class="status" id="status"></p>
+        </form>
+        <a href="/automated-utility.html?utm_source=client_feedback&utm_medium=internal&utm_campaign=feedback_upgrade">View Automated Utility</a>
+        <a href="/refer-business.html?utm_source=client_feedback&utm_medium=internal&utm_campaign=feedback_referral">Refer A Business</a>
+        <small>Only submit information you are comfortable sharing for review. QuantumAiBusiness does not guarantee outcomes.</small>
+      </section>
+    </main>
+    <script>
+      document.getElementById('feedback-form').addEventListener('submit', async function(event){
+        event.preventDefault();
+        var form = event.currentTarget;
+        var status = document.getElementById('status');
+        var data = Object.fromEntries(new FormData(form).entries());
+        status.textContent = 'Sending feedback...';
+        try {
+          var response = await fetch('https://quantumaibusiness.vercel.app/api/lead', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Accept':'application/json'},
+            body: JSON.stringify({
+              event_type: 'client_results_feedback',
+              action_mode: 'owner_review',
+              source: 'quantumaibusiness.com',
+              form: {
+                company: data.company,
+                email: data.email,
+                objective: data.implemented,
+                current_tools: data.result_signal,
+                constraints: data.blocker
+              },
+              package: {
+                key: data.package_key,
+                title: data.package_key
+              },
+              payload: {
+                implemented: data.implemented,
+                result_signal: data.result_signal,
+                blocker: data.blocker,
+                referral: data.referral,
+                url: window.location.href
+              }
+            })
+          });
+          if (!response.ok) throw new Error('Feedback route failed');
+          window.gtag?.('event','client_results_feedback',{event_category:'proof_loop',event_label:data.package_key});
+          window.fbq?.('trackCustom','ClientResultsFeedback',{package_key:data.package_key});
+          status.textContent = 'Feedback sent. Next-step route logged.';
+          form.reset();
+        } catch (error) {
+          status.textContent = 'Could not send automatically. Email quantumbusinessstrategies@gmail.com.';
+        }
+      });
+    </script>
+  </body>
+</html>
