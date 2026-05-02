@@ -5,9 +5,17 @@ const MONEY_PAGE = `${SITE}/business-growth-scan.html`
 const SCAN_PACK_PAGE = `${SITE}/growth-scan-pack.html`
 const REFERRAL_PAGE = `${SITE}/refer-business.html`
 const MAX_SCHEDULED_POSTS = 3
+const FACEBOOK_TYPE_REQUIRED = /facebook posts require a type/i
 
 function campaignDate() {
   return new Date().toISOString().slice(0, 10)
+}
+
+function parseListEnv(value) {
+  return String(value || '')
+    .split(/[,\s]+/)
+    .map((item) => item.trim().replace(/^['"]+|['"]+$/g, ''))
+    .filter(Boolean)
 }
 
 function buildFallbackQueue() {
@@ -148,15 +156,9 @@ function extractSchedulePosts(queue) {
 
 async function scheduleBufferQueue(queue) {
   const apiKey = process.env.BUFFER_API_KEY || ''
-  const channelIds = (process.env.BUFFER_CHANNEL_IDS || '')
-    .split(',')
-    .map((channel) => channel.trim())
-    .filter(Boolean)
+  const channelIds = parseListEnv(process.env.BUFFER_CHANNEL_IDS)
   const legacyToken = process.env.BUFFER_ACCESS_TOKEN || ''
-  const legacyProfileIds = (process.env.BUFFER_PROFILE_IDS || '')
-    .split(',')
-    .map((profile) => profile.trim())
-    .filter(Boolean)
+  const legacyProfileIds = parseListEnv(process.env.BUFFER_PROFILE_IDS)
 
   if (process.env.SOCIAL_AUTO_SCHEDULE !== 'true') {
     return { scheduled: false, reason: 'SOCIAL_AUTO_SCHEDULE is not enabled' }
@@ -173,36 +175,51 @@ async function scheduleBufferQueue(queue) {
     for (let index = 0; index < selectedPosts.length; index += 1) {
       const dueAt = new Date(Date.now() + (index + 1) * 2 * 60 * 60 * 1000).toISOString()
       for (const channelId of channelIds) {
-        const response = await fetch('https://api.buffer.com', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: `mutation CreateQuantumPost($input: CreatePostInput!) {
-              createPost(input: $input) {
-                ... on PostActionSuccess {
-                  post { id text dueAt }
-                }
-                ... on MutationError {
-                  message
-                }
-              }
-            }`,
-            variables: {
-              input: {
-                text: selectedPosts[index],
-                channelId,
-                schedulingType: 'automatic',
-                mode: 'customScheduled',
-                dueAt,
-              },
-            },
-          }),
+        const buildInput = (withFacebookType = false) => ({
+          text: selectedPosts[index],
+          channelId,
+          schedulingType: 'automatic',
+          mode: 'customScheduled',
+          dueAt,
+          ...(withFacebookType ? { metadata: { facebook: { type: 'post' } } } : {}),
         })
-        const payload = await response.json().catch(() => ({ parse_error: true }))
-        const mutationResult = payload.data?.createPost || {}
+
+        const createPost = (withFacebookType = false) =>
+          fetch('https://api.buffer.com', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              query: `mutation CreateQuantumPost($input: CreatePostInput!) {
+                createPost(input: $input) {
+                  ... on PostActionSuccess {
+                    post { id text dueAt }
+                  }
+                  ... on MutationError {
+                    message
+                  }
+                }
+              }`,
+              variables: {
+                input: buildInput(withFacebookType),
+              },
+            }),
+          })
+
+        let response = await createPost(false)
+        let payload = await response.json().catch(() => ({ parse_error: true }))
+        let mutationResult = payload.data?.createPost || {}
+        let retriedWithFacebookType = false
+
+        if (!mutationResult.post?.id && FACEBOOK_TYPE_REQUIRED.test(mutationResult.message || '')) {
+          retriedWithFacebookType = true
+          response = await createPost(true)
+          payload = await response.json().catch(() => ({ parse_error: true }))
+          mutationResult = payload.data?.createPost || {}
+        }
+
         const ok = response.ok && Boolean(mutationResult.post?.id)
 
         results.push({
@@ -211,6 +228,7 @@ async function scheduleBufferQueue(queue) {
           status: response.status,
           channel_id: channelId,
           scheduled_at: dueAt,
+          retried_with_facebook_type: retriedWithFacebookType,
           text_preview: selectedPosts[index].slice(0, 180),
           buffer_response: payload,
         })
