@@ -128,6 +128,50 @@ const PAID_TRAFFIC_TESTS = [
     setup: 'Good business audience, but usually expensive. Use organic LinkedIn first, then paid only for proven copy.',
   },
 ]
+const MONEY_LINKS = [
+  {
+    label: 'Main Scan',
+    priority: 'Primary traffic target',
+    url: 'https://quantumaibusiness.com/business-growth-scan.html?utm_source=owner_console&utm_medium=command&utm_campaign=money_link',
+  },
+  {
+    label: '$49.99 Pack',
+    priority: 'Best cold paid offer',
+    url: 'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=owner_console&utm_medium=command&utm_campaign=money_link',
+  },
+  {
+    label: '$229.99 Utility',
+    priority: 'Upsell after scan',
+    url: 'https://quantumaibusiness.com/automated-utility.html?utm_source=owner_console&utm_medium=command&utm_campaign=money_link',
+  },
+  {
+    label: 'Premium Referral',
+    priority: 'High-ticket handoff',
+    url: 'https://quantumaibusiness.com/refer-business.html?utm_source=owner_console&utm_medium=command&utm_campaign=money_link',
+  },
+]
+const DAILY_COMMANDS = [
+  {
+    lane: 'Traffic',
+    command: 'Post one useful no-hype scan link where business owners already are.',
+    auto: 'Buffer queue and campaign batch can generate/schedule approved posts.',
+  },
+  {
+    lane: 'Conversion',
+    command: 'Push the $49.99 Growth Scan Pack first; use $9.99 only as a low-friction backup.',
+    auto: 'Tracked landing pages route to Stripe checkout and fulfillment intake.',
+  },
+  {
+    lane: 'Fulfillment',
+    command: 'Let low-ticket delivery run, then personally review $229+ and premium prospects.',
+    auto: 'Stripe webhook, OpenAI generation, Resend, and Apps Script logging are connected.',
+  },
+  {
+    lane: 'Scale',
+    command: 'Increase only channels producing Lead, ViewContent, InitiateCheckout, or Purchase.',
+    auto: 'Meta Pixel and Google tag now separate traffic source and funnel events.',
+  },
+]
 
 function isLocalHost() {
   return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
@@ -535,6 +579,19 @@ export default function OwnerConsole() {
     },
     [pipeline],
   )
+  const conversionCommand = useMemo(() => {
+    if (!pipeline.length) return 'Get the next real signal: send traffic to the scan page and watch for Lead or InitiateCheckout.'
+    if (pipelineStats.upsell > 0) return 'Work the upsell queue first. These are the warmest paths toward Automated Utility or full strategy revenue.'
+    if (pipelineStats.paid > 0) return 'Confirm paid fulfillment, then follow up with the Automated Utility upgrade when the scan exposes repeated gaps.'
+    if (pipelineStats.active > 0) return 'Move active leads to a clear next status: report ready, reply sent, upsell target, or closed.'
+    return 'Re-open traffic: post the scan link, run a tiny tracked test, and save any response into the pipeline.'
+  }, [pipeline.length, pipelineStats.active, pipelineStats.paid, pipelineStats.upsell])
+  const automationReadiness = useMemo(() => {
+    if (!backendHealth?.configured) return 0
+    const keys = ['resend', 'stripe_webhook_secret', 'openai_api_key', 'automation_webhook', 'owner_action_token', 'cron_secret', 'social_queue']
+    const active = keys.filter((key) => backendHealth.configured?.[key]).length
+    return Math.round((active / keys.length) * 100)
+  }, [backendHealth])
 
   useEffect(() => {
     refreshBackendHealth()
@@ -1080,6 +1137,51 @@ export default function OwnerConsole() {
           <p>Paste a FormSubmit fulfillment email, review the extracted fields, then copy the report or full customer reply.</p>
         </div>
         <a href="/">PUBLIC SITE</a>
+      </section>
+
+      <section className="owner-command-deck">
+        <div className="owner-command-card owner-command-primary">
+          <span>FASTEST NEXT MOVE</span>
+          <strong>{conversionCommand}</strong>
+          <p>
+            Automation readiness: {automationReadiness}% // Tracked value: ${pipelineStats.value.toFixed(2)} // Active value: ${pipelineStats.activeValue.toFixed(2)}
+          </p>
+          <div className="owner-command-buttons">
+            <button type="button" onClick={runDailyDigest}>RUN DAILY OPS</button>
+            <button type="button" onClick={requestCampaignBatch}>BUILD CAMPAIGN</button>
+            <button type="button" onClick={requestSocialQueue}>QUEUE SOCIAL</button>
+          </div>
+        </div>
+
+        <div className="owner-command-card">
+          <span>FUNNEL STATUS</span>
+          <div className="owner-command-stats">
+            <strong>{pipelineStats.active}</strong><small>active</small>
+            <strong>{pipelineStats.paid}</strong><small>paid</small>
+            <strong>{pipelineStats.upsell}</strong><small>upsell</small>
+            <strong>{pipelineStats.automationCount}</strong><small>high tier</small>
+          </div>
+        </div>
+
+        <div className="owner-command-card owner-command-links">
+          <span>MONEY LINKS</span>
+          {MONEY_LINKS.map((link) => (
+            <button key={link.label} type="button" onClick={() => copyText(link.label, link.url)}>
+              <strong>{link.label}</strong>
+              <small>{link.priority}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="owner-command-deck owner-command-lanes">
+        {DAILY_COMMANDS.map((item) => (
+          <article key={item.lane}>
+            <span>{item.lane}</span>
+            <strong>{item.command}</strong>
+            <p>{item.auto}</p>
+          </article>
+        ))}
       </section>
 
       <section className="owner-grid owner-ops-grid">
