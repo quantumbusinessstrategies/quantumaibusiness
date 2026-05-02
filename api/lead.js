@@ -23,6 +23,10 @@ function shouldCreateFollowUp(type, record) {
   return ['assessment_submitted', 'package_selected'].includes(type) && email.includes('@')
 }
 
+function isQuietTrafficEvent(type) {
+  return ['traffic_pulse', 'static_landing_view', 'static_landing_click'].includes(type)
+}
+
 function buildFallbackLeadFollowUp(input, routeData) {
   const business = input.business || input.website || 'your business'
   const nextAction = routeNextAction(routeData.lead_route)
@@ -206,7 +210,10 @@ export default async function handler(req, res) {
       }
     }
 
-    const [notification, forwarding] = await Promise.allSettled([notifyOwner(record), forwardAutomation(record)])
+    const [notification, forwarding] = await Promise.allSettled([
+      isQuietTrafficEvent(type) ? Promise.resolve({ notified: false, reason: 'quiet traffic event' }) : notifyOwner(record),
+      forwardAutomation(record),
+    ])
     jsonResponse(res, 200, {
       ok: true,
       record,

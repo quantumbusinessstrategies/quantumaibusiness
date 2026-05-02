@@ -407,6 +407,38 @@ function pushAnalyticsEvent(name, params = {}) {
   }
 }
 
+function postTrafficPulse(attribution) {
+  try {
+    const key = `qab_app_pulse_${window.location.pathname}_${attribution.utm_source || ''}_${attribution.utm_campaign || ''}`
+    if (window.sessionStorage.getItem(key)) return
+    window.sessionStorage.setItem(key, '1')
+    const body = JSON.stringify({
+      event_type: 'traffic_pulse',
+      action_mode: 'auto_route',
+      source: 'quantumaibusiness.com',
+      payload: {
+        page: window.location.pathname,
+        title: document.title,
+        url: window.location.href,
+        attribution,
+      },
+    })
+    const endpoint = `${AUTOMATION_API_URL.replace(/\/$/, '')}/api/lead`
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }))
+      return
+    }
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body,
+      keepalive: true,
+    })
+  } catch {
+    // Traffic pulses are useful for the owner console, but never required for the page.
+  }
+}
+
 function createAutomationEvent(type, payload, fallbackTarget) {
   const packageTitle = payload.package?.title || ''
   const isPremium = payload.package?.key === 'premiumReferral' || packageTitle.toLowerCase().includes('premium')
@@ -550,6 +582,7 @@ export default function QuantumAIWebsite() {
 
   useEffect(() => {
     recordAutomationEvent('traffic_attribution_captured', { attribution }, { notify: false })
+    postTrafficPulse(attribution)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

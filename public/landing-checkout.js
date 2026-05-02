@@ -1,4 +1,6 @@
 (function () {
+  var API = 'https://quantumaibusiness.vercel.app/api/lead'
+
   function attribution() {
     var params = new URLSearchParams(window.location.search)
     var data = {
@@ -12,6 +14,65 @@
     })
     return data
   }
+
+  function postAutomationEvent(eventType, payload) {
+    try {
+      var body = JSON.stringify({
+        event_type: eventType,
+        action_mode: 'auto_route',
+        source: 'quantumaibusiness.com',
+        payload: Object.assign(
+          {
+            page: window.location.pathname,
+            title: document.title,
+            url: window.location.href,
+          },
+          payload || {},
+        ),
+      })
+      if (navigator.sendBeacon) {
+        var blob = new Blob([body], { type: 'application/json' })
+        navigator.sendBeacon(API, blob)
+        return
+      }
+      fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: body,
+        keepalive: true,
+      })
+    } catch (error) {
+      // Traffic tracking must never block the landing page.
+    }
+  }
+
+  function pulseOnce() {
+    try {
+      var data = attribution()
+      var key = 'qab_static_pulse_' + window.location.pathname + '_' + (data.utm_source || '') + '_' + (data.utm_campaign || '')
+      if (window.sessionStorage.getItem(key)) return
+      window.sessionStorage.setItem(key, '1')
+      postAutomationEvent('static_landing_view', { attribution: data })
+    } catch (error) {
+      postAutomationEvent('static_landing_view', { attribution: attribution() })
+    }
+  }
+
+  pulseOnce()
+
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest && event.target.closest('a')
+    if (!link) return
+    var href = link.href || ''
+    var label = (link.textContent || '').trim().slice(0, 100)
+    var highIntent = href.indexOf('buy.stripe.com') !== -1 || /scan|checkout|start|growth|utility/i.test(label)
+    if (!highIntent) return
+    postAutomationEvent('static_landing_click', {
+      label: label,
+      destination: href,
+      attribution: attribution(),
+    })
+  })
 
   document.addEventListener('submit', async function (event) {
     var form = event.target.closest && event.target.closest('.checkout-form')
