@@ -123,6 +123,21 @@ function fallbackSchedulePosts() {
   ]
 }
 
+function isSkippableScheduleLine(line) {
+  return /^(notes?:|utm |utm_|primary free|scan pack:|referral program:|- |below is|copy|daily owner checklist|[-]{3,})/i.test(line)
+}
+
+function compactPostForScheduling(value) {
+  const post = String(value || '').replace(/\s+/g, ' ').trim()
+  if (post.length <= 260) return post
+
+  const urlMatch = post.match(/https:\/\/quantumaibusiness\.com\/\S+/)
+  const url = urlMatch?.[0] || ''
+  const text = url ? post.replace(url, '').trim() : post
+  const maxTextLength = url ? 225 - url.length : 255
+  return `${text.slice(0, Math.max(80, maxTextLength)).trim().replace(/[.,;:!?-]+$/, '')}...${url ? ` ${url}` : ''}`
+}
+
 function extractSchedulePosts(queue) {
   const posts = []
   const lines = String(queue || '')
@@ -132,17 +147,25 @@ function extractSchedulePosts(queue) {
 
   for (let index = 0; index < lines.length && posts.length < MAX_SCHEDULED_POSTS; index += 1) {
     const line = lines[index]
+    if (!/^\d+[).]\s+/.test(line) || !/https:\/\/quantumaibusiness\.com/.test(line) || isSkippableScheduleLine(line)) {
+      continue
+    }
+    posts.push(line.replace(/^\d+[).]\s+/, ''))
+  }
+
+  for (let index = 0; index < lines.length && posts.length < MAX_SCHEDULED_POSTS; index += 1) {
+    const line = lines[index]
     const next = lines[index + 1] || ''
     const isHeading = /^\d+\.\s|^(x|linkedin|facebook|short|post|caption|referral|direct)/i.test(line)
     const hasUrl = /https:\/\/quantumaibusiness\.com/.test(line)
     const nextHasUrl = /https:\/\/quantumaibusiness\.com/.test(next)
 
-    if (hasUrl && !/^https?:\/\//i.test(line)) {
+    if (hasUrl && !/^https?:\/\//i.test(line) && !isSkippableScheduleLine(line)) {
       posts.push(line)
       continue
     }
 
-    if (isHeading && next && !/^https?:\/\//i.test(next)) {
+    if (isHeading && next && !/^https?:\/\//i.test(next) && !isSkippableScheduleLine(next)) {
       const url = nextHasUrl ? '' : lines.slice(index + 2, index + 5).find((candidate) => /^https?:\/\//i.test(candidate)) || ''
       posts.push([next, url].filter(Boolean).join(' '))
     }
@@ -151,6 +174,7 @@ function extractSchedulePosts(queue) {
   return posts
     .map((post) => post.replace(/^[-*]\s*/, '').trim())
     .filter((post) => post.length > 40)
+    .map(compactPostForScheduling)
     .slice(0, MAX_SCHEDULED_POSTS)
 }
 
@@ -181,6 +205,7 @@ async function scheduleBufferQueue(queue) {
           schedulingType: 'automatic',
           mode: 'customScheduled',
           dueAt,
+          source: 'quantumaibusiness-social-queue',
           ...(withFacebookType ? { metadata: { facebook: { type: 'post' } } } : {}),
         })
 
