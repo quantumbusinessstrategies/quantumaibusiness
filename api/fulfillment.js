@@ -8,7 +8,7 @@ import {
   setCors,
 } from './_shared.js'
 
-const PACKAGE_NAMES = {
+export const PACKAGE_NAMES = {
   outlinedStrategy: 'Outlined Strategy',
   growthScanPack: 'Growth Scan Pack',
   automatedUtility: 'Automated Utility',
@@ -81,7 +81,7 @@ function cleanText(value, fallback = '') {
   return String(value || fallback).trim().slice(0, 4000)
 }
 
-function normalizePackageKey(value, packageName = '') {
+export function normalizePackageKey(value, packageName = '') {
   const text = `${value || ''} ${packageName || ''}`.toLowerCase()
   if (text.includes('premium') || text.includes('referral')) return 'premiumReferral'
   if (text.includes('full') || text.includes('strategic')) return 'fullStrategic'
@@ -284,17 +284,52 @@ async function generateDeliverable(intake) {
   return { generated: true, deliverable: outputText || buildFallbackDeliverable(intake) }
 }
 
-export default async function handler(req, res) {
-  setCors(req, res)
-  if (handleOptions(req, res)) return
+export async function processFulfillmentIntake(body = {}) {
+    if (body.action === 'send_approved_draft') {
+      if (!body.owner_token || body.owner_token !== process.env.OWNER_ACTION_TOKEN) {
+        return { ok: false, statusCode: 401, error: 'Owner action token is missing or invalid' }
+      }
 
-  if (req.method !== 'POST') {
-    jsonResponse(res, 405, { ok: false, error: 'Method not allowed' })
-    return
-  }
+      const to = cleanText(body.to || body.customer_email || body.email, '')
+      const subject = cleanText(body.subject || 'Your QuantumAiBusiness fulfillment draft')
+      const text = cleanText(body.text || body.draft || body.deliverable)
+      const business = cleanText(body.business || body.company || 'Client business')
+      const website = cleanText(body.website)
 
-  try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
+      if (!to || !text) {
+        return { ok: false, statusCode: 400, error: 'Recipient email and approved draft text are required' }
+      }
+
+      const record = buildAutomationRecord('approved_draft_sent', {
+        customer_email: to,
+        package_name: cleanText(body.package_name || body.package || 'Approved Fulfillment Draft'),
+        form: {
+          company: business,
+          website,
+          email: to,
+        },
+        approved_subject: subject,
+        approved_draft_preview: text.slice(0, 1200),
+      })
+
+      const [clientEmail, ownerNotification, forwarding] = await Promise.allSettled([
+        sendClientEmail({ to, subject, text }),
+        notifyOwner(record),
+        forwardAutomation(record),
+      ])
+
+      return {
+        ok: true,
+        record,
+        client_email: clientEmail.status === 'fulfilled' ? clientEmail.value : { sent: false, error: clientEmail.reason?.message },
+        notification:
+          ownerNotification.status === 'fulfilled'
+            ? ownerNotification.value
+            : { notified: false, error: ownerNotification.reason?.message },
+        forwarding: forwarding.status === 'fulfilled' ? forwarding.value : { forwarded: false, error: forwarding.reason?.message },
+      }
+    }
+
     const intake = {
       package_key: cleanText(normalizePackageKey(body.package_key || body.packageKey, body.package_name || body.packageName)),
       package_name: cleanText(body.package_name || body.packageName || PACKAGE_NAMES[normalizePackageKey(body.package_key || body.packageKey, body.package_name || body.packageName)]),
@@ -309,8 +344,7 @@ export default async function handler(req, res) {
     }
 
     if (!intake.customer_email && !intake.payment_email) {
-      jsonResponse(res, 400, { ok: false, error: 'Customer or payment email is required' })
-      return
+      return { ok: false, statusCode: 400, error: 'Customer or payment email is required' }
     }
 
     const mode = process.env.FULFILLMENT_MODE || 'intake_only'
@@ -367,7 +401,7 @@ export default async function handler(req, res) {
           }),
     ])
 
-    jsonResponse(res, 200, {
+    return {
       ok: true,
       mode,
       client_email_mode: clientEmailMode,
@@ -383,7 +417,22 @@ export default async function handler(req, res) {
       notification: notification.status === 'fulfilled' ? notification.value : { notified: false, error: notification.reason?.message },
       forwarding: forwarding.status === 'fulfilled' ? forwarding.value : { forwarded: false, error: forwarding.reason?.message },
       client_email: clientEmail.status === 'fulfilled' ? clientEmail.value : { sent: false, error: clientEmail.reason?.message },
-    })
+    }
+}
+
+export default async function handler(req, res) {
+  setCors(req, res)
+  if (handleOptions(req, res)) return
+
+  if (req.method !== 'POST') {
+    jsonResponse(res, 405, { ok: false, error: 'Method not allowed' })
+    return
+  }
+
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
+    const result = await processFulfillmentIntake(body)
+    jsonResponse(res, result.statusCode || 200, result)
   } catch (error) {
     jsonResponse(res, 500, { ok: false, error: error.message })
   }

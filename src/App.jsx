@@ -257,6 +257,18 @@ async function submitFulfillmentPacket(packet) {
   return { ok: response.ok, mode: 'static_email_fallback', generated: false, deliverable: '' }
 }
 
+async function createCheckoutSession(packet) {
+  const checkoutEndpoint = `${AUTOMATION_API_URL.replace(/\/$/, '')}/api/checkout-session`
+  const response = await fetch(checkoutEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(packet),
+  })
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.error || `Checkout failed with HTTP ${response.status}`)
+  return data
+}
+
 async function requestBusinessDiagnostic({ target, form }) {
   const diagnosticEndpoint = AUTOMATION_API_URL
     ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/diagnostic') ? '' : '/api/diagnostic'}`
@@ -652,8 +664,21 @@ export default function QuantumAIWebsite() {
       return
     }
 
-    if (!PAYMENT_LINKS[offer.key]) {
-      setPackageStatus(`${offer.title.toUpperCase()} IS READY IN CODE - CREATE + ADD THE STRIPE PAYMENT LINK TO ACTIVATE CHECKOUT`)
+    const checkoutPacket = {
+      package_key: offer.key,
+      package_name: offer.title,
+      company: form.company || scan?.target || '',
+      website: form.website || scan?.target || '',
+      customer_email: form.email,
+      objective: form.objective || scan?.bottlenecks?.join('; ') || '',
+      current_tools: `Readiness ${scan?.readiness || result.readiness}%; gaps: ${result.gaps.join(', ')}`,
+      constraints: 'Submitted through one-step QuantumAiBusiness checkout.',
+      source: 'site_package_one_step_checkout',
+      attribution,
+    }
+
+    if ((!checkoutPacket.company && !checkoutPacket.website) || !checkoutPacket.customer_email) {
+      setPackageStatus('ADD BUSINESS NAME/WEBSITE + EMAIL IN THE GROWTH INTAKE ABOVE, THEN CHECKOUT RUNS IN ONE STEP')
       return
     }
 
@@ -662,10 +687,22 @@ export default function QuantumAIWebsite() {
       package: offer.title,
       package_key: offer.key,
       value: offer.amount || 0,
-      checkout_type: 'stripe',
+      checkout_type: 'stripe_one_step',
     })
-    setPackageStatus(`${offer.title.toUpperCase()} SELECTED - OWNER NOTIFIED - OPENING CHECKOUT`)
-    window.location.assign(PAYMENT_LINKS[offer.key])
+
+    try {
+      setPackageStatus(`${offer.title.toUpperCase()} SELECTED - CREATING ONE-STEP CHECKOUT`)
+      const session = await createCheckoutSession(checkoutPacket)
+      setPackageStatus(`${offer.title.toUpperCase()} CHECKOUT READY - OPENING STRIPE`)
+      window.location.assign(session.url)
+    } catch (error) {
+      if (PAYMENT_LINKS[offer.key]) {
+        setPackageStatus('ONE-STEP CHECKOUT UNAVAILABLE - OPENING BACKUP STRIPE LINK')
+        window.location.assign(PAYMENT_LINKS[offer.key])
+        return
+      }
+      setPackageStatus(`CHECKOUT ERROR: ${error.message}`)
+    }
   }
 
   async function submitPremiumReferral(event) {
@@ -1177,12 +1214,12 @@ export default function QuantumAIWebsite() {
             <div className="brand-chip">PAID DELIVERY INTAKE</div>
             <h2 id="fulfillment-title">Fulfillment Command Packet</h2>
             <p>
-              After checkout, clients can submit the details needed for delivery. Right now this sends the packet to the owner route;
-              once the backend host has secrets, it can generate the first AI deliverable automatically and email the client.
+              New package checkouts now carry the intake into Stripe, then the backend can generate the package-scoped
+              deliverable after payment. Use this form only for older payment links, crypto payments, or manual recovery.
             </p>
             <div className="fulfillment-next">
               <strong>After payment:</strong>
-              <span>Use the same email from Stripe if possible. The owner receives one fulfillment packet with the payment-review checklist.</span>
+              <span>Low-tier card checkouts can auto-deliver. Higher-scope packages stay owner-reviewed before major commitments.</span>
             </div>
           </div>
           <form className="intake-form fulfillment-form" onSubmit={submitPaidFulfillment}>

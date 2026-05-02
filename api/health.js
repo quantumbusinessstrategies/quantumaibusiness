@@ -46,6 +46,7 @@ export default async function handler(req, res) {
     configured: {
       resend: configured(process.env.RESEND_API_KEY),
       resend_from_email: configured(process.env.RESEND_FROM_EMAIL),
+      stripe_secret_key: configured(process.env.STRIPE_SECRET_KEY),
       stripe_webhook_secret: configured(process.env.STRIPE_WEBHOOK_SECRET),
       openai_api_key: configured(process.env.OPENAI_API_KEY),
       automation_webhook: configured(process.env.AUTOMATION_WEBHOOK_URL),

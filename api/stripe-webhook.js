@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { buildAutomationRecord, forwardAutomation, jsonResponse, notifyOwner, readRawBody, sendClientEmail } from './_shared.js'
+import { normalizePackageKey, processFulfillmentIntake } from './fulfillment.js'
 
 export const config = {
   api: {
@@ -124,6 +125,25 @@ function paymentMomentumRecord(session, packageName) {
   })
 }
 
+function fulfillmentIntakeFromCheckout(session, packageName) {
+  const metadata = session.metadata || {}
+  const packageKey = normalizePackageKey(metadata.package_key, packageName)
+  return {
+    package_key: packageKey,
+    package_name: metadata.package_name || packageName,
+    company: metadata.company || '',
+    website: metadata.website || '',
+    customer_email: metadata.customer_email || session.customer_details?.email || session.customer_email || '',
+    payment_email: session.customer_details?.email || session.customer_email || metadata.customer_email || '',
+    objective: metadata.objective || '',
+    current_tools: metadata.current_tools || '',
+    constraints: metadata.constraints || '',
+    source: 'stripe_one_step_checkout_paid',
+    amount: session.amount_total ? session.amount_total / 100 : '',
+    review_only: !['outlinedStrategy', 'growthScanPack'].includes(packageKey),
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     jsonResponse(res, 405, { ok: false, error: 'Method not allowed' })
@@ -152,15 +172,24 @@ export default async function handler(req, res) {
 
     const record = stripeCheckoutRecord(event)
     const session = event.data?.object || {}
+    const isOneStepCheckout = session.metadata?.auto_checkout_intake === 'true'
     const onboardingMode = process.env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send'
     const onboardingEmail = buildClientOnboardingEmail(session, record.package || 'purchase')
     const momentumRecord = paymentMomentumRecord(session, record.package || 'Stripe Checkout')
-    const [notification, forwarding, clientOnboarding] = await Promise.allSettled([
+    const [notification, forwarding, clientOnboarding, fulfillment] = await Promise.allSettled([
       notifyOwner(record),
       forwardAutomation(record),
-      onboardingMode === 'auto_send' && onboardingEmail.to
+      !isOneStepCheckout && onboardingMode === 'auto_send' && onboardingEmail.to
         ? sendClientEmail(onboardingEmail)
-        : Promise.resolve({ sent: false, reason: 'Stripe client onboarding disabled or missing customer email' }),
+        : Promise.resolve({
+            sent: false,
+            reason: isOneStepCheckout
+              ? 'One-step checkout carries intake metadata; second onboarding intake email skipped'
+              : 'Stripe client onboarding disabled or missing customer email',
+          }),
+      isOneStepCheckout
+        ? processFulfillmentIntake(fulfillmentIntakeFromCheckout(session, record.package || 'Stripe Checkout'))
+        : Promise.resolve({ ok: false, reason: 'Not a one-step checkout session' }),
     ])
     const [momentumNotification, momentumForwarding] = await Promise.allSettled([
       notifyOwner(momentumRecord),
@@ -175,6 +204,10 @@ export default async function handler(req, res) {
         clientOnboarding.status === 'fulfilled'
           ? clientOnboarding.value
           : { sent: false, error: clientOnboarding.reason?.message },
+      one_step_fulfillment:
+        fulfillment.status === 'fulfilled'
+          ? fulfillment.value
+          : { ok: false, error: fulfillment.reason?.message },
       post_payment_growth_push: {
         record: momentumRecord,
         notification:

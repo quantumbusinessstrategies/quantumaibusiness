@@ -680,6 +680,8 @@ export default function OwnerConsole() {
 
     const subject = `Your QuantumAiBusiness ${packageDetail.label} for ${effective.business}`
     const payload = {
+      action: 'send_approved_draft',
+      owner_token: ownerToken,
       to: effective.email,
       subject,
       text: aiDraft,
@@ -690,7 +692,7 @@ export default function OwnerConsole() {
 
     try {
       setSendStatus('Sending approved draft through Vercel/Resend...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/send-approved-draft`, {
+      const response = await fetch(`${AUTOMATION_API_URL}/api/fulfillment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
