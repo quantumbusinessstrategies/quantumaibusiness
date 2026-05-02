@@ -19,6 +19,7 @@ const CLIENT_EMAIL_MODES = new Set(['owner_review', 'auto_send'])
 const AUTO_SEND_MODES = new Set(['auto_send', 'auto_send_low_tier', 'auto_send_all'])
 const PUBLIC_SITE = process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com'
 const AUTOMATED_UTILITY_LINK = `${PUBLIC_SITE}/business-growth-scan.html?utm_source=fulfillment&utm_medium=email&utm_campaign=automated_utility_upgrade`
+const CLIENT_SUCCESS_GUIDE = `${PUBLIC_SITE}/client-success-guide.html?utm_source=fulfillment&utm_medium=email&utm_campaign=client_success`
 const PACKAGE_SCOPES = {
   outlinedStrategy: {
     maxTokens: 2600,
@@ -127,6 +128,10 @@ function buildClientDeliveryText(intake, deliverable) {
     `Thanks for submitting your QuantumAiBusiness intake for ${business}. Your package-scoped strategy draft is below.`,
     '',
     deliverable,
+    '',
+    'How to use this:',
+    `Use the Client Success Guide here: ${CLIENT_SUCCESS_GUIDE}`,
+    'Start with the repeated bottleneck, turn it into one practical task, then measure whether more prospects move into form fills, replies, checkout starts, purchases, or clearer owner decisions.',
     upgradePath,
     '',
     'Important note: QuantumAiBusiness provides strategic diagnostics, automation guidance, and opportunity mapping. Results are not guaranteed and depend on execution, market conditions, platform policies, data quality, and the actions taken by the business.',
