@@ -374,6 +374,89 @@ function buildPaidTestCsv() {
   ].join('\n')
 }
 
+function extractRecordFromText(text) {
+  const raw = String(text || '').trim()
+  if (!raw) return null
+  const fullRecordIndex = raw.indexOf('Full record:')
+  const jsonStart = raw.indexOf('{', fullRecordIndex >= 0 ? fullRecordIndex : 0)
+  if (jsonStart < 0) return null
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+  for (let index = jsonStart; index < raw.length; index += 1) {
+    const char = raw[index]
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+    if (inString) continue
+    if (char === '{') depth += 1
+    if (char === '}') depth -= 1
+    if (depth === 0) {
+      try {
+        return JSON.parse(raw.slice(jsonStart, index + 1))
+      } catch {
+        return null
+      }
+    }
+  }
+  return null
+}
+
+function decodeAutomationMessage(text) {
+  const raw = String(text || '')
+  const record = extractRecordFromText(raw) || {}
+  const eventType = record.event_type || (raw.match(/QuantumAiBusiness\s+(?:PAYMENT|CLIENT|OWNER AUTOMATION|SYSTEM)?\s*(?:PRIORITY|LOG)?\s*\/\/?\s*([^/\n]+)/i)?.[1] || '').trim()
+  const haystack = `${raw} ${eventType}`.toLowerCase()
+  const amount = record.amount || ''
+  const contact = record.contact_email || record.payload?.buyer_email || record.payload?.customer_email || ''
+  const packageName = record.package || record.payload?.package_name || record.payload?.growth_input?.offer || ''
+  const target = record.target || record.payload?.target || record.payload?.tracked_links?.pressure_scan || ''
+
+  let category = 'SYSTEM'
+  if (/(stripe|checkout|payment)/.test(haystack)) category = 'PAYMENT'
+  else if (/(paid_fulfillment|diagnostic|lead|intake|referral|approved_draft)/.test(haystack)) category = 'CLIENT'
+  else if (/(growth|campaign|social|digest|post_payment)/.test(haystack)) category = 'OWNER AUTOMATION'
+
+  const realBuyer =
+    category === 'PAYMENT' ||
+    (category === 'CLIENT' && Boolean(contact)) ||
+    /(paid_fulfillment_intake|stripe_checkout_completed|checkout\.session\.completed)/.test(haystack)
+
+  const action =
+    category === 'PAYMENT'
+      ? 'Check Stripe, then watch for auto fulfillment or intake metadata.'
+      : category === 'CLIENT'
+        ? 'Review the client record. Low tiers may auto-deliver; higher tiers need owner review.'
+        : category === 'OWNER AUTOMATION'
+          ? 'This is your machine creating content, campaign, digest, or growth instructions. No buyer action unless it says PAYMENT or CLIENT.'
+          : 'System/status message. Usually no client action needed.'
+
+  return {
+    category,
+    eventType: eventType || 'Unknown event',
+    realBuyer,
+    action,
+    contact: contact || 'Unspecified',
+    packageName: packageName || 'Unspecified',
+    amount: amount ? `$${amount}` : 'Unspecified',
+    target: target || 'Unspecified',
+    route: record.lead_route ? record.lead_route.replaceAll('_', ' ') : 'Unspecified',
+    score: record.lead_score ? `${record.lead_score}/100` : 'Unspecified',
+    record,
+    parsed: Boolean(Object.keys(record).length),
+  }
+}
+
 export default function OwnerConsole() {
   const localOnly = isLocalHost()
   const [rawPacket, setRawPacket] = useState('')
@@ -397,9 +480,11 @@ export default function OwnerConsole() {
   const [routeStatus, setRouteStatus] = useState('')
   const [routeReport, setRouteReport] = useState('')
   const [routeResult, setRouteResult] = useState(null)
+  const [decoderInput, setDecoderInput] = useState('')
   const [ownerToken, setOwnerToken] = useState(loadOwnerToken)
   const [pipeline, setPipeline] = useState(loadPipeline)
   const parsed = useMemo(() => summarizeInput(rawPacket), [rawPacket])
+  const decodedAutomation = useMemo(() => decodeAutomationMessage(decoderInput), [decoderInput])
   const [form, setForm] = useState({
     packageKey: 'outlinedStrategy',
     business: '',
@@ -995,6 +1080,40 @@ export default function OwnerConsole() {
           <p>Paste a FormSubmit fulfillment email, review the extracted fields, then copy the report or full customer reply.</p>
         </div>
         <a href="/">PUBLIC SITE</a>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-decoder">
+          <div className="owner-panel-title">
+            <h2>0. Automation Decoder</h2>
+            <button type="button" onClick={() => setDecoderInput('')}>CLEAR</button>
+          </div>
+          <textarea
+            value={decoderInput}
+            onChange={(event) => setDecoderInput(event.target.value)}
+            placeholder="Paste any QuantumAiBusiness email/log here. This tells you if it was a real buyer, client action, owner automation, or system noise."
+          />
+        </div>
+
+        <div className={`owner-panel owner-decode-card is-${decodedAutomation.category.toLowerCase().replaceAll(' ', '-')}`}>
+          <div className="owner-decode-banner">
+            <span>{decodedAutomation.category}</span>
+            <strong>{decodedAutomation.realBuyer ? 'REAL BUYER / CLIENT PATH' : 'NOT A BUYER EVENT'}</strong>
+          </div>
+          <div className="owner-decode-grid">
+            <span><strong>Event</strong>{decodedAutomation.eventType}</span>
+            <span><strong>Action</strong>{decodedAutomation.action}</span>
+            <span><strong>Contact</strong>{decodedAutomation.contact}</span>
+            <span><strong>Package</strong>{decodedAutomation.packageName}</span>
+            <span><strong>Amount</strong>{decodedAutomation.amount}</span>
+            <span><strong>Score / route</strong>{decodedAutomation.score} // {decodedAutomation.route}</span>
+          </div>
+          <p className="owner-inline-status">
+            {decodedAutomation.parsed
+              ? 'Full record parsed. Use this card first, then only dig into JSON if needed.'
+              : 'No full JSON record parsed yet. Paste the whole email including Full record when possible.'}
+          </p>
+        </div>
       </section>
 
       <section className="owner-grid">

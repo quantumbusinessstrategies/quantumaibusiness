@@ -2123,6 +2123,65 @@ code {
   border-color: #eaffff;
 }
 
+.owner-decoder textarea {
+  min-height: 260px;
+}
+
+.owner-decode-card {
+  align-content: start;
+}
+
+.owner-decode-banner {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  color: #061018;
+  background: linear-gradient(135deg, #eaffff, #98ffdd, #fff1a6);
+  border: 2px solid rgba(234, 255, 255, 0.82);
+  box-shadow: 0 8px 0 rgba(0, 17, 51, 0.72), 0 0 28px rgba(152, 255, 221, 0.2);
+}
+
+.owner-decode-card.is-payment .owner-decode-banner,
+.owner-decode-card.is-client .owner-decode-banner {
+  background: linear-gradient(135deg, #fff1a6, #98ffdd, #eaffff);
+}
+
+.owner-decode-card.is-owner-automation .owner-decode-banner {
+  background: linear-gradient(135deg, #ffb8f3, #eaffff, #98ffdd);
+}
+
+.owner-decode-banner span {
+  font-size: 10px;
+}
+
+.owner-decode-banner strong {
+  font-size: 13px;
+}
+
+.owner-decode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.owner-decode-grid span {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  color: #eaffff;
+  overflow-wrap: anywhere;
+  background: rgba(0, 8, 16, 0.7);
+  border: 1px solid rgba(152, 255, 221, 0.28);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.owner-decode-grid strong {
+  color: #fff1a6;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
 .owner-toast {
   position: fixed;
   right: 18px;
@@ -2339,6 +2398,7 @@ code {
   .owner-ops-grid,
   .owner-metrics,
   .owner-health-grid,
+  .owner-decode-grid,
   .owner-growth-lanes,
   .owner-social-grid,
   .owner-traffic-grid,
