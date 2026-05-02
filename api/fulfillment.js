@@ -21,6 +21,7 @@ const PUBLIC_SITE = process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness
 const AUTOMATED_UTILITY_LINK = `${PUBLIC_SITE}/business-growth-scan.html?utm_source=fulfillment&utm_medium=email&utm_campaign=automated_utility_upgrade`
 const CLIENT_SUCCESS_GUIDE = `${PUBLIC_SITE}/client-success-guide.html?utm_source=fulfillment&utm_medium=email&utm_campaign=client_success`
 const CLIENT_RESULTS_FEEDBACK = `${PUBLIC_SITE}/client-results-feedback.html?utm_source=fulfillment&utm_medium=email&utm_campaign=proof_loop`
+const CLIENT_REFERRAL_LINK = `${PUBLIC_SITE}/refer-business.html?utm_source=fulfillment&utm_medium=email&utm_campaign=client_referral`
 const PACKAGE_SCOPES = {
   outlinedStrategy: {
     maxTokens: 2600,
@@ -136,6 +137,9 @@ function buildClientDeliveryText(intake, deliverable) {
     '',
     'After you try one action:',
     `Send feedback, blockers, or referral signals here: ${CLIENT_RESULTS_FEEDBACK}`,
+    '',
+    'Know another owner with a weak website path, missed follow-up, or unclear automation route?',
+    `Refer them here: ${CLIENT_REFERRAL_LINK}`,
     upgradePath,
     '',
     'Important note: QuantumAiBusiness provides strategic diagnostics, automation guidance, and opportunity mapping. Results are not guaranteed and depend on execution, market conditions, platform policies, data quality, and the actions taken by the business.',
