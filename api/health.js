@@ -54,6 +54,8 @@ export default async function handler(req, res) {
       owner_action_token: configured(process.env.OWNER_ACTION_TOKEN),
       cron_secret: configured(process.env.CRON_SECRET),
       social_queue: configured(process.env.OWNER_ACTION_TOKEN) && configured(process.env.OPENAI_API_KEY),
+      buffer_api_key: configured(process.env.BUFFER_API_KEY),
+      buffer_channel_ids: configured(process.env.BUFFER_CHANNEL_IDS),
       buffer_access_token: configured(process.env.BUFFER_ACCESS_TOKEN),
       buffer_profile_ids: configured(process.env.BUFFER_PROFILE_IDS),
       social_auto_schedule: process.env.SOCIAL_AUTO_SCHEDULE === 'true',

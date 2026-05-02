@@ -147,8 +147,13 @@ function extractSchedulePosts(queue) {
 }
 
 async function scheduleBufferQueue(queue) {
-  const token = process.env.BUFFER_ACCESS_TOKEN || ''
-  const profileIds = (process.env.BUFFER_PROFILE_IDS || '')
+  const apiKey = process.env.BUFFER_API_KEY || ''
+  const channelIds = (process.env.BUFFER_CHANNEL_IDS || '')
+    .split(',')
+    .map((channel) => channel.trim())
+    .filter(Boolean)
+  const legacyToken = process.env.BUFFER_ACCESS_TOKEN || ''
+  const legacyProfileIds = (process.env.BUFFER_PROFILE_IDS || '')
     .split(',')
     .map((profile) => profile.trim())
     .filter(Boolean)
@@ -156,22 +161,77 @@ async function scheduleBufferQueue(queue) {
   if (process.env.SOCIAL_AUTO_SCHEDULE !== 'true') {
     return { scheduled: false, reason: 'SOCIAL_AUTO_SCHEDULE is not enabled' }
   }
-  if (!token || profileIds.length === 0) {
-    return { scheduled: false, reason: 'Buffer token or profile IDs are missing' }
+  if ((!apiKey || channelIds.length === 0) && (!legacyToken || legacyProfileIds.length === 0)) {
+    return { scheduled: false, reason: 'Buffer API key/channel IDs or legacy token/profile IDs are missing' }
   }
 
   const posts = extractSchedulePosts(queue)
   const selectedPosts = posts.length ? posts : fallbackSchedulePosts()
   const results = []
 
+  if (apiKey && channelIds.length) {
+    for (let index = 0; index < selectedPosts.length; index += 1) {
+      const dueAt = new Date(Date.now() + (index + 1) * 2 * 60 * 60 * 1000).toISOString()
+      for (const channelId of channelIds) {
+        const response = await fetch('https://api.buffer.com', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: `mutation CreateQuantumPost($input: CreatePostInput!) {
+              createPost(input: $input) {
+                ... on PostActionSuccess {
+                  post { id text dueAt }
+                }
+                ... on MutationError {
+                  message
+                }
+              }
+            }`,
+            variables: {
+              input: {
+                text: selectedPosts[index],
+                channelId,
+                schedulingType: 'automatic',
+                mode: 'customScheduled',
+                dueAt,
+              },
+            },
+          }),
+        })
+        const payload = await response.json().catch(() => ({ parse_error: true }))
+        const mutationResult = payload.data?.createPost || {}
+        const ok = response.ok && Boolean(mutationResult.post?.id)
+
+        results.push({
+          ok,
+          api: 'buffer_graphql',
+          status: response.status,
+          channel_id: channelId,
+          scheduled_at: dueAt,
+          text_preview: selectedPosts[index].slice(0, 180),
+          buffer_response: payload,
+        })
+      }
+    }
+
+    return {
+      scheduled: results.some((result) => result.ok),
+      attempted: results.length,
+      results,
+    }
+  }
+
   for (let index = 0; index < selectedPosts.length; index += 1) {
     const scheduledAt = new Date(Date.now() + (index + 1) * 2 * 60 * 60 * 1000).toISOString()
     const form = new URLSearchParams()
-    form.set('access_token', token)
+    form.set('access_token', legacyToken)
     form.set('text', selectedPosts[index])
     form.set('scheduled_at', scheduledAt)
     form.set('shorten', 'false')
-    profileIds.forEach((profileId) => form.append('profile_ids[]', profileId))
+    legacyProfileIds.forEach((profileId) => form.append('profile_ids[]', profileId))
 
     const response = await fetch('https://api.bufferapp.com/1/updates/create.json', {
       method: 'POST',
@@ -183,6 +243,7 @@ async function scheduleBufferQueue(queue) {
 
     results.push({
       ok: response.ok,
+      api: 'buffer_rest_legacy',
       status: response.status,
       scheduled_at: scheduledAt,
       text_preview: selectedPosts[index].slice(0, 180),
@@ -228,7 +289,10 @@ export default async function handler(req, res) {
       generation_reason: generation.reason || '',
       queue_preview: generation.queue.slice(0, 1600),
       queue_full: generation.queue,
-      scheduler_ready: Boolean(process.env.BUFFER_ACCESS_TOKEN && process.env.BUFFER_PROFILE_IDS),
+      scheduler_ready: Boolean(
+        (process.env.BUFFER_API_KEY && process.env.BUFFER_CHANNEL_IDS) ||
+          (process.env.BUFFER_ACCESS_TOKEN && process.env.BUFFER_PROFILE_IDS),
+      ),
       auto_schedule_enabled: process.env.SOCIAL_AUTO_SCHEDULE === 'true',
       buffer_schedule: bufferSchedule,
       next_action:
