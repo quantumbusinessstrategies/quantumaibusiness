@@ -49,6 +49,8 @@ This repo includes optional Vercel-style API functions:
 
 See `docs/AUTOMATION_BACKEND.md` for deployment, Stripe webhook, and environment variable setup.
 
+See `marketing/growth-operating-system.md` for the current offer ladder, targeting map, branding direction, traffic system, connectivity map, and daily automation loop.
+
 ## Brand protection note
 
 Names such as Quantumbusinessstrategies, Quantumaibusiness, and QuantumbusinessAI are usually protected through trademark law when used to identify services. Copyright can protect original website copy, graphics, software, and creative materials, but it generally does not protect names, titles, short phrases, or domain names.
