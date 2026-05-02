@@ -4,7 +4,7 @@ const SITE = 'https://quantumaibusiness.com'
 const MONEY_PAGE = `${SITE}/business-growth-scan.html`
 const SCAN_PACK_PAGE = `${SITE}/growth-scan-pack.html`
 const REFERRAL_PAGE = `${SITE}/refer-business.html`
-const MAX_SCHEDULED_POSTS = 3
+const MAX_SCHEDULED_POSTS = Math.max(1, Math.min(3, Number(process.env.SOCIAL_MAX_SCHEDULED_POSTS || 1)))
 const FACEBOOK_TYPE_REQUIRED = /facebook posts require a type/i
 const BUFFER_LIMIT_REACHED = /scheduled posts limit reached/i
 
@@ -129,14 +129,25 @@ function isSkippableScheduleLine(line) {
 }
 
 function compactPostForScheduling(value) {
-  const post = String(value || '').replace(/\s+/g, ' ').trim()
+  const post = String(value || '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^["']|["']$/g, '')
   if (post.length <= 260) return post
 
   const urlMatch = post.match(/https:\/\/quantumaibusiness\.com\/\S+/)
-  const url = urlMatch?.[0] || ''
+  const url = (urlMatch?.[0] || '').replace(/[)"']+$/g, '')
   const text = url ? post.replace(url, '').trim() : post
   const maxTextLength = url ? 225 - url.length : 255
-  return `${text.slice(0, Math.max(80, maxTextLength)).trim().replace(/[.,;:!?-]+$/, '')}...${url ? ` ${url}` : ''}`
+  const targetLength = Math.max(80, maxTextLength)
+  const trimmed = text.length > targetLength ? text.slice(0, targetLength) : text
+  const sentenceSafe = trimmed
+    .replace(/\s+\S*$/, '')
+    .trim()
+    .replace(/[.,;:!?-]+$/, '')
+  return `${sentenceSafe || trimmed.trim()}...${url ? ` ${url}` : ''}`
 }
 
 function extractSchedulePosts(queue) {

@@ -44,6 +44,7 @@ This repo includes optional Vercel-style API functions:
 - `api/fulfillment.js`: generates paid fulfillment drafts and can auto-send the $9.99 diagnostic and $49.99 growth scan pack when `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier`.
 - `api/ops-runner.js`: single daily Vercel cron orchestrator for owner digest, campaign batch, social queue, and backend health summary.
 - `api/social-queue.js`: generates and schedules Buffer posts when `BUFFER_API_KEY`, `BUFFER_CHANNEL_IDS`, and `SOCIAL_AUTO_SCHEDULE=true` are configured.
+- `SOCIAL_MAX_SCHEDULED_POSTS`: optional cap for Buffer scheduling per run. Default is `1` post per connected channel, max `3`, to avoid filling free Buffer queues too quickly.
 - `LEAD_FOLLOW_UP_MODE`: defaults to `owner_review`; set to `auto_send` only when you want warm assessment/package-selection follow-ups emailed automatically.
 
 See `docs/AUTOMATION_BACKEND.md` for deployment, Stripe webhook, and environment variable setup.
