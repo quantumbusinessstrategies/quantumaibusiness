@@ -67,6 +67,21 @@
     var label = (link.textContent || '').trim().slice(0, 100)
     var highIntent = href.indexOf('buy.stripe.com') !== -1 || /scan|checkout|start|growth|utility/i.test(label)
     if (!highIntent) return
+    if (href.indexOf('buy.stripe.com') !== -1) {
+      window.gtag?.('event', 'package_checkout_started', {
+        event_category: 'commerce',
+        event_label: label || 'backup_stripe_checkout',
+        checkout_type: 'backup_stripe_link',
+        destination: href,
+      })
+      window.gtag?.('event', 'close_convert_lead', {
+        event_category: 'commerce',
+        event_label: label || 'backup_stripe_checkout',
+        original_event: 'backup_stripe_link_click',
+        destination: href,
+      })
+      window.fbq?.('track', 'InitiateCheckout', { content_name: label || 'Backup Stripe Checkout', currency: 'USD' })
+    }
     postAutomationEvent('static_landing_click', {
       label: label,
       destination: href,
