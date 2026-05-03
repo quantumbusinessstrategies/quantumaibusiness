@@ -63,12 +63,13 @@
         var data = Object.fromEntries(new FormData(form).entries());
         status.textContent = 'Sending feedback...';
         try {
-          var response = await fetch('https://quantumaibusiness.vercel.app/api/proof-feedback', {
+          var response = await fetch('https://quantumaibusiness.vercel.app/api/lead', {
             method: 'POST',
             headers: {'Content-Type':'application/json','Accept':'application/json'},
             body: JSON.stringify({
               company: data.company,
               email: data.email,
+              event_type: 'client_proof_feedback',
               package_key: data.package_key,
               permission: data.permission,
               implemented: data.implemented,

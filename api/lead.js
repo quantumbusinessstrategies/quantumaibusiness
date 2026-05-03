@@ -27,6 +27,59 @@ function isQuietTrafficEvent(type) {
   return ['traffic_pulse', 'static_landing_view', 'static_landing_click'].includes(type)
 }
 
+function isProofFeedbackEvent(type) {
+  return ['client_proof_feedback', 'client_results_feedback'].includes(type)
+}
+
+function buildProofCaseNote(input) {
+  return [
+    `QuantumAiBusiness case note candidate: ${input.business}`,
+    '',
+    `Package: ${input.package_name}`,
+    `Proof permission: ${input.permission}`,
+    '',
+    'What changed or was noticed:',
+    input.implemented || 'No implementation note supplied.',
+    '',
+    'Signal reported:',
+    input.result_signal || 'No measurable signal supplied yet.',
+    '',
+    'Current blocker:',
+    input.blocker || 'No blocker supplied.',
+    '',
+    'Owner action:',
+    input.permission === 'anonymous_public'
+      ? 'Review for an anonymous case note. Remove identifying details before publishing.'
+      : 'Keep private unless the client later approves anonymous/public use.',
+  ].join('\n')
+}
+
+function buildProofConfirmation(input) {
+  const site = process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com'
+  const utilityLink = `${site}/automated-utility.html?utm_source=proof_feedback&utm_medium=email&utm_campaign=feedback_upgrade`
+  const referralLink = `${site}/refer-business.html?utm_source=proof_feedback&utm_medium=email&utm_campaign=feedback_referral`
+  return [
+    `Subject: QuantumAiBusiness feedback received for ${input.business}`,
+    '',
+    'Hi,',
+    '',
+    `Thanks for sending the follow-up signal for ${input.business}. This helps QuantumAiBusiness tighten the next recommendation instead of guessing from a cold report.`,
+    '',
+    'What happens next:',
+    '- Your feedback is logged for owner review.',
+    '- If the blocker points to intake, follow-up, alerts, reporting, or workflow routing, Automated Utility is the practical next path.',
+    '- If there is a larger strategic or premium signal, it can be reviewed before any bigger scope is discussed.',
+    '',
+    `Automated Utility: ${utilityLink}`,
+    `Refer another business: ${referralLink}`,
+    '',
+    'Important note: QuantumAiBusiness provides diagnostics, automation guidance, and opportunity mapping. Outcomes are not guaranteed and depend on execution, data quality, market conditions, platform policies, and business follow-through.',
+    '',
+    'Best,',
+    'QuantumAiBusiness',
+  ].join('\n')
+}
+
 function buildFallbackLeadFollowUp(input, routeData) {
   const business = input.business || input.website || 'your business'
   const nextAction = routeNextAction(routeData.lead_route)
@@ -135,9 +188,53 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
     const type = body.event_type || body.type || 'lead_event'
-    const record = buildAutomationRecord(type, body.payload || body)
+    const proofInput = isProofFeedbackEvent(type)
+      ? {
+          business: cleanText(body.company || body.form?.company, 'Client business'),
+          website: cleanText(body.website || body.form?.website),
+          email: cleanText(body.email || body.customer_email || body.form?.email),
+          package_key: cleanText(body.package_key || body.packageKey || body.package?.key || 'growthScanPack'),
+          package_name: cleanText(body.package_name || body.packageName || body.package?.title || body.package_key || 'Client Feedback'),
+          permission: cleanText(body.permission, 'private'),
+          implemented: cleanText(body.implemented || body.form?.objective),
+          result_signal: cleanText(body.result_signal || body.resultSignal || body.form?.current_tools),
+          blocker: cleanText(body.blocker || body.form?.constraints),
+          referral: cleanText(body.referral),
+        }
+      : null
+    if (proofInput && (!proofInput.email || !proofInput.business || !proofInput.implemented)) {
+      jsonResponse(res, 400, { ok: false, error: 'Business name, email, and implementation/feedback note are required' })
+      return
+    }
+    const proofCaseNote = proofInput ? buildProofCaseNote(proofInput) : ''
+    const recordPayload = proofInput
+      ? {
+          customer_email: proofInput.email,
+          package_key: proofInput.package_key,
+          package_name: proofInput.package_name,
+          form: {
+            company: proofInput.business,
+            website: proofInput.website,
+            email: proofInput.email,
+            objective: proofInput.implemented,
+            current_tools: proofInput.result_signal,
+            constraints: proofInput.blocker,
+          },
+          permission: proofInput.permission,
+          referral: proofInput.referral,
+          case_note_preview: proofCaseNote.slice(0, 1200),
+          case_note_full: proofCaseNote,
+          next_action: 'Review proof signal, save usable anonymous case notes, and route automation blockers toward Automated Utility.',
+          payload: {
+            ...body,
+            case_note: proofCaseNote,
+          },
+        }
+      : body.payload || body
+    const record = buildAutomationRecord(type, recordPayload)
     const followUpMode = process.env.LEAD_FOLLOW_UP_MODE || 'owner_review'
     let followUp = { created: false, reason: 'Not a follow-up eligible lead event' }
+    let proofConfirmation = { sent: false, reason: 'Not a proof feedback event' }
 
     if (shouldCreateFollowUp(type, record)) {
       const form = leadFormFromPayload(record.payload)
@@ -210,6 +307,15 @@ export default async function handler(req, res) {
       }
     }
 
+    if (proofInput) {
+      const emailParts = splitSubjectAndBody(buildProofConfirmation(proofInput))
+      proofConfirmation = await sendClientEmail({
+        to: proofInput.email,
+        subject: emailParts.subject,
+        text: emailParts.body,
+      })
+    }
+
     const [notification, forwarding] = await Promise.allSettled([
       isQuietTrafficEvent(type) ? Promise.resolve({ notified: false, reason: 'quiet traffic event' }) : notifyOwner(record),
       forwardAutomation(record),
@@ -218,6 +324,11 @@ export default async function handler(req, res) {
       ok: true,
       record,
       follow_up: followUp,
+      proof_feedback: {
+        created: Boolean(proofInput),
+        case_note: proofCaseNote,
+        client_email: proofConfirmation,
+      },
       notification: notification.status === 'fulfilled' ? notification.value : { notified: false, error: notification.reason?.message },
       forwarding: forwarding.status === 'fulfilled' ? forwarding.value : { forwarded: false, error: forwarding.reason?.message },
     })
