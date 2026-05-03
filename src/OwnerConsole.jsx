@@ -183,6 +183,14 @@ const PROOF_LOOP_ACTIONS = [
   'Only publish anonymous proof after explicit permission.',
   'Route blockers about follow-up, intake, reporting, or tool connection toward Automated Utility.',
 ]
+const BUSINESS_SCORECARD = [
+  ['Technical', 9, 'Live site, Vercel backend, Stripe, OpenAI, Resend, tracking, and ledger are connected.'],
+  ['Automation', 8, 'Low-tier delivery, notifications, campaign generation, proof capture, and Buffer queue are active.'],
+  ['Offer', 8, '$49.99 scan pack is the main entry, with $229+ utility and high-ticket owner review behind it.'],
+  ['Trust', 7, 'Sample scan, scope pages, proof feedback, and results roadmap reduce buyer uncertainty.'],
+  ['Traffic', 6, 'Buffer is now scheduling, SEO pages are indexed-ready, but paid traffic still needs disciplined testing.'],
+  ['Fast Profit', 7, 'Able to take payments and deliver quickly; scale depends on qualified traffic and proof signals.'],
+]
 const DAILY_COMMANDS = [
   {
     lane: 'Traffic',
@@ -1262,6 +1270,21 @@ export default function OwnerConsole() {
             <p>{item.auto}</p>
           </article>
         ))}
+      </section>
+
+      <section className="owner-panel owner-scorecard">
+        <div className="owner-panel-title">
+          <h2>Business Scorecard</h2>
+        </div>
+        <div className="owner-score-grid">
+          {BUSINESS_SCORECARD.map(([label, score, note]) => (
+            <article key={label}>
+              <span>{label}</span>
+              <strong>{score}/10</strong>
+              <p>{note}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="owner-grid owner-ops-grid">
