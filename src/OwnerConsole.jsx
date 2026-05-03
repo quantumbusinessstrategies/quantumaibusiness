@@ -37,7 +37,7 @@ const PACKAGE_DETAILS = {
     next: 'Send to QuantumBusinessStrategies and treat as high-touch owner follow-up.',
   },
 }
-const STATUS_OPTIONS = ['new', 'paid intake', 'report ready', 'reply sent', 'upsell target', 'closed']
+const STATUS_OPTIONS = ['new', 'paid intake', 'report ready', 'reply sent', 'proof signal', 'upsell target', 'closed']
 const DAILY_ACTIONS = [
   'Check Stripe for new payments and match them to fulfillment emails.',
   'Paste each paid packet into this console and save it to the pipeline.',
@@ -149,6 +149,39 @@ const MONEY_LINKS = [
     priority: 'High-ticket handoff',
     url: 'https://quantumaibusiness.com/refer-business.html?utm_source=owner_console&utm_medium=command&utm_campaign=money_link',
   },
+]
+const ACCESS_ACTIONS = [
+  {
+    label: 'Google Analytics',
+    status: 'Connected',
+    next: 'Watch key events: qualify_lead, close_convert_lead, purchase, and client_results_feedback.',
+  },
+  {
+    label: 'Meta Pixel',
+    status: 'Receiving events',
+    next: 'Use for retargeting only after enough traffic collects. Keep spend paused until copy proves interest.',
+  },
+  {
+    label: 'Search Console',
+    status: 'Submitted',
+    next: 'Check indexing weekly and add more narrow pages only when they match a buyer problem.',
+  },
+  {
+    label: 'Stripe',
+    status: 'Live payments',
+    next: 'Keep webhook + fulfillment healthy; do not change checkout links unless replacing products intentionally.',
+  },
+  {
+    label: 'Buffer',
+    status: 'Scheduling ready',
+    next: 'Queue one approved post per connected channel, then compare traffic before increasing volume.',
+  },
+]
+const PROOF_LOOP_ACTIONS = [
+  'Turn each paid delivery into one follow-up signal request.',
+  'Save any reply with a result, blocker, or upgrade need as proof signal.',
+  'Only publish anonymous proof after explicit permission.',
+  'Route blockers about follow-up, intake, reporting, or tool connection toward Automated Utility.',
 ]
 const DAILY_COMMANDS = [
   {
@@ -418,6 +451,13 @@ function buildPaidTestCsv() {
   ].join('\n')
 }
 
+function buildProofCsv(rows) {
+  const proofRows = rows.filter((row) => ['proof signal', 'upsell target', 'reply sent'].includes(row.status))
+  const header = ['created', 'business', 'email', 'package', 'status', 'nextAction']
+  const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
+  return [header.join(','), ...proofRows.map((row) => header.map((key) => escape(row[key])).join(','))].join('\n')
+}
+
 function extractRecordFromText(text) {
   const raw = String(text || '').trim()
   if (!raw) return null
@@ -561,6 +601,8 @@ export default function OwnerConsole() {
       const activeItems = pipeline.filter((item) => !['closed', 'reply sent'].includes(item.status))
       const paidItems = pipeline.filter((item) => item.status === 'paid intake')
       const upsellItems = pipeline.filter((item) => item.status === 'upsell target')
+      const proofItems = pipeline.filter((item) => item.status === 'proof signal')
+      const replyItems = pipeline.filter((item) => item.status === 'reply sent')
       const totalValue = pipeline.reduce((sum, item) => sum + Number(item.numericValue || 0), 0)
       const activeValue = activeItems.reduce((sum, item) => sum + Number(item.numericValue || 0), 0)
       const scanPackCount = pipeline.filter((item) => item.packageKey === 'growthScanPack').length
@@ -570,6 +612,8 @@ export default function OwnerConsole() {
         active: activeItems.length,
         paid: paidItems.length,
         upsell: upsellItems.length,
+        proof: proofItems.length,
+        replies: replyItems.length,
         value: totalValue,
         activeValue,
         scanPackCount,
@@ -581,14 +625,15 @@ export default function OwnerConsole() {
   )
   const conversionCommand = useMemo(() => {
     if (!pipeline.length) return 'Get the next real signal: send traffic to the scan page and watch for Lead or InitiateCheckout.'
+    if (pipelineStats.proof > 0) return 'Convert proof signals into anonymous case notes, then reuse the repeated blocker in traffic copy and upsells.'
     if (pipelineStats.upsell > 0) return 'Work the upsell queue first. These are the warmest paths toward Automated Utility or full strategy revenue.'
     if (pipelineStats.paid > 0) return 'Confirm paid fulfillment, then follow up with the Automated Utility upgrade when the scan exposes repeated gaps.'
     if (pipelineStats.active > 0) return 'Move active leads to a clear next status: report ready, reply sent, upsell target, or closed.'
     return 'Re-open traffic: post the scan link, run a tiny tracked test, and save any response into the pipeline.'
-  }, [pipeline.length, pipelineStats.active, pipelineStats.paid, pipelineStats.upsell])
+  }, [pipeline.length, pipelineStats.active, pipelineStats.paid, pipelineStats.proof, pipelineStats.upsell])
   const automationReadiness = useMemo(() => {
     if (!backendHealth?.configured) return 0
-    const keys = ['resend', 'stripe_webhook_secret', 'openai_api_key', 'automation_webhook', 'owner_action_token', 'cron_secret', 'social_queue']
+    const keys = ['resend', 'stripe_webhook_secret', 'openai_api_key', 'automation_webhook', 'owner_action_token', 'cron_secret', 'proof_feedback', 'social_queue']
     const active = keys.filter((key) => backendHealth.configured?.[key]).length
     return Math.round((active / keys.length) * 100)
   }, [backendHealth])
@@ -751,6 +796,39 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied('Paid test CSV export ready')
+  }
+
+  function exportProofCsv() {
+    const blob = new Blob([buildProofCsv(pipeline)], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'quantumaibusiness-proof-signals.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+    setCopied('Proof signal CSV export ready')
+  }
+
+  function markLatestPaidAsProof() {
+    setPipeline((current) => {
+      const index = current.findIndex((item) => ['paid intake', 'report ready', 'reply sent'].includes(item.status))
+      if (index < 0) {
+        setCopied('No paid or replied lead found to mark as proof')
+        return current
+      }
+      const next = current.map((item, itemIndex) =>
+        itemIndex === index
+          ? {
+              ...item,
+              status: 'proof signal',
+              nextAction: 'Review for an anonymous case note, then route any repeated blocker toward Automated Utility.',
+            }
+          : item,
+      )
+      savePipeline(next)
+      setCopied('Latest paid/replied lead marked as proof signal')
+      return next
+    })
   }
 
   async function copyQuickXPost() {
@@ -1158,8 +1236,10 @@ export default function OwnerConsole() {
           <div className="owner-command-stats">
             <strong>{pipelineStats.active}</strong><small>active</small>
             <strong>{pipelineStats.paid}</strong><small>paid</small>
+            <strong>{pipelineStats.proof}</strong><small>proof</small>
             <strong>{pipelineStats.upsell}</strong><small>upsell</small>
             <strong>{pipelineStats.automationCount}</strong><small>high tier</small>
+            <strong>{pipelineStats.replies}</strong><small>replies</small>
           </div>
         </div>
 
@@ -1182,6 +1262,42 @@ export default function OwnerConsole() {
             <p>{item.auto}</p>
           </article>
         ))}
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-proof-engine">
+          <div className="owner-panel-title">
+            <h2>Proof Engine</h2>
+            <button type="button" onClick={markLatestPaidAsProof}>MARK LATEST PROOF</button>
+            <button type="button" onClick={exportProofCsv}>EXPORT PROOF</button>
+          </div>
+          <p>
+            This is the trust loop: paid scan, client signal, anonymous case note, better offer copy, then stronger upsell.
+          </p>
+          <div className="owner-proof-grid">
+            {PROOF_LOOP_ACTIONS.map((action) => (
+              <article key={action}>{action}</article>
+            ))}
+          </div>
+        </div>
+
+        <div className="owner-panel owner-access-map">
+          <div className="owner-panel-title">
+            <h2>Access Map</h2>
+          </div>
+          <p>
+            These are the main systems already connected or ready. The safest automation path is internal generation and tracking first, public posting/spend second.
+          </p>
+          <div className="owner-access-grid">
+            {ACCESS_ACTIONS.map((item) => (
+              <article key={item.label}>
+                <strong>{item.label}</strong>
+                <span>{item.status}</span>
+                <p>{item.next}</p>
+              </article>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="owner-grid owner-ops-grid">
@@ -1274,6 +1390,7 @@ export default function OwnerConsole() {
           <div className="owner-metrics">
             <span><strong>{pipelineStats.active}</strong> active</span>
             <span><strong>{pipelineStats.paid}</strong> paid</span>
+            <span><strong>{pipelineStats.proof}</strong> proof</span>
             <span><strong>{pipelineStats.upsell}</strong> upsell</span>
             <span><strong>${pipelineStats.value.toFixed(2)}</strong> tracked</span>
             <span><strong>${pipelineStats.activeValue.toFixed(2)}</strong> active value</span>
@@ -1322,6 +1439,7 @@ export default function OwnerConsole() {
                 <span className={backendHealth.configured?.automation_webhook ? 'is-on' : ''}>Webhook</span>
                 <span className={backendHealth.configured?.owner_action_token ? 'is-on' : ''}>Owner Key</span>
                 <span className={backendHealth.configured?.cron_secret ? 'is-on' : ''}>Cron</span>
+                <span className={backendHealth.configured?.proof_feedback ? 'is-on' : ''}>Proof</span>
                 <span className={backendHealth.campaign_batch_mode === 'daily_cron_enabled' ? 'is-on' : ''}>Batch</span>
                 <span className={backendHealth.configured?.social_queue ? 'is-on' : ''}>Social</span>
               </div>

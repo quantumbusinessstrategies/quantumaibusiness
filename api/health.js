@@ -55,6 +55,7 @@ export default async function handler(req, res) {
       owner_action_token: configured(process.env.OWNER_ACTION_TOKEN),
       cron_secret: configured(process.env.CRON_SECRET),
       lead_follow_up: configured(process.env.LEAD_FOLLOW_UP_MODE),
+      proof_feedback: configured(process.env.RESEND_API_KEY) && configured(process.env.AUTOMATION_WEBHOOK_URL),
       social_queue: configured(process.env.OWNER_ACTION_TOKEN) && configured(process.env.OPENAI_API_KEY),
       buffer_api_key: configured(process.env.BUFFER_API_KEY),
       buffer_channel_ids: configured(process.env.BUFFER_CHANNEL_IDS),

@@ -29,6 +29,12 @@
               <option value="fullStrategic">Full Strategic Growth</option>
             </select>
           </label>
+          <label>Proof permission
+            <select name="permission">
+              <option value="private" selected>Private owner review only</option>
+              <option value="anonymous_public">Anonymous case note allowed</option>
+            </select>
+          </label>
           <label>What did you implement or notice?
             <textarea name="implemented" required placeholder="Example: changed CTA, added follow-up, found weak intake, clarified offer..."></textarea>
           </label>
@@ -57,37 +63,26 @@
         var data = Object.fromEntries(new FormData(form).entries());
         status.textContent = 'Sending feedback...';
         try {
-          var response = await fetch('https://quantumaibusiness.vercel.app/api/lead', {
+          var response = await fetch('https://quantumaibusiness.vercel.app/api/proof-feedback', {
             method: 'POST',
             headers: {'Content-Type':'application/json','Accept':'application/json'},
             body: JSON.stringify({
-              event_type: 'client_results_feedback',
-              action_mode: 'owner_review',
-              source: 'quantumaibusiness.com',
-              form: {
-                company: data.company,
-                email: data.email,
-                objective: data.implemented,
-                current_tools: data.result_signal,
-                constraints: data.blocker
-              },
-              package: {
-                key: data.package_key,
-                title: data.package_key
-              },
-              payload: {
-                implemented: data.implemented,
-                result_signal: data.result_signal,
-                blocker: data.blocker,
-                referral: data.referral,
-                url: window.location.href
-              }
+              company: data.company,
+              email: data.email,
+              package_key: data.package_key,
+              permission: data.permission,
+              implemented: data.implemented,
+              result_signal: data.result_signal,
+              blocker: data.blocker,
+              referral: data.referral,
+              url: window.location.href
             })
           });
           if (!response.ok) throw new Error('Feedback route failed');
           window.gtag?.('event','client_results_feedback',{event_category:'proof_loop',event_label:data.package_key});
-          window.fbq?.('trackCustom','ClientResultsFeedback',{package_key:data.package_key});
-          status.textContent = 'Feedback sent. Next-step route logged.';
+          window.gtag?.('event','qualify_lead',{event_category:'proof_loop',event_label:'client_feedback'});
+          window.fbq?.('trackCustom','ClientResultsFeedback',{package_key:data.package_key, permission:data.permission});
+          status.textContent = 'Feedback sent. Case-note route logged and owner notified.';
           form.reset();
         } catch (error) {
           status.textContent = 'Could not send automatically. Email quantumbusinessstrategies@gmail.com.';

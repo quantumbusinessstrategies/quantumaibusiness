@@ -137,6 +137,7 @@ function buildClientDeliveryText(intake, deliverable) {
     '',
     'After you try one action:',
     `Send feedback, blockers, or referral signals here: ${CLIENT_RESULTS_FEEDBACK}`,
+    'This is the fastest way to turn the scan into a useful next step. Send what changed, what signal you saw, and what is still blocking the business.',
     '',
     'Know another owner with a weak website path, missed follow-up, or unclear automation route?',
     `Refer them here: ${CLIENT_REFERRAL_LINK}`,
