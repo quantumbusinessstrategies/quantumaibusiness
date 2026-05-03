@@ -18,6 +18,8 @@
       @keyframes floatWire{0%,100%{transform:translate3d(0,0,0) rotateX(58deg) rotateY(0deg) rotateZ(18deg)}50%{transform:translate3d(18px,-22px,0) rotateX(64deg) rotateY(180deg) rotateZ(28deg)}}
       @keyframes rain{0%{transform:translateY(-120vh);opacity:0}12%{opacity:.36}50%{opacity:.1}82%{opacity:.28}100%{transform:translateY(120vh);opacity:0}}
       @keyframes titleSkin{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+      @keyframes panelBreath{0%,100%{box-shadow:0 12px 0 rgba(0,17,51,.58),inset 0 0 24px rgba(255,184,243,.08),0 0 20px rgba(143,252,255,.12)}50%{box-shadow:0 15px 0 rgba(0,17,51,.62),inset 0 0 30px rgba(255,184,243,.12),0 0 34px rgba(143,252,255,.2)}}
+      @keyframes inputSweep{0%{background-position:0% 50%}100%{background-position:200% 50%}}
       body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 28% 16%,rgba(152,255,221,.16),transparent 25%),radial-gradient(circle at 76% 28%,rgba(255,184,243,.18),transparent 28%),radial-gradient(circle at 50% 90%,rgba(255,241,166,.08),transparent 34%),#020509;color:#eaffff;font-family:"Courier New",monospace;overflow-x:hidden}
       body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(circle,#eaffff 0 1px,transparent 1.4px),radial-gradient(circle,#98ffdd 0 1px,transparent 1.8px),radial-gradient(circle,#ffb8f3 0 1px,transparent 1.5px),linear-gradient(rgba(143,252,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,184,243,.05) 1px,transparent 1px);background-size:97px 97px,151px 151px,211px 211px,54px 54px,54px 54px;background-position:4px 8px,80px 40px,30px 110px,0 0,0 0;opacity:.9}
       body:after{content:"0101\A1010\A1100\A0011";white-space:pre;position:fixed;left:4%;top:0;color:rgba(0,255,130,.32);font-size:10px;line-height:15px;text-shadow:0 0 10px rgba(0,255,130,.32);animation:rain 8s linear infinite;pointer-events:none;box-shadow:18vw -30vh 0 rgba(0,255,130,.22),42vw -12vh 0 rgba(152,255,221,.18),64vw -45vh 0 rgba(0,255,130,.2),82vw -20vh 0 rgba(152,255,221,.16)}
@@ -47,15 +49,17 @@
       .trust span{display:grid;gap:6px;min-height:88px;padding:13px;border:1px solid rgba(255,184,243,.42);background:rgba(255,184,243,.06);color:#eaffff}
       .trust b{color:#fff1a6}
       .cta-strip{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:18px 0;padding:16px;border:1px solid rgba(255,241,166,.55);background:rgba(255,241,166,.08)}
-      form.checkout-form{display:grid;gap:12px;margin:18px 0;padding:18px;border:1px solid rgba(143,252,255,.55);background:rgba(0,10,18,.54);box-shadow:0 12px 0 rgba(0,17,51,.58),inset 0 0 24px rgba(255,184,243,.08)}
+      form.checkout-form{display:grid;gap:12px;margin:18px 0;padding:18px;border:1px solid rgba(143,252,255,.55);background:rgba(0,10,18,.38);box-shadow:0 12px 0 rgba(0,17,51,.58),inset 0 0 24px rgba(255,184,243,.08);animation:panelBreath 7s ease-in-out infinite}
       .checkout-form label{display:grid;gap:6px;color:#98ffdd;font-weight:900}
-      .checkout-form input,.checkout-form textarea{width:100%;padding:13px 14px;border:1px solid rgba(143,252,255,.72);background:rgba(0,8,14,.72);color:#eaffff;font:inherit;box-shadow:inset 0 0 16px rgba(143,252,255,.12)}
+      .checkout-form input,.checkout-form textarea{width:100%;padding:13px 14px;border:1px solid rgba(143,252,255,.78);background:linear-gradient(90deg,rgba(0,8,14,.34),rgba(143,252,255,.08),rgba(255,184,243,.07),rgba(0,8,14,.34));background-size:220% 100%;color:#eaffff;font:inherit;box-shadow:inset 0 0 16px rgba(143,252,255,.16),0 0 0 rgba(143,252,255,0);transition:border-color .25s ease,box-shadow .25s ease,background-color .25s ease;animation:inputSweep 13s linear infinite}
+      .checkout-form input:focus,.checkout-form textarea:focus{outline:none;border-color:#fff1a6;background-color:rgba(0,18,28,.2);box-shadow:inset 0 0 18px rgba(255,241,166,.16),0 0 24px rgba(143,252,255,.24)}
+      .checkout-form input::placeholder,.checkout-form textarea::placeholder{color:rgba(234,255,255,.58)}
       .checkout-form textarea{min-height:86px;resize:vertical}
       .checkout-form button{display:inline-block;width:max-content;max-width:100%;margin-top:4px;padding:16px 18px;color:#061018;background:linear-gradient(135deg,#eaffff,#98ffdd,#fff1a6);border:2px solid #effcff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 10px 0 #001133,0 0 28px rgba(152,255,221,.3)}
       .checkout-status{min-height:24px;margin:2px 0 0;color:#fff1a6;font-weight:900}
       small{display:block;margin-top:18px;color:#9ff;line-height:1.6}
       @media(max-width:820px){.hero-grid,.grid,.flow,.trust{grid-template-columns:1fr}main{padding:22px}h1{font-size:42px}}
-    </style>
+    .qab-top-options{display:flex;justify-content:flex-end;margin:0 0 14px}.qab-route-panel{margin-top:26px;padding:18px;border:1px solid rgba(143,252,255,.56);background:rgba(0,10,18,.54);box-shadow:0 10px 0 rgba(0,17,51,.54),inset 0 0 22px rgba(255,184,243,.08)}.qab-route-panel strong{display:block;color:#fff1a6;margin-bottom:10px;text-shadow:0 0 12px rgba(255,241,166,.28)}.qab-route-links{display:flex;flex-wrap:wrap;gap:10px}.qab-route-links a,.qab-top-options a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:12px 14px;color:#061018;background:linear-gradient(135deg,#eaffff,#98ffdd,#fff1a6);border:2px solid #effcff;font-weight:900;text-decoration:none;box-shadow:0 8px 0 #001133,0 0 22px rgba(152,255,221,.22)}.qab-route-links a.is-main,.qab-top-options a{background:linear-gradient(135deg,#fff1a6,#ffb8f3,#8ffcff);box-shadow:0 9px 0 #001133,0 0 26px rgba(255,184,243,.32)}@media(max-width:780px){.qab-top-options{justify-content:flex-start}.qab-route-links a,.qab-top-options a{width:100%}}</style>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -80,7 +84,7 @@
     <script defer src="/landing-checkout.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCLMY2RC5S"></script>  </head>
   <body>
-    <main>
+    <main><div class="qab-top-options"><a href="/" aria-label="See other QuantumAiBusiness options">See Other Options</a></div>
       <section class="hero-grid">
         <div>
           <h1>Growth Scan Pack</h1>
@@ -168,6 +172,6 @@ Next step: if this repeats across pages, move into Automated Utility.</code>
       <a href="https://quantumaibusiness.com/business-growth-scan.html">Why This Pack</a>
       <a href="https://quantumaibusiness.com/#packages">View All Packages</a>
       <small>QuantumAiBusiness provides strategic diagnostics and automation guidance. Results are not guaranteed and depend on execution, data quality, market conditions, and platform policies.</small>
-    </main>
+    <section class="qab-route-panel" aria-label="QuantumAiBusiness route links"><strong>Explore the full growth route</strong><div class="qab-route-links"><a class="is-main" href="/">Return To Main Site</a><a href="/business-growth-scan.html?utm_source=cross_nav&utm_medium=internal&utm_campaign=route_panel">Business Growth Scan</a><a href="/growth-scan-pack.html?utm_source=cross_nav&utm_medium=internal&utm_campaign=route_panel">$49.99 Scan Pack</a><a href="/automated-utility.html?utm_source=cross_nav&utm_medium=internal&utm_campaign=route_panel">Automated Utility</a><a href="/sample-growth-scan.html?utm_source=cross_nav&utm_medium=internal&utm_campaign=route_panel">Sample Scan</a><a href="/results-roadmap.html?utm_source=cross_nav&utm_medium=internal&utm_campaign=route_panel">Results Roadmap</a><a href="/growth-tools.html?utm_source=cross_nav&utm_medium=internal&utm_campaign=route_panel">All Growth Tools</a></div></section></main>
   </body>
 </html>
