@@ -128,6 +128,22 @@ const PAID_TRAFFIC_TESTS = [
     setup: 'Good business audience, but usually expensive. Use organic LinkedIn first, then paid only for proven copy.',
   },
 ]
+const GOOGLE_ADS_TEST = {
+  campaign: 'QuantumAiBusiness - $50 Search Validation',
+  budget: '$10/day, hard cap $50 total',
+  landing:
+    'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=search_scan_pack',
+  kill: 'Pause at $25 with no useful actions. Hard stop at $50 unless purchase or strong checkout intent appears.',
+  keywords: [
+    '"website conversion audit"',
+    '"business automation audit"',
+    '"AI business audit"',
+    '"lead follow up automation"',
+    '"website not converting visitors"',
+    '"small business growth audit"',
+    '"sales funnel audit"',
+  ],
+}
 const MONEY_LINKS = [
   {
     label: 'Main Scan',
@@ -456,6 +472,21 @@ function buildPaidTestCsv() {
         'Pause if spend produces clicks but no scans, or scans but no paid intent.',
       ].map(escape).join(','),
     ),
+  ].join('\n')
+}
+
+function buildGoogleAdsCsv() {
+  const header = ['campaign', 'budget', 'landing_page', 'kill_rule', 'keywords']
+  const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
+  return [
+    header.join(','),
+    [
+      GOOGLE_ADS_TEST.campaign,
+      GOOGLE_ADS_TEST.budget,
+      GOOGLE_ADS_TEST.landing,
+      GOOGLE_ADS_TEST.kill,
+      GOOGLE_ADS_TEST.keywords.join(' | '),
+    ].map(escape).join(','),
   ].join('\n')
 }
 
@@ -804,6 +835,17 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied('Paid test CSV export ready')
+  }
+
+  function exportGoogleAdsCsv() {
+    const blob = new Blob([buildGoogleAdsCsv()], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'quantumaibusiness-google-ads-50-test.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+    setCopied('Google Ads $50 test CSV export ready')
   }
 
   function exportProofCsv() {
@@ -1609,6 +1651,42 @@ export default function OwnerConsole() {
             <button type="button" onClick={copyQuickXPost}>COPY</button>
           </div>
           <pre>{extractFirstPost(dailyCommand || socialQueue || campaignBatch || growthPack || DEFAULT_SOCIAL_POST)}</pre>
+        </div>
+      </section>
+
+      <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-google-ads">
+          <div className="owner-panel-title">
+            <h2>Google Ads $50 Test</h2>
+            <button type="button" onClick={() => copyText('Google Ads landing URL', GOOGLE_ADS_TEST.landing)}>COPY URL</button>
+            <button type="button" onClick={exportGoogleAdsCsv}>EXPORT TEST</button>
+          </div>
+          <p>
+            Strongest paid-intent route right now: exact/phrase Google Search only. One scan sale nearly validates the spend; two sales means the channel has life.
+          </p>
+          <div className="owner-google-box">
+            <span><strong>Campaign</strong>{GOOGLE_ADS_TEST.campaign}</span>
+            <span><strong>Budget</strong>{GOOGLE_ADS_TEST.budget}</span>
+            <span><strong>Kill rule</strong>{GOOGLE_ADS_TEST.kill}</span>
+          </div>
+          <div className="owner-keyword-list">
+            {GOOGLE_ADS_TEST.keywords.map((keyword) => (
+              <code key={keyword}>{keyword}</code>
+            ))}
+          </div>
+        </div>
+
+        <div className="owner-panel">
+          <div className="owner-panel-title">
+            <h2>Ad Guardrails</h2>
+          </div>
+          <div className="owner-action-list">
+            <label><input type="checkbox" /> Search Network only. Display Network off.</label>
+            <label><input type="checkbox" /> Phrase/exact keywords only. No broad match.</label>
+            <label><input type="checkbox" /> Do not accept Google budget/target expansion recommendations.</label>
+            <label><input type="checkbox" /> Pause at $25 if there is no useful action.</label>
+            <label><input type="checkbox" /> Hard stop at $50 unless purchase or strong checkout intent appears.</label>
+          </div>
         </div>
       </section>
 

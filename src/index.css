@@ -2729,7 +2729,8 @@ code {
 }
 
 .owner-proof-engine p,
-.owner-access-map p {
+.owner-access-map p,
+.owner-google-ads p {
   color: #bdfaff;
   font-size: 10px;
 }
@@ -2769,6 +2770,40 @@ code {
   color: #eaffff;
 }
 
+.owner-google-box {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.owner-google-box span {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  color: #eaffff;
+  background: rgba(0, 8, 16, 0.72);
+  border: 1px solid rgba(255, 241, 166, 0.38);
+}
+
+.owner-google-box strong {
+  color: #fff1a6;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.owner-keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.owner-keyword-list code {
+  padding: 8px 10px;
+  color: #98ffdd;
+  background: rgba(0, 8, 16, 0.72);
+  border: 1px solid rgba(152, 255, 221, 0.36);
+}
+
 .owner-lockout {
   display: grid;
   place-items: center;
@@ -2803,7 +2838,8 @@ code {
   .owner-passive-grid,
   .owner-paid-grid,
   .owner-proof-grid,
-  .owner-access-grid {
+  .owner-access-grid,
+  .owner-google-box {
     grid-template-columns: 1fr;
   }
 
