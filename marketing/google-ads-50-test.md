@@ -7,6 +7,13 @@ Run a tightly controlled Google Search test for the $49.99 Growth Scan Pack.
 Primary URL:
 `https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=search_scan_pack`
 
+Creative direction:
+
+- Send paid traffic to the upgraded Growth Scan Pack page, not the main page.
+- The landing page now carries the cyber/pixel QuantumAiBusiness visual identity while keeping one clear checkout path.
+- Use direct ad copy in Google so it passes review; let the landing page provide the "rad" visual punch.
+- Use sitelinks to capture bigger curiosity: Main Site, Automated Utility, Results Roadmap, and Sample Scan.
+
 ## Hard Rules
 
 - Total owner-approved cap: `$50`.
@@ -95,6 +102,7 @@ Headlines:
 
 ```txt
 AI Business Growth Scan
+Cyber Business Growth Scan
 Find Website Profit Leaks
 Website Conversion Audit
 Lead Follow-Up Audit
@@ -104,6 +112,7 @@ Business Automation Audit
 Pressure-Test Your Funnel
 AI-Assisted Growth Readout
 Find Unused Growth Paths
+Pressure Scan Your Business
 ```
 
 Descriptions:
@@ -113,6 +122,7 @@ Find weak offers, missed follow-up, and unused automation paths. AI-assisted Gro
 Pressure-test your website, offer, and follow-up path before buying more traffic. Practical diagnostics, no guarantees.
 Get five AI-assisted scan readouts across pages, offers, funnel steps, products, or competitors.
 Built for owners who want clearer next steps before committing to automation or full strategic growth.
+Cyber-styled, AI-assisted diagnostic page with a clear $49.99 scan-pack checkout path.
 ```
 
 Pinned suggestion:
@@ -159,6 +169,17 @@ After `$50` spend:
 - Stop and review.
 - If one purchase happened, test another `$50` only after checking keyword/ad group source.
 - If two purchases happened, cautiously raise to `$15/day`.
+
+## Sitelink Assets
+
+Use these only as sitelinks, not as the main final URL:
+
+```txt
+See Other Options -> https://quantumaibusiness.com/?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_main
+Automated Utility -> https://quantumaibusiness.com/automated-utility.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_utility
+Sample Scan -> https://quantumaibusiness.com/sample-growth-scan.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_sample
+Results Roadmap -> https://quantumaibusiness.com/results-roadmap.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_results
+```
 
 ## Expected Economics
 
