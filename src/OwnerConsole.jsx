@@ -596,6 +596,8 @@ export default function OwnerConsole() {
   const [campaignBatch, setCampaignBatch] = useState('')
   const [socialQueueStatus, setSocialQueueStatus] = useState('')
   const [socialQueue, setSocialQueue] = useState('')
+  const [adsPreflightStatus, setAdsPreflightStatus] = useState('')
+  const [adsPreflight, setAdsPreflight] = useState(null)
   const [digestStatus, setDigestStatus] = useState('')
   const [dailyCommand, setDailyCommand] = useState('')
   const [followUpStatus, setFollowUpStatus] = useState('')
@@ -1092,6 +1094,40 @@ export default function OwnerConsole() {
       )
     } catch (error) {
       setSocialQueueStatus(`Social queue failed: ${error.message}`)
+    }
+  }
+
+  async function runAdsPreflight() {
+    setAiDraftStatus('')
+    setSendStatus('')
+    setDigestStatus('')
+    setRouteStatus('')
+    if (!ownerToken) {
+      setAdsPreflightStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to run the ads preflight.')
+      return
+    }
+
+    try {
+      setAdsPreflightStatus('Checking paid landing, tracking URL, route pages, and backend notification path...')
+      const response = await fetch(`${AUTOMATION_API_URL}/api/ops-runner`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Owner-Token': ownerToken,
+        },
+        body: JSON.stringify({ action: 'google_ads_preflight', source: 'owner_console_google_ads_preflight' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+      setAdsPreflight(data)
+      setAdsPreflightStatus(
+        data.ready
+          ? 'Ads preflight passed. Owner can launch the $50 Search test with the guardrails below.'
+          : 'Ads preflight found something to fix before spending.',
+      )
+    } catch (error) {
+      setAdsPreflightStatus(`Ads preflight failed: ${error.message}`)
     }
   }
 
@@ -1660,6 +1696,7 @@ export default function OwnerConsole() {
             <h2>Google Ads $50 Test</h2>
             <button type="button" onClick={() => copyText('Google Ads landing URL', GOOGLE_ADS_TEST.landing)}>COPY URL</button>
             <button type="button" onClick={exportGoogleAdsCsv}>EXPORT TEST</button>
+            <button type="button" onClick={runAdsPreflight}>PREFLIGHT</button>
           </div>
           <p>
             Strongest paid-intent route right now: exact/phrase Google Search only. One scan sale nearly validates the spend; two sales means the channel has life.
@@ -1674,6 +1711,17 @@ export default function OwnerConsole() {
               <code key={keyword}>{keyword}</code>
             ))}
           </div>
+          {adsPreflightStatus && <p className="owner-inline-status">{adsPreflightStatus}</p>}
+          {adsPreflight && (
+            <div className="owner-preflight-grid">
+              {adsPreflight.results?.map((item) => (
+                <span key={item.url} className={item.ok ? 'is-on' : ''}>
+                  <strong>{item.label}</strong>
+                  {item.status} // {item.ms}ms
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="owner-panel">
