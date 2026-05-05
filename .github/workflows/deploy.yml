@@ -52,6 +52,9 @@ jobs:
           VITE_GOOGLE_TAG_ID: ${{ vars.VITE_GOOGLE_TAG_ID }}
           VITE_META_PIXEL_ID: ${{ vars.VITE_META_PIXEL_ID }}
 
+      - name: Add SPA route fallback
+        run: cp dist/index.html dist/404.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
