@@ -106,6 +106,54 @@ const PASSIVE_TRAFFIC_ASSETS = [
       'https://quantumaibusiness.com/business-growth-scan.html?utm_source=qr&utm_medium=offline&utm_campaign=always_on',
   },
 ]
+const NO_SPEND_REVENUE_SPRINT = [
+  {
+    lane: 'Warm Network',
+    goal: 'Fastest realistic money route',
+    action: 'Send 10 personal notes to owners, contractors, creators, agency people, and local operators who already know you.',
+    link: 'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=warm_network&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+  {
+    lane: 'Referral Partners',
+    goal: 'Borrow trust instead of buying clicks',
+    action: 'Ask 5 connected people if they know one business owner with a weak site, slow follow-up, or messy intake path.',
+    link: 'https://quantumaibusiness.com/refer-business.html?utm_source=partner_referral&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+  {
+    lane: 'Proof Hunt',
+    goal: 'Create sales material from real replies',
+    action: 'Offer 3 free mini observations, then route only interested replies to the paid scan pack or automated utility.',
+    link: 'https://quantumaibusiness.com/business-growth-scan.html?utm_source=proof_hunt&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+  {
+    lane: 'Upsell Path',
+    goal: 'Move from $49.99 to $229.99+',
+    action: 'After any scan, ask if they want intake, alerts, follow-up, and reporting connected into a simple automation path.',
+    link: 'https://quantumaibusiness.com/automated-utility.html?utm_source=scan_upsell&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+]
+const DIRECT_REVENUE_SCRIPTS = [
+  {
+    label: 'Warm owner text',
+    text:
+      'Quick thing I built: QuantumAiBusiness pressure-scans a business website/offer/follow-up path for weak spots and missed automation. If you know one owner whose site gets attention but not enough action, send them this: https://quantumaibusiness.com/growth-scan-pack.html?utm_source=warm_text&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+  {
+    label: 'Referral ask',
+    text:
+      'Do you know one business owner who might need a sharper website, better follow-up, or cleaner lead routing? I am routing referrals through QuantumAiBusiness here: https://quantumaibusiness.com/refer-business.html?utm_source=referral_ask&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+  {
+    label: '$49 scan close',
+    text:
+      'If you want the clean first step, start with the $49.99 Growth Scan Pack. It gives five AI-assisted readouts across pages, offers, funnel steps, products, or competitors: https://quantumaibusiness.com/growth-scan-pack.html?utm_source=scan_close&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+  {
+    label: '$229 utility upsell',
+    text:
+      'If the scan shows repeated follow-up, intake, or routing gaps, the next useful step is Automated Utility: connect alerts, lead handling, follow-up, and reporting into a simple owner-visible workflow. https://quantumaibusiness.com/automated-utility.html?utm_source=utility_upsell&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
+  },
+]
 const PAID_TRAFFIC_TESTS = [
   {
     channel: 'Meta / Facebook',
@@ -475,6 +523,17 @@ function buildPaidTestCsv() {
   ].join('\n')
 }
 
+function buildRevenueSprintCsv() {
+  const header = ['lane', 'goal', 'action', 'link']
+  const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
+  return [
+    header.join(','),
+    ...NO_SPEND_REVENUE_SPRINT.map((row) =>
+      [row.lane, row.goal, row.action, row.link].map(escape).join(','),
+    ),
+  ].join('\n')
+}
+
 function buildGoogleAdsCsv() {
   const header = ['campaign', 'budget', 'landing_page', 'kill_rule', 'keywords']
   const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
@@ -837,6 +896,17 @@ export default function OwnerConsole() {
     link.click()
     URL.revokeObjectURL(url)
     setCopied('Paid test CSV export ready')
+  }
+
+  function exportRevenueSprintCsv() {
+    const blob = new Blob([buildRevenueSprintCsv()], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'quantumaibusiness-no-spend-revenue-sprint.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+    setCopied('No-spend revenue sprint CSV export ready')
   }
 
   function exportGoogleAdsCsv() {
@@ -1792,21 +1862,52 @@ export default function OwnerConsole() {
       </section>
 
       <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-passive-paid">
+          <div className="owner-panel-title">
+            <h2>17. No-Spend Revenue Sprint</h2>
+            <button type="button" onClick={() => copyText('Warm owner text', DIRECT_REVENUE_SCRIPTS[0].text)}>COPY TEXT</button>
+            <button type="button" onClick={exportRevenueSprintCsv}>EXPORT SPRINT</button>
+          </div>
+          <p>
+            Fastest non-paid route: do not wait for algorithms. Use trust, referrals, and direct context to route real owners into the paid scan or automation upsell.
+          </p>
+          <div className="owner-paid-grid">
+            {NO_SPEND_REVENUE_SPRINT.map((item) => (
+              <article key={item.lane}>
+                <strong>{item.lane}</strong>
+                <span>{item.goal}</span>
+                <p>{item.action}</p>
+                <code>{item.link}</code>
+                <button type="button" onClick={() => copyText(`${item.lane} link`, item.link)}>COPY LINK</button>
+              </article>
+            ))}
+          </div>
+          <div className="owner-passive-grid">
+            {DIRECT_REVENUE_SCRIPTS.map((script) => (
+              <article key={script.label}>
+                <strong>{script.label}</strong>
+                <code>{script.text}</code>
+                <button type="button" onClick={() => copyText(script.label, script.text)}>COPY SCRIPT</button>
+              </article>
+            ))}
+          </div>
+        </div>
+
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>15. Rapid Intake</h2>
+            <h2>18. Rapid Intake</h2>
           </div>
           <div className="owner-action-list">
-            <label><input type="checkbox" /> Post one X or LinkedIn link using the traffic-board UTM.</label>
-            <label><input type="checkbox" /> Make three useful comments before dropping any link.</label>
-            <label><input type="checkbox" /> Add the scan link to email signature and social bios.</label>
+            <label><input type="checkbox" /> Send 10 warm direct notes before spending another dollar on ads.</label>
+            <label><input type="checkbox" /> Ask 5 people for one business-owner referral.</label>
+            <label><input type="checkbox" /> Route interested people to the $49.99 scan pack first, then Automated Utility.</label>
             <label><input type="checkbox" /> Check owner console, Gmail, Stripe, and Sheet after posting.</label>
           </div>
         </div>
 
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>16. Follow-Up Draft</h2>
+            <h2>19. Follow-Up Draft</h2>
             <button type="button" onClick={requestFollowUpDraft}>GENERATE FOLLOW-UP</button>
           </div>
           <p className="owner-inline-status">
