@@ -154,6 +154,33 @@ const DIRECT_REVENUE_SCRIPTS = [
       'If the scan shows repeated follow-up, intake, or routing gaps, the next useful step is Automated Utility: connect alerts, lead handling, follow-up, and reporting into a simple owner-visible workflow. https://quantumaibusiness.com/automated-utility.html?utm_source=utility_upsell&utm_medium=direct&utm_campaign=no_spend_revenue_sprint',
   },
 ]
+const AUTOMATION_UTILITY_ROUTES = [
+  {
+    label: 'Clay',
+    use: 'Best fit for automated prospect research, company enrichment, and AI-personalized outbound lists.',
+    url: 'https://www.clay.com/',
+  },
+  {
+    label: 'Apollo',
+    use: 'Best fit for B2B lead database, email sequences, and sales engagement if you want a more outbound-heavy path.',
+    url: 'https://www.apollo.io/',
+  },
+  {
+    label: 'GoHighLevel',
+    use: 'Best fit for CRM, funnels, bookings, SMS/email follow-up, and agency-style client operations.',
+    url: 'https://www.gohighlevel.com/',
+  },
+  {
+    label: 'Make',
+    use: 'Best fit for visual automation between Stripe, Sheets, Gmail, OpenAI, Buffer, and owner alerts.',
+    url: 'https://www.make.com/',
+  },
+  {
+    label: 'Zapier',
+    use: 'Best fit for simple no-code automation and quick app connections without building custom backend routes.',
+    url: 'https://zapier.com/',
+  },
+]
 const PAID_TRAFFIC_TESTS = [
   {
     channel: 'Meta / Facebook',
@@ -1918,9 +1945,29 @@ export default function OwnerConsole() {
       </section>
 
       <section className="owner-grid owner-ops-grid">
+        <div className="owner-panel owner-passive-paid">
+          <div className="owner-panel-title">
+            <h2>20. Automation Utility Routes</h2>
+            <button type="button" onClick={() => copyText('Automation utility routes', AUTOMATION_UTILITY_ROUTES.map((item) => `${item.label}: ${item.url} // ${item.use}`).join('\n'))}>COPY ROUTES</button>
+          </div>
+          <p>
+            These are the real "less owner input" routes. They still need account setup, data, and guardrails, but they are closer to automated acquisition/operations than fighting ad setup by hand.
+          </p>
+          <div className="owner-paid-grid">
+            {AUTOMATION_UTILITY_ROUTES.map((item) => (
+              <article key={item.label}>
+                <strong>{item.label}</strong>
+                <p>{item.use}</p>
+                <code>{item.url}</code>
+                <button type="button" onClick={() => copyText(`${item.label} link`, item.url)}>COPY LINK</button>
+              </article>
+            ))}
+          </div>
+        </div>
+
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>17. Follow-Up Copy</h2>
+            <h2>21. Follow-Up Copy</h2>
             <button type="button" onClick={() => copyText('Follow-up draft', followUpDraft)}>COPY FOLLOW-UP</button>
           </div>
           <pre>{followUpDraft || 'No follow-up generated yet. Review the fields above, then use GENERATE FOLLOW-UP.'}</pre>
@@ -1930,28 +1977,28 @@ export default function OwnerConsole() {
       <section className="owner-grid owner-output-grid">
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>18. Strategy Report</h2>
+            <h2>22. Strategy Report</h2>
             <button type="button" onClick={() => copyText('Report', report)}>COPY REPORT</button>
           </div>
           <pre>{report}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>19. Customer Reply</h2>
+            <h2>23. Customer Reply</h2>
             <button type="button" onClick={() => copyText('Reply', reply)}>COPY REPLY</button>
           </div>
           <pre>{reply}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>20. Upgrade Follow-Up</h2>
+            <h2>24. Upgrade Follow-Up</h2>
             <button type="button" onClick={() => copyText('Upgrade follow-up', upsell)}>COPY UPSELL</button>
           </div>
           <pre>{upsell}</pre>
         </div>
         <div className="owner-panel">
           <div className="owner-panel-title">
-            <h2>21. Outreach Copy</h2>
+            <h2>25. Outreach Copy</h2>
             <button type="button" onClick={() => copyText('Outreach copy', outreachCopy)}>COPY OUTREACH</button>
           </div>
           <pre>{outreachCopy}</pre>
