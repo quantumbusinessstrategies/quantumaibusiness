@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quantumaibusiness-api",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-05-05",
+  "workers_dev": true,
+  "vars": {
+    "PUBLIC_SITE_ORIGIN": "https://quantumaibusiness.com",
+    "VERCEL_BACKEND_ORIGIN": "https://quantumaibusiness.vercel.app",
+    "OWNER_EMAIL": "quantumbusinessstrategies@gmail.com",
+    "FULFILLMENT_MODE": "auto_generate",
+    "FULFILLMENT_CLIENT_EMAIL_MODE": "auto_send_low_tier",
+    "LEAD_FOLLOW_UP_MODE": "owner_review",
+    "STRIPE_CLIENT_ONBOARDING_MODE": "auto_send"
+  }
+}

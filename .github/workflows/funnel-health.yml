@@ -1,0 +1,30 @@
+name: Funnel Health
+
+on:
+  schedule:
+    - cron: "30 14 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check public funnel and backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          urls=(
+            "https://quantumaibusiness.com"
+            "https://quantumaibusiness.com/growth-scan-pack.html"
+            "https://quantumaibusiness.com/business-growth-scan.html"
+            "https://quantumaibusiness.com/refer-business.html"
+            "https://quantumaibusiness.vercel.app/api/health"
+          )
+
+          for url in "${urls[@]}"; do
+            code="$(curl -L -sS -o /tmp/qab-response.txt -w "%{http_code}" "$url")"
+            echo "$url => $code"
+            test "$code" = "200"
+          done
+
+          grep -q '"ok":true' /tmp/qab-response.txt
