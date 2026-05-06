@@ -2,6 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      if (location.protocol === 'http:' && /(^|\.)quantumaibusiness\.com$/.test(location.hostname)) {
+        location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`)
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Unlock a $9.99 AI-assisted QuantumAiBusiness growth diagnostic for a business name, website, offer, or funnel." />
     <meta name="theme-color" content="#02070d" />

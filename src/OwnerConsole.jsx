@@ -204,11 +204,12 @@ const PAID_TRAFFIC_TESTS = [
   },
 ]
 const GOOGLE_ADS_TEST = {
-  campaign: 'QuantumAiBusiness - $50 Search Validation',
-  budget: '$10/day, hard cap $50 total',
+  campaign: 'QuantumAiBusiness - $30 Search Launch',
+  budget: '$10/day, hard cap $30 total',
   landing:
-    'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=search_scan_pack',
-  kill: 'Pause at $25 with no useful actions. Hard stop at $50 unless purchase or strong checkout intent appears.',
+    'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=search_scan_pack',
+  conversion: 'https://quantumaibusiness.com/scan-pack-thank-you.html',
+  kill: 'Pause at $15 with no useful actions. Hard stop at $30 unless purchase or strong checkout intent appears.',
   keywords: [
     '"website conversion audit"',
     '"business automation audit"',
@@ -562,7 +563,7 @@ function buildRevenueSprintCsv() {
 }
 
 function buildGoogleAdsCsv() {
-  const header = ['campaign', 'budget', 'landing_page', 'kill_rule', 'keywords']
+  const header = ['campaign', 'budget', 'landing_page', 'conversion_url', 'kill_rule', 'keywords']
   const escape = (value) => `"${String(value || '').replaceAll('"', '""')}"`
   return [
     header.join(','),
@@ -570,6 +571,7 @@ function buildGoogleAdsCsv() {
       GOOGLE_ADS_TEST.campaign,
       GOOGLE_ADS_TEST.budget,
       GOOGLE_ADS_TEST.landing,
+      GOOGLE_ADS_TEST.conversion,
       GOOGLE_ADS_TEST.kill,
       GOOGLE_ADS_TEST.keywords.join(' | '),
     ].map(escape).join(','),
@@ -941,10 +943,10 @@ export default function OwnerConsole() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'quantumaibusiness-google-ads-50-test.csv'
+    link.download = 'quantumaibusiness-google-ads-30-launch.csv'
     link.click()
     URL.revokeObjectURL(url)
-    setCopied('Google Ads $50 test CSV export ready')
+    setCopied('Google Ads $30 launch CSV export ready')
   }
 
   function exportProofCsv() {
@@ -1220,7 +1222,7 @@ export default function OwnerConsole() {
       setAdsPreflight(data)
       setAdsPreflightStatus(
         data.ready
-          ? 'Ads preflight passed. Owner can launch the $50 Search test with the guardrails below.'
+          ? 'Ads preflight passed. Owner can launch the $30 Search route with the guardrails below.'
           : 'Ads preflight found something to fix before spending.',
       )
     } catch (error) {
@@ -1790,7 +1792,7 @@ export default function OwnerConsole() {
       <section className="owner-grid owner-ops-grid">
         <div className="owner-panel owner-google-ads">
           <div className="owner-panel-title">
-            <h2>Google Ads $50 Test</h2>
+            <h2>Google Ads $30 Launch</h2>
             <button type="button" onClick={() => copyText('Google Ads landing URL', GOOGLE_ADS_TEST.landing)}>COPY URL</button>
             <button type="button" onClick={exportGoogleAdsCsv}>EXPORT TEST</button>
             <button type="button" onClick={runAdsPreflight}>PREFLIGHT</button>
@@ -1801,6 +1803,7 @@ export default function OwnerConsole() {
           <div className="owner-google-box">
             <span><strong>Campaign</strong>{GOOGLE_ADS_TEST.campaign}</span>
             <span><strong>Budget</strong>{GOOGLE_ADS_TEST.budget}</span>
+            <span><strong>Conversion URL</strong>{GOOGLE_ADS_TEST.conversion}</span>
             <span><strong>Kill rule</strong>{GOOGLE_ADS_TEST.kill}</span>
           </div>
           <div className="owner-keyword-list">

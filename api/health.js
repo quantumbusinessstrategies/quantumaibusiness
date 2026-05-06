@@ -51,7 +51,7 @@ export default async function handler(req, res) {
       stripe_webhook_secret: configured(process.env.STRIPE_WEBHOOK_SECRET),
       openai_api_key: configured(process.env.OPENAI_API_KEY),
       automation_webhook: configured(process.env.AUTOMATION_WEBHOOK_URL),
-      owner_notification_url: configured(process.env.OWNER_NOTIFICATION_URL),
+      owner_notification_url: configured(process.env.OWNER_NOTIFICATION_URL) || configured(ownerEmail()),
       owner_action_token: configured(process.env.OWNER_ACTION_TOKEN),
       cron_secret: configured(process.env.CRON_SECRET),
       lead_follow_up: configured(process.env.LEAD_FOLLOW_UP_MODE),

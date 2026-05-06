@@ -2,11 +2,12 @@ const DEFAULT_SITE_ORIGIN = 'https://quantumaibusiness.com'
 const DEFAULT_VERCEL_ORIGIN = 'https://quantumaibusiness.vercel.app'
 const DEFAULT_OWNER_EMAIL = 'quantumbusinessstrategies@gmail.com'
 const LANDING_URL =
-  'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=search_scan_pack'
+  'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=search_scan_pack'
 
 const CHECK_PAGES = [
   ['Main site', 'https://quantumaibusiness.com'],
   ['Growth Scan Pack', LANDING_URL],
+  ['Conversion Success Page', 'https://quantumaibusiness.com/scan-pack-thank-you.html'],
   ['Business Growth Scan', 'https://quantumaibusiness.com/business-growth-scan.html'],
   ['Automated Utility', 'https://quantumaibusiness.com/automated-utility.html'],
   ['Sample Scan', 'https://quantumaibusiness.com/sample-growth-scan.html'],
@@ -15,9 +16,10 @@ const CHECK_PAGES = [
 
 const LANDING_TERMS = [
   ['price', '$49.99'],
-  ['tracking campaign', 'fifty_dollar_validation'],
-  ['package event', 'package_checkout'],
+  ['checkout path', 'Unlock Scan Pack'],
+  ['checkout script', 'landing-checkout.js'],
 ]
+const LANDING_URL_TERMS = [['tracking campaign', 'thirty_dollar_validation']]
 
 function configured(value) {
   return Boolean(value && String(value).trim())
@@ -95,7 +97,10 @@ async function checkPage([label, url]) {
       length: text.length,
       title: text.match(/<title>(.*?)<\/title>/i)?.[1] || '',
       checks: label === 'Growth Scan Pack'
-        ? LANDING_TERMS.map(([name, term]) => ({ name, ok: text.includes(term) }))
+        ? [
+            ...LANDING_TERMS.map(([name, term]) => ({ name, ok: text.includes(term) })),
+            ...LANDING_URL_TERMS.map(([name, term]) => ({ name, ok: url.includes(term) })),
+          ]
         : [],
     }
   } catch (error) {
@@ -125,17 +130,18 @@ async function adsPreflight() {
     ready,
     launch_mode: ready ? 'ready_for_owner_launch' : 'fix_before_spend',
     next_action: ready
-      ? 'Owner may launch the exact/phrase Google Search test with Display off, $10/day budget, and $50 hard cap.'
+      ? 'Owner may launch the exact/phrase Google Search launch with Display off, $10/day budget, and $30 hard cap.'
       : 'Fix failed page or landing checks before funding Google Ads.',
     failed_pages: failedPages,
     failed_checks: failedChecks,
     recommended_google_ads_settings: {
-      campaign: 'QuantumAiBusiness - $50 Search Validation',
+      campaign: 'QuantumAiBusiness - $30 Search Launch',
       landing_url: LANDING_URL,
-      budget: '$10/day with $50 hard cap',
+      conversion_url: 'https://quantumaibusiness.com/scan-pack-thank-you.html',
+      budget: '$10/day with $30 hard cap',
       network: 'Google Search only. Display off. Search Partners off for first test.',
       match_type: 'Phrase/exact only. No broad match on first run.',
-      kill_rule: 'Pause at $25 with no checkout or form signal. Hard stop at $50.',
+      kill_rule: 'Pause at $15 with clicks but no checkout or form signal. Hard stop at $30.',
     },
     results,
   }

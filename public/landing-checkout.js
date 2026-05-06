@@ -1,4 +1,23 @@
 (function () {
+  try {
+    if (
+      window.location &&
+      window.location.protocol === 'http:' &&
+      /(^|\.)quantumaibusiness\.com$/.test(window.location.hostname)
+    ) {
+      window.location.replace(
+        'https://' +
+          window.location.host +
+          window.location.pathname +
+          window.location.search +
+          window.location.hash,
+      )
+      return
+    }
+  } catch (error) {
+    // Never block landing pages.
+  }
+
   var API = 'https://quantumaibusiness.vercel.app/api/lead'
 
   function attribution() {
@@ -74,12 +93,6 @@
         checkout_type: 'backup_stripe_link',
         destination: href,
       })
-      window.gtag?.('event', 'close_convert_lead', {
-        event_category: 'commerce',
-        event_label: label || 'backup_stripe_checkout',
-        original_event: 'backup_stripe_link_click',
-        destination: href,
-      })
       window.fbq?.('track', 'InitiateCheckout', { content_name: label || 'Backup Stripe Checkout', currency: 'USD' })
     }
     postAutomationEvent('static_landing_click', {
@@ -117,11 +130,6 @@
       window.gtag?.('event', 'static_one_step_checkout_started', {
         event_category: 'commerce',
         event_label: packageName,
-      })
-      window.gtag?.('event', 'close_convert_lead', {
-        event_category: 'commerce',
-        event_label: packageName,
-        original_event: 'static_one_step_checkout_started',
       })
       window.fbq?.('track', 'InitiateCheckout', { content_name: packageName, currency: 'USD' })
 

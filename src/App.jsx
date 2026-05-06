@@ -67,8 +67,7 @@ const PACKAGE_VALUES = {
 }
 const GOOGLE_KEY_EVENT_ALIASES = {
   assessment_submitted: ['qualify_lead'],
-  package_checkout_started: ['close_convert_lead'],
-  checkout_return_success: ['purchase'],
+  checkout_return_success: ['purchase', 'close_convert_lead'],
 }
 
 function rand(seed, min, max) {

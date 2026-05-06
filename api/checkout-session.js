@@ -30,7 +30,7 @@ function buildCheckoutForm(intake) {
     return { error: 'This package is owner-reviewed and cannot use instant checkout yet.' }
   }
 
-  const successUrl = `${site}/?checkout=success&package=${encodeURIComponent(packageKey)}&session_id={CHECKOUT_SESSION_ID}#fulfillment`
+  const successUrl = `${site}/scan-pack-thank-you.html?checkout=success&package=${encodeURIComponent(packageKey)}&session_id={CHECKOUT_SESSION_ID}`
   const cancelUrl = `${site}/?checkout=cancel&package=${encodeURIComponent(packageKey)}#packages`
   const form = new URLSearchParams()
 

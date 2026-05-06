@@ -1,11 +1,14 @@
-# QuantumAiBusiness Google Ads $50 Search Test
+# QuantumAiBusiness Google Ads $30 Search Launch
 
 ## Objective
 
-Run a tightly controlled Google Search test for the $49.99 Growth Scan Pack.
+Run a tightly controlled Google Search launch for the $49.99 Growth Scan Pack without letting Google expand the spend or targeting.
 
 Primary URL:
-`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=search_scan_pack`
+`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=search_scan_pack`
+
+Conversion/success URL for Google Ads setup:
+`https://quantumaibusiness.com/scan-pack-thank-you.html`
 
 Creative direction:
 
@@ -16,11 +19,11 @@ Creative direction:
 
 ## Hard Rules
 
-- Total owner-approved cap: `$50`.
+- Total owner-approved cap: `$30`.
 - Daily budget: `$10/day`.
-- Campaign duration: up to `5 days`.
-- Pause at `$25` if there are no useful actions.
-- Hard stop at `$50` unless there is a purchase or clear checkout intent.
+- Campaign duration: up to `3 days`.
+- Pause at `$15` if there are clicks but no useful actions.
+- Hard stop at `$30` unless there is a purchase or clear checkout intent.
 - Search network only.
 - Do not enable Display Network.
 - Do not use broad match.
@@ -29,8 +32,9 @@ Creative direction:
 
 Useful actions:
 - `qualify_lead`
-- `close_convert_lead`
 - `purchase`
+- Success page visit: `/scan-pack-thank-you.html`
+- `close_convert_lead`
 - Stripe checkout start
 - Stripe payment
 - Owner email showing a paid/qualified event
@@ -40,7 +44,7 @@ Useful actions:
 - Campaign type: Search
 - Goal: Website traffic, Leads, or Sales
 - Bidding: Maximize clicks with a CPC limit if available, or manual CPC if Google allows it
-- Budget: `$10/day`
+- Budget: `$10/day`, with account-level spend watched manually until Google confirms the campaign cap/billing setup
 - Locations: United States
 - Language: English
 - Networks: Google Search only
@@ -62,7 +66,7 @@ Keywords:
 ```
 
 Final URL:
-`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=website_conversion_audit`
+`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=website_conversion_audit`
 
 ## Ad Group 2: Business Automation Audit
 
@@ -78,7 +82,7 @@ Keywords:
 ```
 
 Final URL:
-`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=automation_audit`
+`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=automation_audit`
 
 ## Ad Group 3: AI Business Audit
 
@@ -94,7 +98,7 @@ Keywords:
 ```
 
 Final URL:
-`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=ai_business_audit`
+`https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=ai_business_audit`
 
 ## Responsive Search Ad Assets
 
@@ -161,13 +165,13 @@ After first `$10` spend:
 - If impressions but no clicks: tighten headlines or keywords.
 - If clicks but no meaningful actions: pause weakest ad group.
 
-After `$25` spend:
+After `$15` spend:
 - Continue only if there is checkout intent, scan action, owner email lead, or purchase.
 - If nothing useful happened, pause the campaign.
 
-After `$50` spend:
+After `$30` spend:
 - Stop and review.
-- If one purchase happened, test another `$50` only after checking keyword/ad group source.
+- If one purchase happened, test another `$30` only after checking keyword/ad group source.
 - If two purchases happened, cautiously raise to `$15/day`.
 
 ## Sitelink Assets
@@ -175,14 +179,14 @@ After `$50` spend:
 Use these only as sitelinks, not as the main final URL:
 
 ```txt
-See Other Options -> https://quantumaibusiness.com/?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_main
-Automated Utility -> https://quantumaibusiness.com/automated-utility.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_utility
-Sample Scan -> https://quantumaibusiness.com/sample-growth-scan.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_sample
-Results Roadmap -> https://quantumaibusiness.com/results-roadmap.html?utm_source=google&utm_medium=paid_search&utm_campaign=fifty_dollar_validation&utm_content=sitelink_results
+See Other Options -> https://quantumaibusiness.com/?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=sitelink_main
+Automated Utility -> https://quantumaibusiness.com/automated-utility.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=sitelink_utility
+Sample Scan -> https://quantumaibusiness.com/sample-growth-scan.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=sitelink_sample
+Results Roadmap -> https://quantumaibusiness.com/results-roadmap.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=sitelink_results
 ```
 
 ## Expected Economics
 
-One $49.99 sale roughly validates the route but does not create much profit after fees.
-Two sales from $50 is strong early signal.
+One $49.99 sale from $30 spend is a useful early signal, not proof of scalable profit.
+Two sales from $30 is strong early signal.
 The real upside is from a $49.99 buyer upgrading into `$229.99+` Automated Utility or owner-reviewed strategy.
