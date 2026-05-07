@@ -63,22 +63,35 @@
         var data = Object.fromEntries(new FormData(form).entries());
         status.textContent = 'Sending feedback...';
         try {
+          var feedback = {
+            company: data.company,
+            email: data.email,
+            event_type: 'client_proof_feedback',
+            package_key: data.package_key,
+            permission: data.permission,
+            implemented: data.implemented,
+            result_signal: data.result_signal,
+            blocker: data.blocker,
+            referral: data.referral,
+            url: window.location.href
+          };
           var response = await fetch('/api/lead', {
             method: 'POST',
             headers: {'Content-Type':'application/json','Accept':'application/json'},
-            body: JSON.stringify({
-              company: data.company,
-              email: data.email,
-              event_type: 'client_proof_feedback',
-              package_key: data.package_key,
-              permission: data.permission,
-              implemented: data.implemented,
-              result_signal: data.result_signal,
-              blocker: data.blocker,
-              referral: data.referral,
-              url: window.location.href
-            })
+            body: JSON.stringify(feedback)
           });
+          if (!response.ok) {
+            response = await fetch('https://formsubmit.co/ajax/quantumbusinessstrategies@gmail.com', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json','Accept':'application/json'},
+              body: JSON.stringify({
+                _subject: 'QuantumAiBusiness client feedback',
+                _template: 'table',
+                _captcha: 'false',
+                ...feedback
+              })
+            });
+          }
           if (!response.ok) throw new Error('Feedback route failed');
           window.gtag?.('event','client_results_feedback',{event_category:'proof_loop',event_label:data.package_key});
           window.gtag?.('event','qualify_lead',{event_category:'proof_loop',event_label:'client_feedback'});
