@@ -18,7 +18,7 @@
     // Never block landing pages.
   }
 
-  var API = 'https://quantumaibusiness.vercel.app/api/lead'
+  var API = '/api/lead'
 
   function attribution() {
     var params = new URLSearchParams(window.location.search)
@@ -50,13 +50,13 @@
         ),
       })
       if (navigator.sendBeacon) {
-        var blob = new Blob([body], { type: 'application/json' })
+        var blob = new Blob([body], { type: 'text/plain' })
         navigator.sendBeacon(API, blob)
         return
       }
       fetch(API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8', Accept: 'application/json' },
         body: body,
         keepalive: true,
       })
@@ -133,7 +133,7 @@
       })
       window.fbq?.('track', 'InitiateCheckout', { content_name: packageName, currency: 'USD' })
 
-      var response = await fetch('https://quantumaibusiness.vercel.app/api/checkout-session', {
+      var response = await fetch('/api/checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),

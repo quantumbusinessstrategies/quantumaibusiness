@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 
 const PIPELINE_STORAGE_KEY = 'quantumaibusiness_owner_pipeline'
 const OWNER_TOKEN_STORAGE_KEY = 'quantumaibusiness_owner_action_token'
-const AUTOMATION_API_URL = 'https://quantumaibusiness.vercel.app'
+const AUTOMATION_API_URL = import.meta.env.VITE_AUTOMATION_API_URL || ''
+function apiEndpoint(path) {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  if (!AUTOMATION_API_URL) return cleanPath
+  return `${AUTOMATION_API_URL.replace(/\/$/, '')}${cleanPath}`
+}
 const PACKAGE_OPTIONS = [
   ['outlinedStrategy', 'Outlined Strategy'],
   ['growthScanPack', 'Growth Scan Pack'],
@@ -276,7 +281,7 @@ const PROOF_LOOP_ACTIONS = [
   'Route blockers about follow-up, intake, reporting, or tool connection toward Automated Utility.',
 ]
 const BUSINESS_SCORECARD = [
-  ['Technical', 9, 'Live site, Vercel backend, Stripe, OpenAI, Resend, tracking, and ledger are connected.'],
+  ['Technical', 9, 'Live site, owned API backend, Stripe, OpenAI, Resend, tracking, and ledger are connected.'],
   ['Automation', 8, 'Low-tier delivery, notifications, campaign generation, proof capture, and Buffer queue are active.'],
   ['Offer', 8, '$49.99 scan pack is the main entry, with $229+ utility and high-ticket owner review behind it.'],
   ['Trust', 7, 'Sample scan, scope pages, proof feedback, and results roadmap reduce buyer uncertainty.'],
@@ -830,7 +835,7 @@ export default function OwnerConsole() {
 
   async function syncLeadToBackend(lead) {
     try {
-      const response = await fetch(`${AUTOMATION_API_URL}/api/lead`, {
+      const response = await fetch(apiEndpoint('/api/lead'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
@@ -988,8 +993,8 @@ export default function OwnerConsole() {
 
   async function refreshBackendHealth() {
     try {
-      setBackendStatus('Checking Vercel automation backend...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/health`)
+      setBackendStatus('Checking automation API...')
+      const response = await fetch(apiEndpoint('/api/health'))
       const data = await response.json()
       setBackendHealth(data)
       setBackendStatus(response.ok ? 'Backend online' : `Backend check failed: ${data.error || response.status}`)
@@ -1018,7 +1023,7 @@ export default function OwnerConsole() {
 
     try {
       setAiDraftStatus('Requesting review-only fulfillment draft...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/fulfillment`, {
+      const response = await fetch(apiEndpoint('/api/fulfillment'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
@@ -1041,7 +1046,7 @@ export default function OwnerConsole() {
     setDigestStatus('')
     setRouteStatus('')
     if (!ownerToken) {
-      setSendStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here.')
+      setSendStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here.')
       return
     }
     if (!aiDraft) {
@@ -1062,8 +1067,8 @@ export default function OwnerConsole() {
     }
 
     try {
-      setSendStatus('Sending approved draft through Vercel/Resend...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/fulfillment`, {
+      setSendStatus('Sending approved draft through the automation API...')
+      const response = await fetch(apiEndpoint('/api/fulfillment'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1090,7 +1095,7 @@ export default function OwnerConsole() {
     setDigestStatus('')
     setRouteStatus('')
     if (!ownerToken) {
-      setGrowthStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to unlock protected growth generation.')
+      setGrowthStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to unlock protected growth generation.')
       return
     }
 
@@ -1106,7 +1111,7 @@ export default function OwnerConsole() {
 
     try {
       setGrowthStatus('Generating owner-reviewed growth and advertising pack...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/growth-campaign`, {
+      const response = await fetch(apiEndpoint('/api/growth-campaign'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1134,13 +1139,13 @@ export default function OwnerConsole() {
     setDigestStatus('')
     setRouteStatus('')
     if (!ownerToken) {
-      setCampaignBatchStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to generate the daily campaign batch.')
+      setCampaignBatchStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to generate the daily campaign batch.')
       return
     }
 
     try {
       setCampaignBatchStatus('Generating daily monetization campaign batch...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/campaign-batch`, {
+      const response = await fetch(apiEndpoint('/api/campaign-batch'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1168,13 +1173,13 @@ export default function OwnerConsole() {
     setDigestStatus('')
     setRouteStatus('')
     if (!ownerToken) {
-      setSocialQueueStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to generate the social queue.')
+      setSocialQueueStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to generate the social queue.')
       return
     }
 
     try {
       setSocialQueueStatus('Building ad-ready organic social queue...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/social-queue`, {
+      const response = await fetch(apiEndpoint('/api/social-queue'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1202,13 +1207,13 @@ export default function OwnerConsole() {
     setDigestStatus('')
     setRouteStatus('')
     if (!ownerToken) {
-      setAdsPreflightStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to run the ads preflight.')
+      setAdsPreflightStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to run the ads preflight.')
       return
     }
 
     try {
       setAdsPreflightStatus('Checking paid landing, tracking URL, route pages, and backend notification path...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/ops-runner`, {
+      const response = await fetch(apiEndpoint('/api/ops-runner'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1235,7 +1240,7 @@ export default function OwnerConsole() {
     setSendStatus('')
     setDigestStatus('')
     if (!ownerToken) {
-      setRouteStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to unlock lead routing.')
+      setRouteStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to unlock lead routing.')
       return
     }
 
@@ -1253,7 +1258,7 @@ export default function OwnerConsole() {
 
     try {
       setRouteStatus('Scoring lead and generating owner route...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/lead-router`, {
+      const response = await fetch(apiEndpoint('/api/lead-router'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1281,7 +1286,7 @@ export default function OwnerConsole() {
     setSendStatus('')
     setDigestStatus('')
     if (!ownerToken) {
-      setFollowUpStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to generate follow-up drafts.')
+      setFollowUpStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to generate follow-up drafts.')
       return
     }
 
@@ -1299,7 +1304,7 @@ export default function OwnerConsole() {
 
     try {
       setFollowUpStatus('Generating owner-reviewed follow-up route brief...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/lead-router`, {
+      const response = await fetch(apiEndpoint('/api/lead-router'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1326,13 +1331,13 @@ export default function OwnerConsole() {
     setSendStatus('')
     setRouteStatus('')
     if (!ownerToken) {
-      setDigestStatus('Add OWNER_ACTION_TOKEN in Vercel, then paste the same token here to run the owner digest.')
+      setDigestStatus('Add OWNER_ACTION_TOKEN to the automation API host, then paste the same token here to run the owner digest.')
       return
     }
 
     try {
       setDigestStatus('Sending owner command digest...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/daily-digest`, {
+      const response = await fetch(apiEndpoint('/api/daily-digest'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1356,13 +1361,13 @@ export default function OwnerConsole() {
 
   async function testOwnerKey() {
     if (!ownerToken) {
-      setOwnerKeyStatus('Paste the same OWNER_ACTION_TOKEN from Vercel first.')
+      setOwnerKeyStatus('Paste the same OWNER_ACTION_TOKEN from the automation API host first.')
       return
     }
 
     try {
       setOwnerKeyStatus('Checking owner key...')
-      const response = await fetch(`${AUTOMATION_API_URL}/api/health`, {
+      const response = await fetch(apiEndpoint('/api/health'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1661,7 +1666,7 @@ export default function OwnerConsole() {
             <input
               name="ownerToken"
               onChange={updateOwnerToken}
-              placeholder="Paste local OWNER_ACTION_TOKEN after adding it in Vercel"
+              placeholder="Paste local OWNER_ACTION_TOKEN after adding it to the API host"
               type="password"
               value={ownerToken}
             />

@@ -1,5 +1,4 @@
 const DEFAULT_SITE_ORIGIN = 'https://quantumaibusiness.com'
-const DEFAULT_VERCEL_ORIGIN = 'https://quantumaibusiness.vercel.app'
 const DEFAULT_OWNER_EMAIL = 'quantumbusinessstrategies@gmail.com'
 const LANDING_URL =
   'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=search_scan_pack'
@@ -57,13 +56,18 @@ function health(env) {
     ok: true,
     service: 'quantumaibusiness-cloudflare-worker',
     owner_email: env.OWNER_EMAIL || DEFAULT_OWNER_EMAIL,
+    owner_notification_provider: configured(env.RESEND_API_KEY) ? 'resend' : 'formsubmit',
+    owner_notification_target: env.OWNER_EMAIL || DEFAULT_OWNER_EMAIL,
+    owner_notification_endpoint_configured: configured(env.OWNER_NOTIFICATION_URL),
     public_site_origin: env.PUBLIC_SITE_ORIGIN || DEFAULT_SITE_ORIGIN,
-    vercel_backend_origin: env.VERCEL_BACKEND_ORIGIN || DEFAULT_VERCEL_ORIGIN,
+    legacy_backend_origin_configured: configured(env.LEGACY_BACKEND_ORIGIN),
     fulfillment_mode: env.FULFILLMENT_MODE || 'intake_only',
     fulfillment_client_email_mode: env.FULFILLMENT_CLIENT_EMAIL_MODE || 'owner_review',
     lead_follow_up_mode: env.LEAD_FOLLOW_UP_MODE || 'owner_review',
     stripe_client_onboarding_mode: env.STRIPE_CLIENT_ONBOARDING_MODE || 'auto_send',
-    migration_mode: 'cloudflare_first_with_vercel_fallback',
+    migration_mode: configured(env.LEGACY_BACKEND_ORIGIN)
+      ? 'cloudflare_first_with_explicit_legacy_fallback'
+      : 'cloudflare_owned_no_implicit_fallback',
     configured: {
       resend: configured(env.RESEND_API_KEY),
       resend_from_email: configured(env.RESEND_FROM_EMAIL),
@@ -147,8 +151,19 @@ async function adsPreflight() {
   }
 }
 
-async function proxyToVercel(request, env) {
-  const origin = env.VERCEL_BACKEND_ORIGIN || DEFAULT_VERCEL_ORIGIN
+async function proxyToLegacyBackend(request, env) {
+  if (!configured(env.LEGACY_BACKEND_ORIGIN)) {
+    return json(
+      {
+        ok: false,
+        error: 'Route is not implemented on the owned API yet',
+        next_action: 'Port this /api route into the Cloudflare Worker or configure LEGACY_BACKEND_ORIGIN temporarily.',
+      },
+      501,
+    )
+  }
+
+  const origin = env.LEGACY_BACKEND_ORIGIN
   const source = new URL(request.url)
   const target = new URL(source.pathname + source.search, origin)
   return fetch(target.toString(), request)
@@ -171,7 +186,7 @@ export default {
     }
 
     if (url.pathname.startsWith('/api/')) {
-      return proxyToVercel(request, env)
+      return proxyToLegacyBackend(request, env)
     }
 
     return json({ ok: false, error: 'Not found' }, 404)

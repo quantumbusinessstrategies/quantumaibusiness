@@ -2,6 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="canonical" href="https://quantumaibusiness.com/scan-pack-thank-you.html" />
+    <script>
+      ;(function () {
+        var host = location.hostname || ''
+        if (!/(^|\\.)quantumaibusiness\\.com$/.test(host)) return
+        var targetHost = host.indexOf('www.') === 0 ? host.slice(4) : host
+        var needsHttps = location.protocol === 'http:'
+        var needsApex = host !== targetHost
+        if (!needsHttps && !needsApex) return
+        var targetUrl =
+          'https://' + targetHost + location.pathname + location.search + location.hash
+        location.replace(targetUrl)
+      })()
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#02070d" />
@@ -49,6 +63,15 @@
         value: value,
         currency: 'USD'
       });
+
+      var adsId = params.get('aw') || params.get('ads_id') || '';
+      var adsLabel = params.get('aw_label') || params.get('ads_label') || '';
+      if (adsId && /^AW-\\d+$/.test(adsId)) {
+        gtag('config', adsId);
+        if (adsLabel) {
+          gtag('event', 'conversion', { send_to: adsId + '/' + adsLabel, value: value, currency: 'USD' });
+        }
+      }
       fbq('track', 'Purchase', { currency: 'USD', value: value, content_name: 'QuantumAiBusiness Scan Pack' });
     </script>
   </head>

@@ -85,7 +85,7 @@ async function generateCommand(publicSite) {
 
 async function buildDigest() {
   const publicSite = process.env.PUBLIC_SITE_ORIGIN || 'https://quantumaibusiness.com'
-  const backend = 'https://quantumaibusiness.vercel.app'
+  const backend = process.env.AUTOMATION_API_URL || process.env.PUBLIC_API_ORIGIN || 'https://api.quantumaibusiness.com'
   const command = await generateCommand(publicSite)
   return {
     event_type: 'daily_owner_digest',

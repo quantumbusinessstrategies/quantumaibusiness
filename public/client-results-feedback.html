@@ -63,7 +63,7 @@
         var data = Object.fromEntries(new FormData(form).entries());
         status.textContent = 'Sending feedback...';
         try {
-          var response = await fetch('https://quantumaibusiness.vercel.app/api/lead', {
+          var response = await fetch('/api/lead', {
             method: 'POST',
             headers: {'Content-Type':'application/json','Accept':'application/json'},
             body: JSON.stringify({

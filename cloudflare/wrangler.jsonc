@@ -4,9 +4,15 @@
   "main": "src/worker.js",
   "compatibility_date": "2026-05-05",
   "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "quantumaibusiness.com/api/*",
+      "zone_name": "quantumaibusiness.com"
+    }
+  ],
   "vars": {
     "PUBLIC_SITE_ORIGIN": "https://quantumaibusiness.com",
-    "VERCEL_BACKEND_ORIGIN": "https://quantumaibusiness.vercel.app",
+    "LEGACY_BACKEND_ORIGIN": "",
     "OWNER_EMAIL": "quantumbusinessstrategies@gmail.com",
     "FULFILLMENT_MODE": "auto_generate",
     "FULFILLMENT_CLIENT_EMAIL_MODE": "auto_send_low_tier",

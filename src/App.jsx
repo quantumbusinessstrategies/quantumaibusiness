@@ -31,7 +31,7 @@ const PARTNER_LINKS = {
   pepes: 'https://quantumpepes.xyz',
 }
 const LEAD_WEBHOOK = import.meta.env.VITE_LEAD_WEBHOOK_URL || ''
-const AUTOMATION_API_URL = import.meta.env.VITE_AUTOMATION_API_URL || 'https://quantumaibusiness.vercel.app'
+const AUTOMATION_API_URL = import.meta.env.VITE_AUTOMATION_API_URL || ''
 const OWNER_NOTIFICATION_URL =
   import.meta.env.VITE_OWNER_NOTIFICATION_URL || `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
 const GOOGLE_TAG_ID = import.meta.env.VITE_GOOGLE_TAG_ID || 'G-RCLMY2RC5S'
@@ -68,6 +68,12 @@ const PACKAGE_VALUES = {
 const GOOGLE_KEY_EVENT_ALIASES = {
   assessment_submitted: ['qualify_lead'],
   checkout_return_success: ['purchase', 'close_convert_lead'],
+}
+
+function apiEndpoint(path) {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  if (!AUTOMATION_API_URL) return cleanPath
+  return `${AUTOMATION_API_URL.replace(/\/$/, '')}${cleanPath}`
 }
 
 function rand(seed, min, max) {
@@ -153,11 +159,7 @@ function mailtoHref({ form, result, scan, packageName = 'General inquiry' }) {
 }
 
 async function notifyOwner(type, payload) {
-  const automationEndpoint = AUTOMATION_API_URL
-    ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/lead') ? '' : '/api/lead'}`
-    : ''
-  const endpoint = automationEndpoint || LEAD_WEBHOOK || OWNER_NOTIFICATION_URL
-  if (!endpoint) return false
+  const automationEndpoint = apiEndpoint('/api/lead')
   const actionMode = payload.package?.key === 'premiumReferral' || Number(payload.package?.amount || 0) >= 2500 ? 'owner_review' : 'auto_route'
 
   const subject = `Quantum AI Business ${type.replaceAll('_', ' ')}`
@@ -173,29 +175,40 @@ async function notifyOwner(type, payload) {
   )
 
   try {
-    const body = automationEndpoint
-      ? {
-          event_type: type,
-          action_mode: actionMode,
-          notify: CONTACT_EMAIL,
-          source: 'quantumaibusiness.com',
-          payload,
-        }
-      : {
-          _subject: subject,
-          _template: 'table',
-          _captcha: 'false',
-          event_type: type,
-          action_mode: actionMode,
-          notify: CONTACT_EMAIL,
-          source: 'quantumaibusiness.com',
-          message,
-        }
-
-    const response = await fetch(endpoint, {
+    const automationBody = {
+      event_type: type,
+      action_mode: actionMode,
+      notify: CONTACT_EMAIL,
+      source: 'quantumaibusiness.com',
+      payload,
+    }
+    const response = await fetch(automationEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(automationBody),
+    })
+    if (response.ok) return true
+  } catch {
+    // Fall back below. Ownership of traffic stays on quantumaibusiness.com; this only preserves lead delivery.
+  }
+
+  const fallbackEndpoint = LEAD_WEBHOOK || OWNER_NOTIFICATION_URL
+  if (!fallbackEndpoint) return false
+
+  try {
+    const response = await fetch(fallbackEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        _subject: subject,
+        _template: 'table',
+        _captcha: 'false',
+        event_type: type,
+        action_mode: actionMode,
+        notify: CONTACT_EMAIL,
+        source: 'quantumaibusiness.com',
+        message,
+      }),
     })
     return response.ok
   } catch {
@@ -228,18 +241,17 @@ function fulfillmentOwnerMessage(packet) {
 }
 
 async function submitFulfillmentPacket(packet) {
-  const fulfillmentEndpoint = AUTOMATION_API_URL
-    ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/fulfillment') ? '' : '/api/fulfillment'}`
-    : ''
+  const fulfillmentEndpoint = apiEndpoint('/api/fulfillment')
 
-  if (fulfillmentEndpoint) {
+  try {
     const response = await fetch(fulfillmentEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(packet),
     })
-    if (!response.ok) throw new Error('Fulfillment endpoint rejected the intake')
-    return response.json()
+    if (response.ok) return response.json()
+  } catch {
+    // Fall through to email fallback so paid-buyer recovery never depends on an API being online.
   }
 
   const response = await fetch(OWNER_NOTIFICATION_URL, {
@@ -270,7 +282,7 @@ async function submitFulfillmentPacket(packet) {
 }
 
 async function createCheckoutSession(packet) {
-  const checkoutEndpoint = `${AUTOMATION_API_URL.replace(/\/$/, '')}/api/checkout-session`
+  const checkoutEndpoint = apiEndpoint('/api/checkout-session')
   const response = await fetch(checkoutEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -282,11 +294,7 @@ async function createCheckoutSession(packet) {
 }
 
 async function requestBusinessDiagnostic({ target, form }) {
-  const diagnosticEndpoint = AUTOMATION_API_URL
-    ? `${AUTOMATION_API_URL.replace(/\/$/, '')}${AUTOMATION_API_URL.endsWith('/api/diagnostic') ? '' : '/api/diagnostic'}`
-    : ''
-
-  if (!diagnosticEndpoint) return null
+  const diagnosticEndpoint = apiEndpoint('/api/diagnostic')
 
   const response = await fetch(diagnosticEndpoint, {
     method: 'POST',
@@ -431,14 +439,14 @@ function postTrafficPulse(attribution) {
         attribution,
       },
     })
-    const endpoint = `${AUTOMATION_API_URL.replace(/\/$/, '')}/api/lead`
+    const endpoint = apiEndpoint('/api/lead')
     if (navigator.sendBeacon) {
-      navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }))
+      navigator.sendBeacon(endpoint, new Blob([body], { type: 'text/plain' }))
       return
     }
     fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8', Accept: 'application/json' },
       body,
       keepalive: true,
     })

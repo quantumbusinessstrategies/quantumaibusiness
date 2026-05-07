@@ -14,6 +14,19 @@ function cleanText(value, fallback = '') {
   return String(value || fallback).trim().slice(0, 4000)
 }
 
+function parseRequestBody(req) {
+  if (!req.body) return {}
+  if (typeof req.body === 'object') return req.body
+  if (typeof req.body !== 'string') return {}
+
+  try {
+    return JSON.parse(req.body || '{}')
+  } catch {
+    const decoded = decodeURIComponent(req.body)
+    return JSON.parse(decoded || '{}')
+  }
+}
+
 function leadFormFromPayload(payload = {}) {
   return payload.form || payload.payload?.form || {}
 }
@@ -186,7 +199,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
+    const body = parseRequestBody(req)
     const type = body.event_type || body.type || 'lead_event'
     const proofInput = isProofFeedbackEvent(type)
       ? {

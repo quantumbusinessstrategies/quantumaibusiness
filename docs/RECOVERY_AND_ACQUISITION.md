@@ -9,7 +9,7 @@ Check:
 
 - Google Ads campaigns: https://ads.google.com/aw/campaigns
 - Google Ads billing: https://ads.google.com/aw/billing/summary
-- Owner console: https://quantumaibusiness.vercel.app/owner
+- Owner console: https://quantumaibusiness.com/owner
 
 ## Current Reality
 

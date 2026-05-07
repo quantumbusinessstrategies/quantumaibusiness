@@ -4,9 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="canonical" href="https://quantumaibusiness.com/" />
     <script>
-      if (location.protocol === 'http:' && /(^|\.)quantumaibusiness\.com$/.test(location.hostname)) {
-        location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`)
-      }
+      ;(function () {
+        var host = location.hostname || ''
+        if (!/(^|\\.)quantumaibusiness\\.com$/.test(host)) return
+        var targetHost = host.indexOf('www.') === 0 ? host.slice(4) : host
+        var needsHttps = location.protocol === 'http:'
+        var needsApex = host !== targetHost
+        if (!needsHttps && !needsApex) return
+        var targetUrl =
+          'https://' + targetHost + location.pathname + location.search + location.hash
+        location.replace(targetUrl)
+      })()
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

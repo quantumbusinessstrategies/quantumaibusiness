@@ -1,6 +1,6 @@
 import { buildAutomationRecord, forwardAutomation, jsonResponse, notifyOwner, setCors, verifyCronOrOwner } from './_shared.js'
 
-const BACKEND = 'https://quantumaibusiness.vercel.app'
+const BACKEND = process.env.AUTOMATION_API_URL || process.env.PUBLIC_API_ORIGIN || 'https://api.quantumaibusiness.com'
 const GOOGLE_ADS_LANDING_URL =
   'https://quantumaibusiness.com/growth-scan-pack.html?utm_source=google&utm_medium=paid_search&utm_campaign=thirty_dollar_validation&utm_content=search_scan_pack'
 const GOOGLE_ADS_PAGES = [

@@ -1,24 +1,24 @@
 # QuantumAiBusiness Cloudflare Migration
 
-This keeps the public site on GitHub Pages while moving live backend automation away from Vercel in stages.
+This keeps the public site on GitHub Pages while moving live backend automation to an owned Cloudflare Worker API.
 
 ## Target Architecture
 
 - GitHub Pages: public website on `quantumaibusiness.com`
-- Cloudflare Workers: live API/webhook backend
+- Cloudflare Workers: live `quantumaibusiness.com/api/*` backend
 - GitHub Actions: scheduled checks and low-risk recurring automation
 - Stripe: payments and webhook events
 - Resend: owner/client email
 - OpenAI: paid diagnostic generation
 - Google Sheets/Apps Script: low-cost ledger and owner visibility
 
-## Phase 1: Deploy Worker Beside Vercel
+## Phase 1: Deploy Owned Worker
 
-The first Worker is a safe bridge:
+The first Worker proves the owned API path:
 
 - `/api/health` reports Cloudflare Worker readiness.
 - `/api/ads-preflight` checks the paid landing route before Google Ads spend.
-- Other `/api/*` requests proxy to the existing Vercel backend until each route is migrated.
+- Other `/api/*` requests return a route-migration response unless `LEGACY_BACKEND_ORIGIN` is explicitly configured.
 
 Deploy:
 
@@ -49,7 +49,7 @@ Move these first:
 4. `/api/growth-campaign`
 5. `/api/social-queue`
 
-Keep Vercel active until test submissions, owner emails, and sheet logging pass.
+Keep any legacy backend active only until test submissions, owner emails, and sheet logging pass through the owned API.
 
 ## Phase 3: Move Money Routes
 
@@ -59,7 +59,7 @@ Move Stripe last:
 2. Add the new signing secret to Cloudflare.
 3. Run Stripe test event.
 4. Confirm owner email and ledger entry.
-5. Only then disable the Vercel webhook.
+5. Only then disable any legacy webhook.
 
 ## Why Not GitHub Only
 

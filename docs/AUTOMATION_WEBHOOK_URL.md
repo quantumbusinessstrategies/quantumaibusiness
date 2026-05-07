@@ -2,7 +2,7 @@
 
 Recommended first automation target: Google Sheets through Google Apps Script.
 
-This gives QuantumAiBusiness a low-cost event ledger that is easy to export, back up, and replace later. Vercel remains the source of truth for the backend; the sheet is just a copy of events.
+This gives QuantumAiBusiness a low-cost event ledger that is easy to export, back up, and replace later. The owned API remains the source of truth for the backend; the sheet is just a copy of events.
 
 ## Why This Path
 
@@ -26,15 +26,15 @@ This gives QuantumAiBusiness a low-cost event ledger that is easy to export, bac
 9. Who has access: Anyone.
 10. Deploy and copy the Web app URL.
 
-## Add It To Vercel
+## Add It To The API Host
 
-In the Vercel project, add:
+In the API host, add:
 
 ```text
 AUTOMATION_WEBHOOK_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec?secret=YOUR_LONG_SECRET
 ```
 
-Then redeploy Vercel.
+Then redeploy the API.
 
 ## What Will Be Logged
 

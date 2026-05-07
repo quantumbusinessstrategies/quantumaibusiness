@@ -20,7 +20,7 @@ npm run build
 Set these as GitHub Pages repository variables or local `.env` values:
 
 - `VITE_CONTACT_EMAIL`: fallback email for lead and payment buttons. Default: `quantumbusinessstrategies@gmail.com`.
-- `VITE_AUTOMATION_API_URL`: optional serverless API base URL. Example: `https://quantumaibusiness.vercel.app`. When set, site events go to `/api/lead` first.
+- `VITE_AUTOMATION_API_URL`: optional serverless API base URL. Leave blank for same-origin `https://quantumaibusiness.com/api/*`.
 - `VITE_LEAD_WEBHOOK_URL`: Zapier, Make, CRM, Google Apps Script, or other HTTPS webhook for assessments.
 - `VITE_OWNER_NOTIFICATION_URL`: owner notification endpoint. Defaults to FormSubmit AJAX for `quantumbusinessstrategies@gmail.com`; approve the first activation email from FormSubmit.
 - `VITE_AUDIT_PAYMENT_URL`: checkout link for the Business Weakness Scan.
@@ -37,18 +37,20 @@ Set these as GitHub Pages repository variables or local `.env` values:
 
 ## Serverless automation backend
 
-This repo includes optional Vercel-style API functions:
+This repo includes optional serverless API functions. The ownership target is same-domain API routing at `https://quantumaibusiness.com/api/*`:
 
 - `api/lead.js`: receives scans, assessment submits, package selections, premium referrals, and share actions.
 - `api/stripe-webhook.js`: receives Stripe `checkout.session.completed` events.
 - `api/fulfillment.js`: generates paid fulfillment drafts and can auto-send the $9.99 diagnostic and $49.99 growth scan pack when `FULFILLMENT_CLIENT_EMAIL_MODE=auto_send_low_tier`.
 - `api/lead.js` also captures client feedback, blocker signals, referrals, anonymous case-note permission, owner notification, Sheet forwarding, and client confirmation through the `client_proof_feedback` event.
-- `api/ops-runner.js`: single daily Vercel cron orchestrator for owner digest, campaign batch, social queue, and backend health summary.
+- `api/ops-runner.js`: single daily cron orchestrator for owner digest, campaign batch, social queue, and backend health summary.
 - `api/social-queue.js`: generates and schedules Buffer posts when `BUFFER_API_KEY`, `BUFFER_CHANNEL_IDS`, and `SOCIAL_AUTO_SCHEDULE=true` are configured.
 - `SOCIAL_MAX_SCHEDULED_POSTS`: optional cap for Buffer scheduling per run. Default is `1` post per connected channel, max `3`, to avoid filling free Buffer queues too quickly.
 - `LEAD_FOLLOW_UP_MODE`: defaults to `owner_review`; set to `auto_send` only when you want warm assessment/package-selection follow-ups emailed automatically.
 
 See `docs/AUTOMATION_BACKEND.md` for deployment, Stripe webhook, and environment variable setup.
+
+See `docs/OWNERSHIP_EXIT_PLAN.md` for the owned-domain API migration.
 
 See `marketing/growth-operating-system.md` for the current offer ladder, targeting map, branding direction, traffic system, connectivity map, and daily automation loop.
 
