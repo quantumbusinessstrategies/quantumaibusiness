@@ -33,6 +33,10 @@ This plan removes Vercel as an implicit dependency and keeps the live system und
 7. Run a test lead, test checkout, test webhook, and owner console preflight.
 8. Remove `.vercel/`, `vercel.json`, and Vercel project connection after the owned API passes.
 
+## Hands-Off API Deploy
+
+The repo includes `.github/workflows/cloudflare-api.yml`. Add `CLOUDFLARE_API_TOKEN` to GitHub Actions secrets, then every `cloudflare/**` change can deploy the owned `quantumaibusiness.com/api/*` Worker automatically.
+
 ## Google Ads And Analytics Rule
 
 Use only owned URLs in campaign setup:

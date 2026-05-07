@@ -1,0 +1,27 @@
+name: Deploy Cloudflare API
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - cloudflare/**
+      - .github/workflows/cloudflare-api.yml
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip when Cloudflare token is missing
+        if: ${{ env.CLOUDFLARE_API_TOKEN == '' }}
+        run: echo "CLOUDFLARE_API_TOKEN is not configured. Add it in GitHub Secrets to deploy quantumaibusiness.com/api/*."
+
+      - name: Deploy Worker API
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: npx wrangler@4.89.0 deploy --config cloudflare/wrangler.jsonc
