@@ -19,6 +19,7 @@
   }
 
   var API = '/api/lead'
+  var OWNER_INBOX = 'https://formsubmit.co/ajax/quantumbusinessstrategies@gmail.com'
 
   function attribution() {
     var params = new URLSearchParams(window.location.search)
@@ -32,6 +33,22 @@
       if (value) data[key] = value.slice(0, 160)
     })
     return data
+  }
+
+  function withStripeTracking(href, data) {
+    try {
+      var url = new URL(href)
+      if (url.hostname !== 'buy.stripe.com') return href
+      ;['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref'].forEach(function (key) {
+        if (data[key] && !url.searchParams.get(key)) url.searchParams.set(key, data[key])
+      })
+      if (!url.searchParams.get('client_reference_id')) {
+        url.searchParams.set('client_reference_id', 'qab_' + Date.now())
+      }
+      return url.toString()
+    } catch (error) {
+      return href
+    }
   }
 
   function postAutomationEvent(eventType, payload) {
@@ -65,6 +82,27 @@
     }
   }
 
+  async function postOwnerFallback(eventType, payload) {
+    try {
+      var response = await fetch(OWNER_INBOX, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          _subject: 'QuantumAiBusiness checkout intake',
+          _template: 'table',
+          _captcha: 'false',
+          event_type: eventType,
+          source: 'quantumaibusiness.com',
+          ...payload,
+        }),
+        keepalive: true,
+      })
+      return response.ok
+    } catch (error) {
+      return false
+    }
+  }
+
   function pulseOnce() {
     try {
       var data = attribution()
@@ -87,13 +125,18 @@
     var highIntent = href.indexOf('buy.stripe.com') !== -1 || /scan|checkout|start|growth|utility/i.test(label)
     if (!highIntent) return
     if (href.indexOf('buy.stripe.com') !== -1) {
+      var trackedHref = withStripeTracking(href, attribution())
       window.gtag?.('event', 'package_checkout_started', {
         event_category: 'commerce',
         event_label: label || 'backup_stripe_checkout',
         checkout_type: 'backup_stripe_link',
-        destination: href,
+        destination: trackedHref,
       })
       window.fbq?.('track', 'InitiateCheckout', { content_name: label || 'Backup Stripe Checkout', currency: 'USD' })
+      if (trackedHref !== href) {
+        event.preventDefault()
+        window.location.assign(trackedHref)
+      }
     }
     postAutomationEvent('static_landing_click', {
       label: label,
@@ -143,8 +186,16 @@
       status.textContent = 'Opening Stripe checkout...'
       window.location.assign(data.url)
     } catch (error) {
-      status.textContent = 'Tracked checkout failed. Opening backup Stripe link...'
-      if (fallback) window.location.assign(fallback)
+      status.textContent = 'Saving intake and opening Stripe checkout...'
+      await postOwnerFallback('checkout_intake_before_backup_stripe', payload)
+      if (fallback) {
+        var trackedFallback = withStripeTracking(fallback, payload.attribution || attribution())
+        window.gtag?.('event', 'backup_stripe_checkout_opened', {
+          event_category: 'commerce',
+          event_label: packageName,
+        })
+        window.location.assign(trackedFallback)
+      }
     } finally {
       button.disabled = false
     }
